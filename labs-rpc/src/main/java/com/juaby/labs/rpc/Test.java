@@ -13,10 +13,10 @@ import org.glassfish.grizzly.samples.filterchain.GIOPServer;
 public class Test {
 
     public static void main(String[] args) {
-        String service = "service-1";
+        ServiceConfig config = new ServiceConfig("service-1");
         Endpoint endpoint = new Endpoint(GIOPServer.HOST, GIOPServer.PORT);
-        EndpointHelper.add(service, endpoint);
-        ServiceConfig config = new ServiceConfig(service);
+        EndpointHelper.add(config.getName(), endpoint);
+
         MessageService messageService = new MessageClientServiceImpl(config);
         TestBean bean = new TestBean();
         bean.setId("100");
