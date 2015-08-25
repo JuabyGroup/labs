@@ -10,6 +10,6 @@ package com.juaby.labs.rpc;
  */
 public interface MessageService {
 
-    public TestResult message(TestBean testBean);
+    public TestResult message(TestBean testBean, String param);
 
 }
