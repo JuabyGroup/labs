@@ -2,6 +2,9 @@ package com.juaby.labs.rpc;
 
 import org.glassfish.grizzly.samples.filterchain.GIOPServer;
 
+import java.lang.reflect.Method;
+import java.lang.reflect.ParameterizedType;
+import java.lang.reflect.Type;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -16,11 +19,11 @@ import java.util.List;
 public class Test {
 
     public static void main(String[] args) {
-        ServiceConfig config = new ServiceConfig(MessageService.class.getName());
+        /*ServiceConfig config = new ServiceConfig(MessageService.class.getName());
         Endpoint endpoint = new Endpoint(GIOPServer.HOST, GIOPServer.PORT);
         EndpointHelper.add(config.getName(), endpoint);
 
-        MessageService messageService = new MessageClientServiceImpl(config);
+        MessageService messageService = new MessageServiceClientProxy(config);
 
         TestBean bean = new TestBean();
         bean.setId("100");
@@ -29,7 +32,37 @@ public class Test {
         List<String> params = new ArrayList<String>();
         params.add("COME HERE!");
         TestResult result = messageService.message(bean, params);
-        System.out.println(result.getContent());
+        System.out.println(result.getContent());*/
+        Method[] methods = MessageService.class.getDeclaredMethods();
+        for (Method method : methods) {
+            System.out.println("method:" + method.getName());// 方法名
+            // //////////////方法的参数
+            System.out.println(" paramTypeType: ");
+            Type[] paramTypeList = method.getGenericParameterTypes();// 方法的参数列表
+            for (Type paramType : paramTypeList) {
+                System.out.println("  " + paramType);// 参数类型
+                if (paramType instanceof ParameterizedType)/**//* 如果是泛型类型 */{
+                    Type[] types = ((ParameterizedType) paramType)
+                            .getActualTypeArguments();// 泛型类型列表
+                    System.out.println("  TypeArgument: ");
+                    for (Type type : types) {
+                        System.out.println("   " + type);
+                    }
+                }
+            }
+            // //////////////方法的返回值
+            System.out.println(" returnType: ");
+            Type returnType = method.getGenericReturnType();// 返回类型
+            System.out.println("  " + returnType);
+            if (returnType instanceof ParameterizedType)/**//* 如果是泛型类型 */{
+                Type[] types = ((ParameterizedType) returnType)
+                        .getActualTypeArguments();// 泛型类型列表
+                System.out.println("  TypeArgument: ");
+                for (Type type : types) {
+                    System.out.println("   " + type);
+                }
+            }
+        }
     }
 
 }

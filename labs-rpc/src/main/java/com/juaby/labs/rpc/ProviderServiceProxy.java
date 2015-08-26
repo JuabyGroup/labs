@@ -20,6 +20,7 @@ public class ProviderServiceProxy implements ProviderService {
         this.messageService = messageService;
     }
 
+    @Override
     public MessageBody<TestResult> handler(Object[] params) {
         TestBean testBean = (TestBean)params[0];
         List<String> param = (List<String>)params[1];
