@@ -40,10 +40,7 @@
 
 package org.glassfish.grizzly.samples.filterchain;
 
-import com.juaby.labs.rpc.MessageServerServiceImpl;
-import com.juaby.labs.rpc.MessageService;
-import com.juaby.labs.rpc.SerializeTool;
-import com.juaby.labs.rpc.TestResult;
+import com.juaby.labs.rpc.*;
 import org.glassfish.grizzly.filterchain.BaseFilter;
 import org.glassfish.grizzly.filterchain.FilterChain;
 import org.glassfish.grizzly.filterchain.FilterChainContext;
@@ -75,9 +72,11 @@ public class ServiceFilter extends BaseFilter {
 
         final GIOPMessage message = ctx.getMessage();
 
-        MessageService messageService = new MessageServerServiceImpl();
-        TestResult result = messageService.message(null, null);
-        byte[] body = SerializeTool.serialize(result);
+        RequestMessageBody requestMessageBody = new RequestMessageBody();
+        SerializeTool.deserialize(message.getBody(), requestMessageBody);
+        ProviderService providerService = ProxyHelper.getProxyInstance(requestMessageBody.getService() + requestMessageBody.getMethod());
+        MessageBody messageBody = providerService.handler(requestMessageBody.getParams());
+        byte[] body = SerializeTool.serialize(messageBody);
         message.setBodyLength(body.length);
         message.setBody(body);
         ctx.write(peerAddress, message, null);

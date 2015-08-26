@@ -1,5 +1,7 @@
 package com.juaby.labs.rpc;
 
+import java.util.List;
+
 /**
  * Title: <br>
  * Description: <br>
@@ -10,6 +12,8 @@ package com.juaby.labs.rpc;
  */
 public interface MessageService {
 
-    public TestResult message(TestBean testBean, String param);
+    public static final String A = "";
+
+    public TestResult message(TestBean testBean, List<String> param);
 
 }

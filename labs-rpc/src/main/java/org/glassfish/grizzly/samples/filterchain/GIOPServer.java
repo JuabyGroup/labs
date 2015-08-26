@@ -40,6 +40,7 @@
 
 package org.glassfish.grizzly.samples.filterchain;
 
+import com.juaby.labs.rpc.*;
 import org.glassfish.grizzly.filterchain.FilterChainBuilder;
 import org.glassfish.grizzly.filterchain.TransportFilter;
 import org.glassfish.grizzly.nio.transport.TCPNIOTransport;
@@ -57,6 +58,12 @@ public class GIOPServer {
     public static final int PORT = 9098;
     
     public static void main(String[] args) throws Exception {
+
+        MessageService messageServerService = new MessageServerServiceImpl();
+        ProviderService providerService = new ProviderServiceProxy(messageServerService);
+        String method = "message";
+        ProxyHelper.addProxyInstance(MessageService.class.getName() + method, providerService);
+
         LifeCycleFilter lifeCycleFilter = new LifeCycleFilter();
         // Create a FilterChain using FilterChainBuilder
         FilterChainBuilder filterChainBuilder = FilterChainBuilder.stateless();

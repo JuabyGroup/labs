@@ -1,6 +1,7 @@
 package com.juaby.labs.rpc;
 
 import java.util.Date;
+import java.util.List;
 
 /**
  * Title: <br>
@@ -13,7 +14,7 @@ import java.util.Date;
 public class MessageServerServiceImpl implements MessageService {
 
     @Override
-    public TestResult message(TestBean testBean, String param) {
+    public TestResult message(TestBean testBean, List<String> param) {
         TestResult result = new TestResult();
         result.setId("2000");
         result.setName("RESULT_NAME");

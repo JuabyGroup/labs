@@ -56,9 +56,9 @@ import org.glassfish.grizzly.utils.Charsets;
  */
 public class GIOPClient {
 
-    public static <R, M> R sendMessage(ServiceConfig config, M message, R result) throws InterruptedException, ExecutionException, TimeoutException {
+    public static <R> R sendMessage(RequestMessageBody requestMessageBody) throws InterruptedException, ExecutionException, TimeoutException {
         Connection connection = null;
-        Endpoint endpoint = EndpointHelper.cache(config.getName()).iterator().next();
+        Endpoint endpoint = EndpointHelper.cache(requestMessageBody.getService()).iterator().next();
         final FutureImpl<GIOPMessage> resultFuture = SafeFutureImpl.create();
         String messageId = MessageIdGenerator.id();
         try {
@@ -67,7 +67,7 @@ public class GIOPClient {
             connection = ConnectionFactory.get(endpoint);
 
             // Initialize sample GIOP message
-            byte[] testMessage = SerializeTool.serialize(message);
+            byte[] testMessage = SerializeTool.serialize(requestMessageBody);
             GIOPMessage sentMessage = new GIOPMessage((byte) 1, (byte) 2,
                     (byte) 0x0F, (byte) 0, testMessage);
 
@@ -78,14 +78,15 @@ public class GIOPClient {
 
             final GIOPMessage rcvMessage = ResultFutureHelper.result(messageId);
 
-            result = SerializeTool.deserialize(rcvMessage.getBody(), result);
+            MessageBody<R> messageBody = new MessageBody<R>();
+            SerializeTool.deserialize(rcvMessage.getBody(), messageBody);
+            return messageBody.getBody();
         } finally {
             if (connection != null) {
                 ConnectionFactory.release(endpoint, connection);
             }
             ResultFutureHelper.map().remove(messageId);
         }
-        return result;
     }
 
 }

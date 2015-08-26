@@ -2,6 +2,7 @@ package com.juaby.labs.rpc;
 
 import org.glassfish.grizzly.samples.filterchain.GIOPClient;
 
+import java.util.List;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeoutException;
 
@@ -22,10 +23,13 @@ public class MessageClientServiceImpl implements MessageService {
     }
 
     @Override
-    public TestResult message(TestBean testBean, String param) {
-        TestResult result = new TestResult();
+    public TestResult message(TestBean testBean, List<String> params) {
+        TestResult result = null;
+        RequestMessageBody requestMessageBody = new RequestMessageBody(config.getName());
+        requestMessageBody.setMethod("message");
+        requestMessageBody.setParams(new Object[] {testBean, params});
         try {
-            result = GIOPClient.sendMessage(config, testBean, result);
+            result = GIOPClient.sendMessage(requestMessageBody);
         } catch (InterruptedException e) {
             e.printStackTrace();
         } catch (ExecutionException e) {
