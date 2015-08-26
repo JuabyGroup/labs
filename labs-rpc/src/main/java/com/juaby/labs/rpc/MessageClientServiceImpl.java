@@ -22,7 +22,7 @@ public class MessageClientServiceImpl implements MessageService {
     }
 
     @Override
-    public TestResult message(TestBean testBean) {
+    public TestResult message(TestBean testBean, String param) {
         TestResult result = new TestResult();
         try {
             result = GIOPClient.sendMessage(config, testBean, result);

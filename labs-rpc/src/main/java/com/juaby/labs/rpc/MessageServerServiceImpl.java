@@ -13,7 +13,7 @@ import java.util.Date;
 public class MessageServerServiceImpl implements MessageService {
 
     @Override
-    public TestResult message(TestBean testBean) {
+    public TestResult message(TestBean testBean, String param) {
         TestResult result = new TestResult();
         result.setId("2000");
         result.setName("RESULT_NAME");

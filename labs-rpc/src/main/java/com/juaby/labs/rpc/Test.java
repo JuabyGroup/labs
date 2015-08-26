@@ -22,7 +22,7 @@ public class Test {
         bean.setId("100");
         bean.setCode("200");
         bean.setMessage("我来了");
-        TestResult result = messageService.message(bean);
+        TestResult result = messageService.message(bean, null);
         System.out.println(result.getContent());
     }
 

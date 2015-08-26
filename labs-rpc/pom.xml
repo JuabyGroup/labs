@@ -15,6 +15,7 @@
         <grizzly.version>2.3.22</grizzly.version>
         <netty.version>4.0.30.Final</netty.version>
         <grizzly-npn-bootstrap.version>1.0</grizzly-npn-bootstrap.version>
+        <asm.version>5.0.4</asm.version>
     </properties>
 
     <dependencies>
@@ -211,6 +212,24 @@
             <groupId>com.google.guava</groupId>
             <artifactId>guava</artifactId>
             <version>18.0</version>
+        </dependency>
+
+        <dependency>
+            <groupId>org.ow2.asm</groupId>
+            <artifactId>asm</artifactId>
+            <version>${asm.version}</version>
+        </dependency>
+
+        <dependency>
+            <groupId>org.ow2.asm</groupId>
+            <artifactId>asm-commons</artifactId>
+            <version>${asm.version}</version>
+        </dependency>
+
+        <dependency>
+            <groupId>org.ow2.asm</groupId>
+            <artifactId>asm-util</artifactId>
+            <version>${asm.version}</version>
         </dependency>
 
     </dependencies>

@@ -76,7 +76,7 @@ public class ServiceFilter extends BaseFilter {
         final GIOPMessage message = ctx.getMessage();
 
         MessageService messageService = new MessageServerServiceImpl();
-        TestResult result = messageService.message(null);
+        TestResult result = messageService.message(null, null);
         byte[] body = SerializeTool.serialize(result);
         message.setBodyLength(body.length);
         message.setBody(body);
