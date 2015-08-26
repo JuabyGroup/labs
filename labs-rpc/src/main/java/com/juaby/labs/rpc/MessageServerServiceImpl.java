@@ -23,4 +23,14 @@ public class MessageServerServiceImpl implements MessageService {
         return result;
     }
 
+    @Override
+    public TestResult message2(TestBean testBean, List<String> param) {
+        return null;
+    }
+
+    @Override
+    public int message3(TestBean testBean, List<String> param) {
+        return 0;
+    }
+
 }

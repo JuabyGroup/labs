@@ -1,7 +1,9 @@
 package com.juaby.labs.rpc;
 
 import org.glassfish.grizzly.samples.filterchain.GIOPServer;
+import org.objectweb.asm.ClassReader;
 
+import java.io.IOException;
 import java.lang.reflect.Method;
 import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Type;
@@ -40,13 +42,13 @@ public class Test {
             System.out.println(" paramTypeType: ");
             Type[] paramTypeList = method.getGenericParameterTypes();// 方法的参数列表
             for (Type paramType : paramTypeList) {
-                System.out.println("  " + paramType);// 参数类型
+                System.out.println("  " + paramType.getTypeName());// 参数类型
                 if (paramType instanceof ParameterizedType)/**//* 如果是泛型类型 */{
                     Type[] types = ((ParameterizedType) paramType)
                             .getActualTypeArguments();// 泛型类型列表
                     System.out.println("  TypeArgument: ");
                     for (Type type : types) {
-                        System.out.println("   " + type);
+                        System.out.println("   " + type.getTypeName());
                     }
                 }
             }

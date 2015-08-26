@@ -1,6 +1,5 @@
 package com.juaby.labs.rpc;
 
-import org.glassfish.grizzly.http.server.util.ClassLoaderUtil;
 import org.glassfish.grizzly.samples.filterchain.GIOPClient;
 
 import java.util.List;
@@ -26,8 +25,7 @@ public class MessageServiceClientProxy implements MessageService {
     @Override
     public TestResult message(TestBean testBean, List<String> params) {
         TestResult result = null;
-
-        RequestMessageBody requestMessageBody = new RequestMessageBody(config.getName());
+        RequestMessageBody requestMessageBody = new RequestMessageBody(getClass().getInterfaces()[0].getName());
         requestMessageBody.setMethod("message");
         requestMessageBody.setParams(new Object[] {testBean, params});
         try {
@@ -42,4 +40,26 @@ public class MessageServiceClientProxy implements MessageService {
         return result;
     }
 
+    @Override
+    public TestResult message2(TestBean testBean, List<String> params) {
+        TestResult result = null;
+        RequestMessageBody requestMessageBody = new RequestMessageBody(getClass().getInterfaces()[0].getName());
+        requestMessageBody.setMethod("message");
+        requestMessageBody.setParams(new Object[] {testBean, params});
+        try {
+            result = GIOPClient.sendMessage(requestMessageBody);
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        } catch (ExecutionException e) {
+            e.printStackTrace();
+        } catch (TimeoutException e) {
+            e.printStackTrace();
+        }
+        return result;
+    }
+
+    @Override
+    public int message3(TestBean testBean, List<String> param) {
+        return 0;
+    }
 }

@@ -15,5 +15,7 @@ public interface MessageService {
     public static final String A = "";
 
     public TestResult message(TestBean testBean, List<String> param);
+    public TestResult message2(TestBean testBean, List<String> param);
+    public int message3(TestBean testBean, List<String> param);
 
 }
