@@ -13,7 +13,7 @@ public class MessageServiceClientProxyDump implements Opcodes {
         MethodVisitor mv;
         AnnotationVisitor av0;
 
-        cw.visit(V1_7, ACC_PUBLIC + ACC_SUPER, "com/juaby/labs/rpc/" + serviceClassInfo.getSimpleName() + "ClientProxy", null, "java/lang/Object", new String[] { serviceClassInfo.getSimpleName().replaceAll(".", "/") });
+        cw.visit(V1_7, ACC_PUBLIC + ACC_SUPER, "com/juaby/labs/rpc/" + serviceClassInfo.getSimpleName() + "$ClientProxy", null, "java/lang/Object", new String[] { serviceClassInfo.getName().replaceAll(".", "/") });
 
         {
             fv = cw.visitField(ACC_PRIVATE, "config", "Lcom/juaby/labs/rpc/ServiceConfig;", null, null);
@@ -26,14 +26,41 @@ public class MessageServiceClientProxyDump implements Opcodes {
             mv.visitMethodInsn(INVOKESPECIAL, "java/lang/Object", "<init>", "()V", false);
             mv.visitVarInsn(ALOAD, 0);
             mv.visitVarInsn(ALOAD, 1);
-            mv.visitFieldInsn(PUTFIELD, "com/juaby/labs/rpc/" + serviceClassInfo.getSimpleName() + "ClientProxy", "config", "Lcom/juaby/labs/rpc/ServiceConfig;");
+            mv.visitFieldInsn(PUTFIELD, "com/juaby/labs/rpc/" + serviceClassInfo.getSimpleName() + "$ClientProxy", "config", "Lcom/juaby/labs/rpc/ServiceConfig;");
             mv.visitInsn(RETURN);
             mv.visitMaxs(2, 2);
             mv.visitEnd();
         }
         for (int i = 0; i < serviceClassInfo.getMethods().length; i++) {
+            String methodName = serviceClassInfo.getMethods()[i].getMethod().getName().replaceAll(".", "/");
+            java.lang.reflect.Type[] paramTypes = serviceClassInfo.getMethods()[i].getParamTypes();
+            String returnType = serviceClassInfo.getMethods()[i].getReturnType().getTypeName().replaceAll(".", "/");
+            StringBuilder methodInfoBuilder = new StringBuilder();
+            methodInfoBuilder.append("(");
+            for (java.lang.reflect.Type type : paramTypes) {
+                methodInfoBuilder.append(ProxyHelper.javaType(type.getTypeName()));
+                methodInfoBuilder.append(type.getTypeName().replaceAll(".", "/"));
+                methodInfoBuilder.append(";");
+            }
+            methodInfoBuilder.append(")");
+            methodInfoBuilder.append(ProxyHelper.javaType(serviceClassInfo.getMethods()[i].getReturnType().getTypeName()));
+            methodInfoBuilder.append(returnType);
+            methodInfoBuilder.append(";");
+
+            StringBuilder methodInfoBuilder2 = new StringBuilder();
+            methodInfoBuilder2.append("(");
+            for (java.lang.reflect.Type type : paramTypes) {
+                methodInfoBuilder2.append(ProxyHelper.javaType(type.getTypeName()));
+                methodInfoBuilder2.append(type.getTypeName().replaceAll(".", "/"));
+                methodInfoBuilder2.append(";");
+            }
+            methodInfoBuilder2.append(")");
+            methodInfoBuilder2.append(ProxyHelper.javaType(serviceClassInfo.getMethods()[i].getReturnType().getTypeName()));
+            methodInfoBuilder2.append(returnType);
+            methodInfoBuilder2.append(";");
+            String methodInfo = "(Lcom/juaby/labs/rpc/TestBean;Ljava/util/List<Ljava/lang/String;>;)Lcom/juaby/labs/rpc/TestResult;";
             {
-                mv = cw.visitMethod(ACC_PUBLIC, serviceClassInfo.getMethods()[i].getMethod().getName(), "(Lcom/juaby/labs/rpc/TestBean;Ljava/util/List;)Lcom/juaby/labs/rpc/TestResult;", "(Lcom/juaby/labs/rpc/TestBean;Ljava/util/List<Ljava/lang/String;>;)Lcom/juaby/labs/rpc/TestResult;", null);
+                mv = cw.visitMethod(ACC_PUBLIC, methodName, methodInfoBuilder.toString(), "(Lcom/juaby/labs/rpc/TestBean;Ljava/util/List<Ljava/lang/String;>;)Lcom/juaby/labs/rpc/TestResult;", null);
                 mv.visitCode();
                 Label l0 = new Label();
                 Label l1 = new Label();
@@ -56,7 +83,7 @@ public class MessageServiceClientProxyDump implements Opcodes {
                 mv.visitMethodInsn(INVOKESPECIAL, "com/juaby/labs/rpc/RequestMessageBody", "<init>", "(Ljava/lang/String;)V", false);
                 mv.visitVarInsn(ASTORE, 4);
                 mv.visitVarInsn(ALOAD, 4);
-                mv.visitLdcInsn("message");
+                mv.visitLdcInsn(methodName);
                 mv.visitMethodInsn(INVOKEVIRTUAL, "com/juaby/labs/rpc/RequestMessageBody", "setMethod", "(Ljava/lang/String;)V", false);
                 mv.visitVarInsn(ALOAD, 4);
                 mv.visitInsn(ICONST_2);
@@ -73,13 +100,21 @@ public class MessageServiceClientProxyDump implements Opcodes {
                 mv.visitLabel(l0);
                 mv.visitVarInsn(ALOAD, 4);
                 mv.visitMethodInsn(INVOKESTATIC, "org/glassfish/grizzly/samples/filterchain/GIOPClient", "sendMessage", "(Lcom/juaby/labs/rpc/RequestMessageBody;)Ljava/lang/Object;", false);
-                mv.visitTypeInsn(CHECKCAST, "com/juaby/labs/rpc/TestResult");
+                mv.visitTypeInsn(CHECKCAST, returnType);
                 mv.visitVarInsn(ASTORE, 3);
                 mv.visitLabel(l1);
                 Label l5 = new Label();
                 mv.visitJumpInsn(GOTO, l5);
                 mv.visitLabel(l2);
-                mv.visitFrame(Opcodes.F_FULL, 5, new Object[]{"com/juaby/labs/rpc/MessageServiceClientProxy", "com/juaby/labs/rpc/TestBean", "java/util/List", "com/juaby/labs/rpc/TestResult", "com/juaby/labs/rpc/RequestMessageBody"}, 1, new Object[]{"java/lang/InterruptedException"});
+                int nLocal = 3 + paramTypes.length;
+                Object[] local = new Object[nLocal];
+                local[0] = "com/juaby/labs/rpc/" + serviceClassInfo.getSimpleName() + "$ClientProxy";
+                for (int n = 1; n <= paramTypes.length; n++) {
+                    local[n] = paramTypes[n - 1].getTypeName().replaceAll(".", "/");
+                }
+                local[paramTypes.length + 1] = returnType;
+                local[nLocal - 1] = "com/juaby/labs/rpc/RequestMessageBody";
+                mv.visitFrame(Opcodes.F_FULL, nLocal, local, 1, new Object[]{"java/lang/InterruptedException"});
                 mv.visitVarInsn(ASTORE, 5);
                 mv.visitVarInsn(ALOAD, 5);
                 mv.visitMethodInsn(INVOKEVIRTUAL, "java/lang/InterruptedException", "printStackTrace", "()V", false);

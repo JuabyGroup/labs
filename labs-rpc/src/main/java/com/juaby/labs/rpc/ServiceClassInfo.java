@@ -60,9 +60,9 @@ public class ServiceClassInfo {
 
         private Method method;
 
-        private Type[] paramTypes;
+        private ParamInfo[] paramTypes;
 
-        private Type returnType;
+        private ReturnInfo returnInfo;
 
         public MethodInfo() {
         }
@@ -79,12 +79,58 @@ public class ServiceClassInfo {
             this.method = method;
         }
 
-        public Type[] getParamTypes() {
+        public ParamInfo[] getParamTypes() {
             return paramTypes;
         }
 
-        public void setParamTypes(Type[] paramTypes) {
+        public void setParamTypes(ParamInfo[] paramTypes) {
             this.paramTypes = paramTypes;
+        }
+
+        public ReturnInfo getReturnInfo() {
+            return returnInfo;
+        }
+
+        public void setReturnInfo(ReturnInfo returnInfo) {
+            this.returnInfo = returnInfo;
+        }
+
+    }
+
+    public final class ParamInfo {
+
+        private Type paramType;
+
+        private Type[] parameterizedTypes;
+
+        public ParamInfo() {
+        }
+
+        public Type getParamType() {
+            return paramType;
+        }
+
+        public void setParamType(Type paramType) {
+            this.paramType = paramType;
+        }
+
+        public Type[] getParameterizedTypes() {
+            return parameterizedTypes;
+        }
+
+        public void setParameterizedTypes(Type[] parameterizedTypes) {
+            this.parameterizedTypes = parameterizedTypes;
+        }
+
+    }
+
+    public final class ReturnInfo {
+
+        private Type returnType;
+
+        private Type[] parameterizedTypes;
+
+        public ReturnInfo() {
         }
 
         public Type getReturnType() {
@@ -93,6 +139,14 @@ public class ServiceClassInfo {
 
         public void setReturnType(Type returnType) {
             this.returnType = returnType;
+        }
+
+        public Type[] getParameterizedTypes() {
+            return parameterizedTypes;
+        }
+
+        public void setParameterizedTypes(Type[] parameterizedTypes) {
+            this.parameterizedTypes = parameterizedTypes;
         }
 
     }
