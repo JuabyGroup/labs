@@ -2,6 +2,7 @@ package com.juaby.labs.rpc;
 
 import java.util.Date;
 import java.util.List;
+import java.util.Map;
 
 /**
  * Title: <br>
@@ -29,7 +30,7 @@ public class MessageServerServiceImpl implements MessageService {
     }
 
     @Override
-    public int message3(TestBean testBean, List<String> param) {
+    public int message3(TestBean testBean, Map<String, List<TestBean>> param) {
         return 0;
     }
 

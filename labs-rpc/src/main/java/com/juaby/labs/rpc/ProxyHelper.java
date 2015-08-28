@@ -69,4 +69,12 @@ public class ProxyHelper {
         }
     }
 
+    public static boolean isJavaType(String typeName) {
+        if (javaTypes.containsKey(typeName)) {
+            return true;
+        } else {
+            return false;
+        }
+    }
+
 }

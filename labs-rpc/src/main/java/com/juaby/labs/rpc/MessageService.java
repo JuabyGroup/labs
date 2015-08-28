@@ -1,6 +1,7 @@
 package com.juaby.labs.rpc;
 
 import java.util.List;
+import java.util.Map;
 
 /**
  * Title: <br>
@@ -16,6 +17,6 @@ public interface MessageService {
 
     public TestResult message(TestBean testBean, List<String> param);
     public TestResult message2(TestBean testBean, List<String> param);
-    public int message3(TestBean testBean, List<String> param);
+    public int message3(TestBean testBean, Map<String, List<TestBean>> param);
 
 }

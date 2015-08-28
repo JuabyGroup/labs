@@ -33,30 +33,50 @@ public class MessageServiceClientProxyDump implements Opcodes {
         }
         for (int i = 0; i < serviceClassInfo.getMethods().length; i++) {
             String methodName = serviceClassInfo.getMethods()[i].getMethod().getName().replaceAll(".", "/");
-            java.lang.reflect.Type[] paramTypes = serviceClassInfo.getMethods()[i].getParamTypes();
-            String returnType = serviceClassInfo.getMethods()[i].getReturnType().getTypeName().replaceAll(".", "/");
+            ServiceClassInfo.ParamInfo[] paramTypes = serviceClassInfo.getMethods()[i].getParamTypes();
+            ServiceClassInfo.ReturnInfo returnType = serviceClassInfo.getMethods()[i].getReturnInfo();
             StringBuilder methodInfoBuilder = new StringBuilder();
             methodInfoBuilder.append("(");
-            for (java.lang.reflect.Type type : paramTypes) {
-                methodInfoBuilder.append(ProxyHelper.javaType(type.getTypeName()));
-                methodInfoBuilder.append(type.getTypeName().replaceAll(".", "/"));
+            for (ServiceClassInfo.ParamInfo type : paramTypes) {
+                methodInfoBuilder.append(ProxyHelper.javaType(type.getParamType().getTypeName()));
+                int index = type.getParamType().getTypeName().indexOf("<");
+                if (index == -1) {
+                    index = type.getParamType().getTypeName().length();
+                }
+                methodInfoBuilder.append(type.getParamType().getTypeName().substring(0, index).replaceAll(".", "/"));
                 methodInfoBuilder.append(";");
             }
             methodInfoBuilder.append(")");
-            methodInfoBuilder.append(ProxyHelper.javaType(serviceClassInfo.getMethods()[i].getReturnType().getTypeName()));
-            methodInfoBuilder.append(returnType);
-            methodInfoBuilder.append(";");
+            methodInfoBuilder.append(ProxyHelper.javaType(serviceClassInfo.getMethods()[i].getReturnInfo().getReturnType().getTypeName()));
+
+            int index = returnType.getReturnType().getTypeName().indexOf("<");
+            if (index == -1) {
+                index = returnType.getReturnType().getTypeName().length();
+            }
+            methodInfoBuilder.append(returnType.getReturnType().getTypeName().substring(0, index));
+            if (!ProxyHelper.isJavaType(returnType.getReturnType().getTypeName())) {
+                methodInfoBuilder.append(";");
+            }
 
             StringBuilder methodInfoBuilder2 = new StringBuilder();
             methodInfoBuilder2.append("(");
-            for (java.lang.reflect.Type type : paramTypes) {
-                methodInfoBuilder2.append(ProxyHelper.javaType(type.getTypeName()));
-                methodInfoBuilder2.append(type.getTypeName().replaceAll(".", "/"));
+            for (ServiceClassInfo.ParamInfo type : paramTypes) {
+                methodInfoBuilder2.append(ProxyHelper.javaType(type.getParamType().getTypeName()));
+                int index2 = type.getParamType().getTypeName().indexOf("<");
+                if (index2 == -1) {
+                    index2 = type.getParamType().getTypeName().length();
+                }
+                methodInfoBuilder2.append(type.getParamType().getTypeName().substring(0, index2).replaceAll(".", "/"));
+                if (type.getParameterizedTypes() != null && type.getParameterizedTypes().length > 0) {
+                    methodInfoBuilder2.append("<");
+
+                    methodInfoBuilder2.append(">");
+                }
                 methodInfoBuilder2.append(";");
             }
             methodInfoBuilder2.append(")");
-            methodInfoBuilder2.append(ProxyHelper.javaType(serviceClassInfo.getMethods()[i].getReturnType().getTypeName()));
-            methodInfoBuilder2.append(returnType);
+            methodInfoBuilder2.append(ProxyHelper.javaType(serviceClassInfo.getMethods()[i].getReturnInfo().getReturnType().getTypeName()));
+            methodInfoBuilder2.append(returnType.getReturnType().getTypeName().replaceAll(".", "/"));
             methodInfoBuilder2.append(";");
             String methodInfo = "(Lcom/juaby/labs/rpc/TestBean;Ljava/util/List<Ljava/lang/String;>;)Lcom/juaby/labs/rpc/TestResult;";
             {
@@ -100,7 +120,7 @@ public class MessageServiceClientProxyDump implements Opcodes {
                 mv.visitLabel(l0);
                 mv.visitVarInsn(ALOAD, 4);
                 mv.visitMethodInsn(INVOKESTATIC, "org/glassfish/grizzly/samples/filterchain/GIOPClient", "sendMessage", "(Lcom/juaby/labs/rpc/RequestMessageBody;)Ljava/lang/Object;", false);
-                mv.visitTypeInsn(CHECKCAST, returnType);
+                mv.visitTypeInsn(CHECKCAST, returnType.getReturnType().getTypeName().replaceAll(".", "/"));
                 mv.visitVarInsn(ASTORE, 3);
                 mv.visitLabel(l1);
                 Label l5 = new Label();
@@ -110,7 +130,7 @@ public class MessageServiceClientProxyDump implements Opcodes {
                 Object[] local = new Object[nLocal];
                 local[0] = "com/juaby/labs/rpc/" + serviceClassInfo.getSimpleName() + "$ClientProxy";
                 for (int n = 1; n <= paramTypes.length; n++) {
-                    local[n] = paramTypes[n - 1].getTypeName().replaceAll(".", "/");
+                    local[n] = paramTypes[n - 1].getParamType().getTypeName().replaceAll(".", "/");
                 }
                 local[paramTypes.length + 1] = returnType;
                 local[nLocal - 1] = "com/juaby/labs/rpc/RequestMessageBody";

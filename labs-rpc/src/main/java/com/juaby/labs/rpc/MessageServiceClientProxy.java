@@ -3,6 +3,7 @@ package com.juaby.labs.rpc;
 import org.glassfish.grizzly.samples.filterchain.GIOPClient;
 
 import java.util.List;
+import java.util.Map;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeoutException;
 
@@ -59,7 +60,7 @@ public class MessageServiceClientProxy implements MessageService {
     }
 
     @Override
-    public int message3(TestBean testBean, List<String> param) {
+    public int message3(TestBean testBean, Map<String, List<TestBean>> param) {
         return 0;
     }
 }
