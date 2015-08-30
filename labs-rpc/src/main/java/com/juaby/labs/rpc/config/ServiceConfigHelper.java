@@ -1,7 +1,5 @@
 package com.juaby.labs.rpc.config;
 
-import com.juaby.labs.rpc.config.ServiceConfig;
-
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 

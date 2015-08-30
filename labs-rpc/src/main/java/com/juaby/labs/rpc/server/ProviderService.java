@@ -1,6 +1,6 @@
 package com.juaby.labs.rpc.server;
 
-import org.glassfish.grizzly.samples.filterchain.MessageBody;
+import com.juaby.labs.rpc.base.ResponseMessageBody;
 
 /**
  * Title: <br>
@@ -12,6 +12,6 @@ import org.glassfish.grizzly.samples.filterchain.MessageBody;
  */
 public interface ProviderService {
 
-    public <R> MessageBody<R> handler(Object[] params);
+    public <R> ResponseMessageBody<R> handler(Object[] params);
 
 }

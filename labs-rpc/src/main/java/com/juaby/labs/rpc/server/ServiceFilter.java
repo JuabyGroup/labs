@@ -44,7 +44,6 @@ import com.juaby.labs.rpc.base.RequestMessageBody;
 import com.juaby.labs.rpc.base.ResponseMessageBody;
 import com.juaby.labs.rpc.base.RpcMessage;
 import com.juaby.labs.rpc.proxy.ProxyHelper;
-import com.juaby.labs.rpc.server.ProviderService;
 import com.juaby.labs.rpc.util.SerializeTool;
 import org.glassfish.grizzly.filterchain.BaseFilter;
 import org.glassfish.grizzly.filterchain.FilterChain;
