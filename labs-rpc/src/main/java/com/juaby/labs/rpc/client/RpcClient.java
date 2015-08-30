@@ -60,7 +60,7 @@ import java.util.concurrent.TimeoutException;
  */
 public class RpcClient {
 
-    public static <R> R sendMessage(RequestMessageBody requestMessageBody) throws Exception {
+    public static <R> R sendMessage(RequestMessageBody requestMessageBody) {
         Connection connection = null;
         Endpoint endpoint = EndpointHelper.cache(requestMessageBody.getService()).iterator().next();
         final FutureImpl<RpcMessage> resultFuture = SafeFutureImpl.create();
@@ -84,13 +84,13 @@ public class RpcClient {
 
             SerializeTool.deserialize(rcvMessage.getBody(), messageBody);
         } catch (InterruptedException e) {
-            throw new InterruptedException(""); //TODO
+            //TODO
         } catch (ExecutionException e) {
-            throw new ExecutionException(e.getCause()); //TODO
+            //TODO
         } catch (TimeoutException e) {
-            throw new TimeoutException(""); //TODO
+            //TODO
         } catch (Exception e) {
-            throw new Exception(""); //TODO
+            //TODO
         } finally {
             if (connection != null) {
                 ConnectionFactory.release(endpoint, connection);

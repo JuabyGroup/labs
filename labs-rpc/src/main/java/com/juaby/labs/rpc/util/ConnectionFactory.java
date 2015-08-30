@@ -1,12 +1,12 @@
 package com.juaby.labs.rpc.util;
 
+import com.juaby.labs.rpc.client.RpcClientFilter;
 import org.glassfish.grizzly.Connection;
 import org.glassfish.grizzly.connectionpool.SingleEndpointPool;
 import org.glassfish.grizzly.filterchain.FilterChainBuilder;
 import org.glassfish.grizzly.filterchain.TransportFilter;
 import org.glassfish.grizzly.nio.transport.TCPNIOTransport;
 import org.glassfish.grizzly.nio.transport.TCPNIOTransportBuilder;
-import org.glassfish.grizzly.samples.filterchain.GIOPClientFilter;
 
 import java.io.IOException;
 import java.net.InetSocketAddress;
@@ -61,7 +61,7 @@ public class ConnectionFactory {
         // Add TransportFilter, which is responsible
         // for reading and writing data to the connection
         filterChainBuilder.add(new TransportFilter());
-        filterChainBuilder.add(new GIOPClientFilter());
+        filterChainBuilder.add(new RpcClientFilter());
         filterChainBuilder.add(new ResultFutureHelper.CustomClientFilter());
 
         // Create TCP NIO transport

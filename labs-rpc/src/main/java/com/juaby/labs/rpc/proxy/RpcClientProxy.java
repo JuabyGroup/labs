@@ -2,9 +2,9 @@ package com.juaby.labs.rpc.proxy;
 
 import com.juaby.labs.rpc.*;
 import com.juaby.labs.rpc.base.RequestMessageBody;
+import com.juaby.labs.rpc.client.RpcClient;
 import com.juaby.labs.rpc.config.ServiceConfig;
 import com.juaby.labs.rpc.config.ServiceConfigHelper;
-import org.glassfish.grizzly.samples.filterchain.RpcClient;
 
 import java.io.File;
 import java.io.IOException;

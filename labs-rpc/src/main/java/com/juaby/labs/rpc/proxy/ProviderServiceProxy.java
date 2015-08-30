@@ -3,8 +3,8 @@ package com.juaby.labs.rpc.proxy;
 import com.juaby.labs.rpc.MessageService;
 import com.juaby.labs.rpc.TestBean;
 import com.juaby.labs.rpc.TestResult;
+import com.juaby.labs.rpc.base.ResponseMessageBody;
 import com.juaby.labs.rpc.server.ProviderService;
-import org.glassfish.grizzly.samples.filterchain.MessageBody;
 
 import java.util.List;
 
@@ -25,11 +25,11 @@ public class ProviderServiceProxy implements ProviderService {
     }
 
     @Override
-    public MessageBody<TestResult> handler(Object[] params) {
+    public ResponseMessageBody<TestResult> handler(Object[] params) {
         TestBean testBean = (TestBean)params[0];
         List<String> param = (List<String>)params[1];
         TestResult result = messageService.message(testBean, param);
-        MessageBody<TestResult> messageBody = new MessageBody<TestResult>();
+        ResponseMessageBody<TestResult> messageBody = new ResponseMessageBody<TestResult>();
         messageBody.setBody(result);
         messageBody.setReturnClass(result.getClass().getName());
         return messageBody;
