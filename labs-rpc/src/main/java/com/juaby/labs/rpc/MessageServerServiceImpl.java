@@ -1,5 +1,6 @@
 package com.juaby.labs.rpc;
 
+import java.io.File;
 import java.util.Date;
 import java.util.List;
 import java.util.Map;
@@ -12,7 +13,7 @@ import java.util.Map;
  * @author <a href=mailto:yanjiabao@juaby.com>yanjiabao</a> <br>
  * @date Created by yanjiabao on 2015/8/25 17:08.
  */
-public class MessageServerServiceImpl implements MessageService {
+public class MessageServerServiceImpl<O, F> implements MessageService<O, F> {
 
     @Override
     public TestResult message(TestBean testBean, List<String> param) {
@@ -25,13 +26,37 @@ public class MessageServerServiceImpl implements MessageService {
     }
 
     @Override
-    public TestResult message2(TestBean testBean, List<String> param) {
+    public <T> TestResult message2(TestBean testBean, List<String> param) {
         return null;
     }
 
     @Override
-    public int message3(TestBean testBean, Map<String, List<TestBean>> param) {
-        return 0;
+    public List<Map<String, File>> message3(TestBean testBean, Map<String, List<TestBean>> param) {
+        return null;
     }
 
+    @Override
+    public <V> V vmethod() {
+        return null;
+    }
+
+    @Override
+    public <V> void vmethod(V v) {
+
+    }
+
+    @Override
+    public <V, R> R vmethod2(V v) {
+        return (R)v;
+    }
+
+    @Override
+    public <T> TestResult message2(TestBean testBean, List<String> param, T t) {
+        return null;
+    }
+
+    @Override
+    public <T> O message2(List<F> param, O t) {
+        return null;
+    }
 }

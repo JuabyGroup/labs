@@ -38,9 +38,11 @@
  * holder.
  */
 
-package org.glassfish.grizzly.samples.filterchain;
+package com.juaby.labs.rpc.server;
 
 import com.juaby.labs.rpc.base.RequestMessageBody;
+import com.juaby.labs.rpc.base.ResponseMessageBody;
+import com.juaby.labs.rpc.base.RpcMessage;
 import com.juaby.labs.rpc.proxy.ProxyHelper;
 import com.juaby.labs.rpc.server.ProviderService;
 import com.juaby.labs.rpc.util.SerializeTool;
@@ -73,12 +75,12 @@ public class ServiceFilter extends BaseFilter {
         // Peer address is used for non-connected UDP Connection :)
         final Object peerAddress = ctx.getAddress();
 
-        final GIOPMessage message = ctx.getMessage();
+        final RpcMessage message = ctx.getMessage();
 
         RequestMessageBody requestMessageBody = new RequestMessageBody();
         SerializeTool.deserialize(message.getBody(), requestMessageBody);
         ProviderService providerService = ProxyHelper.getProxyInstance(requestMessageBody.getService() + requestMessageBody.getMethod());
-        MessageBody messageBody = providerService.handler(requestMessageBody.getParams());
+        ResponseMessageBody messageBody = providerService.handler(requestMessageBody.getParams());
         byte[] body = SerializeTool.serialize(messageBody);
         message.setBodyLength(body.length);
         message.setBody(body);

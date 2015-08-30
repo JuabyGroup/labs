@@ -1,4 +1,4 @@
-package com.juaby.labs.rpc;
+package com.juaby.labs.rpc.server;
 
 import org.glassfish.grizzly.samples.filterchain.MessageBody;
 

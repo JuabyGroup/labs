@@ -1,5 +1,9 @@
-package com.juaby.labs.rpc;
+package com.juaby.labs.rpc.proxy;
 
+import com.juaby.labs.rpc.MessageService;
+import com.juaby.labs.rpc.TestBean;
+import com.juaby.labs.rpc.TestResult;
+import com.juaby.labs.rpc.server.ProviderService;
 import org.glassfish.grizzly.samples.filterchain.MessageBody;
 
 import java.util.List;

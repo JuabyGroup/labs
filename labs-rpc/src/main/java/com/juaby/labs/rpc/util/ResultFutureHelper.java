@@ -1,10 +1,10 @@
-package com.juaby.labs.rpc;
+package com.juaby.labs.rpc.util;
 
+import com.juaby.labs.rpc.base.RpcMessage;
 import org.glassfish.grizzly.filterchain.BaseFilter;
 import org.glassfish.grizzly.filterchain.FilterChainContext;
 import org.glassfish.grizzly.filterchain.NextAction;
 import org.glassfish.grizzly.impl.FutureImpl;
-import org.glassfish.grizzly.samples.filterchain.GIOPMessage;
 import org.glassfish.grizzly.utils.Charsets;
 
 import java.io.IOException;
@@ -24,7 +24,7 @@ import java.util.concurrent.TimeoutException;
  */
 public class ResultFutureHelper {
 
-    private static final Map<String, FutureImpl<GIOPMessage>> resultFutureMap = new ConcurrentHashMap<String, FutureImpl<GIOPMessage>>();
+    private static final Map<String, FutureImpl<RpcMessage>> resultFutureMap = new ConcurrentHashMap<String, FutureImpl<RpcMessage>>();
 
     public static final class CustomClientFilter extends BaseFilter {
 
@@ -33,10 +33,10 @@ public class ResultFutureHelper {
 
         @Override
         public NextAction handleRead(FilterChainContext ctx) throws IOException {
-            final GIOPMessage message = ctx.getMessage();
+            final RpcMessage message = ctx.getMessage();
             if (message != null) {
                 String messageId = new String(message.getId(), Charsets.UTF8_CHARSET);
-                FutureImpl<GIOPMessage> resultFuture = resultFutureMap.get(messageId);
+                FutureImpl<RpcMessage> resultFuture = resultFutureMap.get(messageId);
                 if (resultFuture != null) {
                     resultFuture.result(message);
                 }
@@ -46,14 +46,14 @@ public class ResultFutureHelper {
         }
     }
 
-    public static GIOPMessage result(String messageId) throws InterruptedException, ExecutionException, TimeoutException {
+    public static RpcMessage result(String messageId) throws InterruptedException, ExecutionException, TimeoutException {
         if (messageId == null || messageId.length() == 0) {
             return null;
         }
         return map().get(messageId).get(10, TimeUnit.SECONDS);
     }
 
-    public static Map<String, FutureImpl<GIOPMessage>> map() {
+    public static Map<String, FutureImpl<RpcMessage>> map() {
         return resultFutureMap;
     }
 

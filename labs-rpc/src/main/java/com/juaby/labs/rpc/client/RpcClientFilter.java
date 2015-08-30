@@ -38,8 +38,9 @@
  * holder.
  */
 
-package org.glassfish.grizzly.samples.filterchain;
+package com.juaby.labs.rpc.client;
 
+import com.juaby.labs.rpc.base.RpcMessage;
 import org.glassfish.grizzly.Buffer;
 import org.glassfish.grizzly.filterchain.BaseFilter;
 import org.glassfish.grizzly.filterchain.FilterChainContext;
@@ -55,7 +56,7 @@ import java.util.logging.Filter;
  *
  * @author Alexey Stashok
  */
-public final class GIOPServerFilter extends BaseFilter {
+public final class RpcClientFilter extends BaseFilter {
 
     private static final int HEADER_SIZE = 12 + 32;
 
@@ -101,7 +102,7 @@ public final class GIOPServerFilter extends BaseFilter {
             sourceBuffer.split(completeMessageLength) : null;
 
         // Construct a GIOP message
-        final GIOPMessage giopMessage = new GIOPMessage();
+        final RpcMessage giopMessage = new RpcMessage();
 
         // Set GIOP header bytes
         giopMessage.setGIOPHeader(sourceBuffer.get(), sourceBuffer.get(),
@@ -155,7 +156,7 @@ public final class GIOPServerFilter extends BaseFilter {
     @Override
     public NextAction handleWrite(final FilterChainContext ctx) throws IOException {
         // Get the source GIOP message to be written
-        final GIOPMessage giopMessage = ctx.getMessage();
+        final RpcMessage giopMessage = ctx.getMessage();
 
         final int size = HEADER_SIZE + giopMessage.getBodyLength();
 

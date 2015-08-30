@@ -1,10 +1,9 @@
-package com.juaby.labs.rpc;
+package com.juaby.labs.rpc.proxy;
 
 import org.objectweb.asm.ClassWriter;
 import org.objectweb.asm.FieldVisitor;
 import org.objectweb.asm.MethodVisitor;
 import org.objectweb.asm.Opcodes;
-import org.objectweb.asm.util.ASMifier;
 
 import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
@@ -21,7 +20,7 @@ public class DynamicServiceClientGenerator extends ClassLoader implements Opcode
     public <S> S newInstance(Class[] constructorParamTypes, Object[] constructorParamValues) throws IllegalAccessException,
             InstantiationException,
             ClassNotFoundException, NoSuchMethodException, InvocationTargetException {
-        Class<?> c = Class.forName("com.juaby.labs.rpc.MessageServiceClientProxy");
+        Class<?> c = Class.forName("com.juaby.labs.rpc.proxy.RpcClientProxy");
         /*以下调用带参的、私有构造函数*/
         Constructor<?> c1 = c.getDeclaredConstructor(constructorParamTypes);
         c1.setAccessible(true);
@@ -113,8 +112,9 @@ public class DynamicServiceClientGenerator extends ClassLoader implements Opcode
     }
 
     public static void main(String[] args) throws Exception {
-        org.objectweb.asm.util.ASMifier asm = new ASMifier();
-        asm.main(new String [] {"com.juaby.labs.rpc.MessageServiceClientProxy"});
+        Rpcifier rpcifier = new Rpcifier();
+        //rpcifier.main(new String [] {"com.juaby.labs.rpc.proxy.RpcClientProxy"});
+        rpcifier.main(new String [] {"com.juaby.labs.rpc.MessageService"});
     }
 
 }

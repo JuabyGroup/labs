@@ -1,6 +1,8 @@
 package com.juaby.labs.rpc;
 
-import java.util.*;
+import com.juaby.labs.rpc.proxy.ProxyHelper;
+import com.juaby.labs.rpc.proxy.ServiceClassInfo;
+import com.juaby.labs.rpc.util.ServiceClassInfoHelper;
 import org.objectweb.asm.*;
 public class MessageServiceClientProxyDump implements Opcodes {
 
@@ -119,7 +121,7 @@ public class MessageServiceClientProxyDump implements Opcodes {
                 mv.visitMethodInsn(INVOKEVIRTUAL, "com/juaby/labs/rpc/RequestMessageBody", "setParams", "([Ljava/lang/Object;)V", false);
                 mv.visitLabel(l0);
                 mv.visitVarInsn(ALOAD, 4);
-                mv.visitMethodInsn(INVOKESTATIC, "org/glassfish/grizzly/samples/filterchain/GIOPClient", "sendMessage", "(Lcom/juaby/labs/rpc/RequestMessageBody;)Ljava/lang/Object;", false);
+                mv.visitMethodInsn(INVOKESTATIC, "org/glassfish/grizzly/samples/filterchain/RpcClient", "sendMessage", "(Lcom/juaby/labs/rpc/RequestMessageBody;)Ljava/lang/Object;", false);
                 mv.visitTypeInsn(CHECKCAST, returnType.getReturnType().getTypeName().replaceAll(".", "/"));
                 mv.visitVarInsn(ASTORE, 3);
                 mv.visitLabel(l1);

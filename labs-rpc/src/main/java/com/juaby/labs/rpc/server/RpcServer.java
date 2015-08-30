@@ -38,12 +38,12 @@
  * holder.
  */
 
-package org.glassfish.grizzly.samples.filterchain;
+package com.juaby.labs.rpc.server;
 
-import com.juaby.labs.rpc.*;
+import com.juaby.labs.rpc.MessageServerServiceImpl;
+import com.juaby.labs.rpc.MessageService;
 import com.juaby.labs.rpc.proxy.ProviderServiceProxy;
 import com.juaby.labs.rpc.proxy.ProxyHelper;
-import com.juaby.labs.rpc.server.ProviderService;
 import org.glassfish.grizzly.filterchain.FilterChainBuilder;
 import org.glassfish.grizzly.filterchain.TransportFilter;
 import org.glassfish.grizzly.nio.transport.TCPNIOTransport;
@@ -55,7 +55,7 @@ import org.glassfish.grizzly.samples.lifecycle.LifeCycleFilter;
  * 
  * @author Alexey Stashok
  */
-public class GIOPServer {
+public class RpcServer {
     public static final String HOST = "localhost";
     public static final int PORT = 9098;
     
@@ -73,7 +73,7 @@ public class GIOPServer {
         filterChainBuilder.add(new TransportFilter());
         // Add lifecycle filter to track the connections
         filterChainBuilder.add(lifeCycleFilter);
-        filterChainBuilder.add(new GIOPServerFilter());
+        filterChainBuilder.add(new RpcServerFilter());
         filterChainBuilder.add(new ServiceFilter());
 
         // Create TCP NIO transport

@@ -51,7 +51,7 @@ import java.util.logging.Filter;
 
 /**
  * Example of parser {@link Filter},
- * which is response for Buffer <-> GIOPMessage transformation.
+ * which is response for Buffer <-> RpcMessage transformation.
  *
  * @author Alexey Stashok
  */
@@ -63,7 +63,7 @@ public final class GIOPClientFilter extends BaseFilter {
      * Method is called, when new data was read from the Connection and ready
      * to be processed.
      *
-     * We override this method to perform Buffer -> GIOPMessage transformation.
+     * We override this method to perform Buffer -> RpcMessage transformation.
      * 
      * @param ctx Context of {@link FilterChainContext} processing
      * @return the next action
@@ -146,7 +146,7 @@ public final class GIOPClientFilter extends BaseFilter {
     /**
      * Method is called, when we write a data to the Connection.
      *
-     * We override this method to perform GIOPMessage -> Buffer transformation.
+     * We override this method to perform RpcMessage -> Buffer transformation.
      *
      * @param ctx Context of {@link FilterChainContext} processing
      * @return the next action

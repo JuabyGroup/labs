@@ -1,4 +1,4 @@
-package com.juaby.labs.rpc;
+package com.juaby.labs.rpc.proxy;
 
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;

@@ -43,7 +43,8 @@ package org.glassfish.grizzly.samples.filterchain;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeoutException;
 
-import com.juaby.labs.rpc.*;
+import com.juaby.labs.rpc.base.RequestMessageBody;
+import com.juaby.labs.rpc.util.*;
 import org.glassfish.grizzly.Connection;
 import org.glassfish.grizzly.impl.FutureImpl;
 import org.glassfish.grizzly.impl.SafeFutureImpl;
@@ -54,16 +55,16 @@ import org.glassfish.grizzly.utils.Charsets;
  * 
  * @author Alexey Stashok
  */
-public class GIOPClient {
+public class RpcClient {
 
-    public static <R> R sendMessage(RequestMessageBody requestMessageBody) throws InterruptedException, ExecutionException, TimeoutException {
+    public static <R> R sendMessage(RequestMessageBody requestMessageBody) throws Exception {
         Connection connection = null;
         Endpoint endpoint = EndpointHelper.cache(requestMessageBody.getService()).iterator().next();
         final FutureImpl<GIOPMessage> resultFuture = SafeFutureImpl.create();
         String messageId = MessageIdGenerator.id();
+        MessageBody<R> messageBody = new MessageBody<R>();
         try {
             // Connect client to the GIOP server
-
             connection = ConnectionFactory.get(endpoint);
 
             // Initialize sample GIOP message
@@ -78,15 +79,22 @@ public class GIOPClient {
 
             final GIOPMessage rcvMessage = ResultFutureHelper.result(messageId);
 
-            MessageBody<R> messageBody = new MessageBody<R>();
             SerializeTool.deserialize(rcvMessage.getBody(), messageBody);
-            return messageBody.getBody();
+        } catch (InterruptedException e) {
+            throw new InterruptedException(""); //TODO
+        } catch (ExecutionException e) {
+            throw new ExecutionException(e.getCause()); //TODO
+        } catch (TimeoutException e) {
+            throw new TimeoutException(""); //TODO
+        } catch (Exception e) {
+            throw new Exception(""); //TODO
         } finally {
             if (connection != null) {
                 ConnectionFactory.release(endpoint, connection);
             }
             ResultFutureHelper.map().remove(messageId);
         }
+        return messageBody.getBody();
     }
 
 }

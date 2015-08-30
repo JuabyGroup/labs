@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 2008-2011 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2009-2011 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -38,53 +38,26 @@
  * holder.
  */
 
-package org.glassfish.grizzly.samples.filterchain;
-
-import com.juaby.labs.rpc.base.RequestMessageBody;
-import com.juaby.labs.rpc.proxy.ProxyHelper;
-import com.juaby.labs.rpc.server.ProviderService;
-import com.juaby.labs.rpc.util.SerializeTool;
-import org.glassfish.grizzly.filterchain.BaseFilter;
-import org.glassfish.grizzly.filterchain.FilterChain;
-import org.glassfish.grizzly.filterchain.FilterChainContext;
-import org.glassfish.grizzly.filterchain.NextAction;
-
-import java.io.IOException;
+package com.juaby.labs.rpc.base;
 
 /**
- * Implementation of {@link FilterChain} filter, which replies with the request
- * message.
- * 
+ * Simple representation of GIOP message
+ *
  * @author Alexey Stashok
  */
-public class ServiceFilter extends BaseFilter {
+public class BaseMessage {
 
-    /**
-     * Handle just read operation, when some message has come and ready to be
-     * processed.
-     *
-     * @param ctx Context of {@link FilterChainContext} processing
-     * @return the next action
-     * @throws IOException
-     */
-    @Override
-    public NextAction handleRead(FilterChainContext ctx)
-            throws IOException {
-        // Peer address is used for non-connected UDP Connection :)
-        final Object peerAddress = ctx.getAddress();
+    private byte[] id;
 
-        final GIOPMessage message = ctx.getMessage();
+    public BaseMessage() {
+    }
 
-        RequestMessageBody requestMessageBody = new RequestMessageBody();
-        SerializeTool.deserialize(message.getBody(), requestMessageBody);
-        ProviderService providerService = ProxyHelper.getProxyInstance(requestMessageBody.getService() + requestMessageBody.getMethod());
-        MessageBody messageBody = providerService.handler(requestMessageBody.getParams());
-        byte[] body = SerializeTool.serialize(messageBody);
-        message.setBodyLength(body.length);
-        message.setBody(body);
-        ctx.write(peerAddress, message, null);
+    public byte[] getId() {
+        return id;
+    }
 
-        return ctx.getStopAction();
+    public void setId(byte[] id) {
+        this.id = id;
     }
 
 }

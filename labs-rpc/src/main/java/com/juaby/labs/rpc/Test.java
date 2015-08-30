@@ -22,10 +22,10 @@ public class Test {
 
     public static void main(String[] args) {
         /*ServiceConfig config = new ServiceConfig(MessageService.class.getName());
-        Endpoint endpoint = new Endpoint(GIOPServer.HOST, GIOPServer.PORT);
+        Endpoint endpoint = new Endpoint(RpcServer.HOST, RpcServer.PORT);
         EndpointHelper.add(config.getName(), endpoint);
 
-        MessageService messageService = new MessageServiceClientProxy(config);
+        MessageService messageService = new RpcClientProxy(config);
 
         TestBean bean = new TestBean();
         bean.setId("100");
@@ -35,7 +35,7 @@ public class Test {
         params.add("COME HERE!");
         TestResult result = messageService.message(bean, params);
         System.out.println(result.getContent());*/
-        Method[] methods = MessageService.class.getDeclaredMethods();
+        Method[] methods = MessageService.class.getMethods();
         for (Method method : methods) {
             System.out.println("method:" + method.getName());// 方法名
             // //////////////方法的参数

@@ -1,4 +1,4 @@
-package com.juaby.labs.rpc;
+package com.juaby.labs.rpc.util;
 
 import org.glassfish.grizzly.Connection;
 import org.glassfish.grizzly.connectionpool.SingleEndpointPool;

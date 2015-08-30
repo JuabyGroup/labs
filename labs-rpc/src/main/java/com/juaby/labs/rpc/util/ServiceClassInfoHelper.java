@@ -1,4 +1,6 @@
-package com.juaby.labs.rpc;
+package com.juaby.labs.rpc.util;
+
+import com.juaby.labs.rpc.proxy.ServiceClassInfo;
 
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
@@ -28,7 +30,7 @@ public class ServiceClassInfoHelper {
         ServiceClassInfo serviceClassInfo = new ServiceClassInfo(service.getName());
         Field[] fields = service.getFields();
         serviceClassInfo.setFields(fields);
-        Method[] methods = service.getDeclaredMethods();
+        Method[] methods = service.getMethods();
         if (methods == null || methods.length == 0) {
             return serviceClassInfo;
         }
