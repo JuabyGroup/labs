@@ -113,8 +113,8 @@ public class DynamicServiceClientGenerator extends ClassLoader implements Opcode
 
     public static void main(String[] args) throws Exception {
         Rpcifier rpcifier = new Rpcifier();
-        //rpcifier.main(new String [] {"com.juaby.labs.rpc.proxy.RpcClientProxy"});
-        rpcifier.main(new String [] {"com.juaby.labs.rpc.MessageService"});
+        rpcifier.main(new String [] {"com.juaby.labs.rpc.proxy.RpcClientProxyExample"});
+        //rpcifier.main(new String [] {"com.juaby.labs.rpc.MessageService"});
     }
 
 }

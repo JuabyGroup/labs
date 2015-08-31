@@ -19,53 +19,23 @@ import java.util.Map;
  * @author <a href=mailto:yanjiabao@juaby.com>yanjiabao</a> <br>
  * @date Created by yanjiabao on 2015/8/25 17:08.
  */
-public class RpcClientProxy<O, F> implements MessageService<O, F> {
+public class RpcClientProxy {
 
-    private ServiceConfig config = ServiceConfigHelper.getConfig(getClass().getInterfaces()[0].getName());
+    protected ServiceConfig config;
 
-    @Override
-    public TestResult message(TestBean testBean, List<String> params) {
-        RequestMessageBody requestMessageBody = new RequestMessageBody(config.getName());
-        requestMessageBody.setMethod("message");
-        requestMessageBody.setParams(new Object[] {testBean, params});
+    protected <R> R sendMessage(String service, String method, Object[] params) {
+        RequestMessageBody requestMessageBody = new RequestMessageBody(service);
+        requestMessageBody.setMethod(method);
+        requestMessageBody.setParams(params);
         return RpcClient.sendMessage(requestMessageBody);
     }
 
-    @Override
-    public <T> TestResult message2(TestBean testBean, List<String> params) {
-        RequestMessageBody requestMessageBody = new RequestMessageBody(config.getName());
-        requestMessageBody.setMethod("message2");
-        requestMessageBody.setParams(new Object[] {testBean, params});
-        return RpcClient.sendMessage(requestMessageBody);
+    protected void setConfig(String service) {
+        this.config = ServiceConfigHelper.getConfig(service);
     }
 
-    @Override
-    public List<Map<String, File>> message3(TestBean testBean, Map<String, List<TestBean>> param) throws NegativeArraySizeException, IOException {
-        return null;
+    protected ServiceConfig getConfig() {
+        return this.config;
     }
 
-    @Override
-    public <V> V vmethod() {
-        return null;
-    }
-
-    @Override
-    public <V> void vmethod(V v) {
-        return;
-    }
-
-    @Override
-    public <V, R> R vmethod2(V v) {
-        return (R)v;
-    }
-
-    @Override
-    public <T> TestResult message2(TestBean testBean, List<String> param, T t) {
-        return null;
-    }
-
-    @Override
-    public <T> O message2(List<F> param, O t) {
-        return null;
-    }
 }
