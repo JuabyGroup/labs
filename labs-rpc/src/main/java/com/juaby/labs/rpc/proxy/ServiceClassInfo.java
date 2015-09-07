@@ -56,6 +56,12 @@ public class ServiceClassInfo {
         this.methods = methods;
     }
 
+    public final class FieldInfo {
+
+
+
+    }
+
     public final class MethodInfo {
 
         private Method method;

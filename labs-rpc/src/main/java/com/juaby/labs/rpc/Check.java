@@ -58,4 +58,9 @@ public class Check<O, F> implements MessageService<O, F> {
     public <T> O message2(List<F> param, O t) {
         return null;
     }
+
+    @Override
+    public <T> O messageENUM(List<F> param, com.juaby.labs.rpc.proxy.Type t) {
+        return null;
+    }
 }

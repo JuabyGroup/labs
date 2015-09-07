@@ -1,5 +1,7 @@
 package com.juaby.labs.rpc;
 
+import com.juaby.labs.rpc.proxy.Type;
+
 import java.io.File;
 import java.util.Date;
 import java.util.List;
@@ -57,6 +59,11 @@ public class MessageServerServiceImpl<O, F> implements MessageService<O, F> {
 
     @Override
     public <T> O message2(List<F> param, O t) {
+        return null;
+    }
+
+    @Override
+    public <T> O messageENUM(List<F> param, Type t) {
         return null;
     }
 }

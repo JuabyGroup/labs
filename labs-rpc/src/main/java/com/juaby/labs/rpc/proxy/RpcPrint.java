@@ -141,7 +141,7 @@ public abstract class RpcPrint {
     public final List<Object> text;
 
     /**
-     * Constructs a new {@link Printer}.
+     * Constructs a new {@link RpcPrint}.
      */
     protected RpcPrint(final int api) {
         this.api = api;

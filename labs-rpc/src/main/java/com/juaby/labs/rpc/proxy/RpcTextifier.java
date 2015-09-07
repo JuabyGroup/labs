@@ -175,7 +175,7 @@ public class RpcTextifier extends RpcPrint {
         } else {
             cr = new ClassReader(args[i]);
         }
-        cr.accept(new TraceClassVisitor(new PrintWriter(System.out)), flags);
+        cr.accept(new RpcTraceClassVisitor(new PrintWriter(System.out)), flags);
     }
 
     // ------------------------------------------------------------------------
