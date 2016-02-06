@@ -34,21 +34,15 @@ import java.io.PrintWriter;
 import java.util.HashMap;
 import java.util.Map;
 
-import org.objectweb.asm.Attribute;
-import org.objectweb.asm.ClassReader;
-import org.objectweb.asm.Handle;
-import org.objectweb.asm.Label;
-import org.objectweb.asm.Opcodes;
-import org.objectweb.asm.Type;
-import org.objectweb.asm.TypePath;
+import org.objectweb.asm.*;
 import org.objectweb.asm.util.ASMifiable;
 
 /**
- * A {@link RpcPrint} that prints the ASM code to generate the classes if visits.
+ * A {@link RpcProxyParser} that prints the ASM code to generate the classes if visits.
  *
  * Created by Juaby on 2015/8/29.
  */
-public class Rpcifier extends RpcPrint {
+public class Rpcifier extends RpcProxyParser {
 
     /**
      * The name of the visitor variable in the produced code.
@@ -80,6 +74,8 @@ public class Rpcifier extends RpcPrint {
      * Pseudo access flag used to distinguish inner class flags.
      */
     private static final int ACCESS_INNER = 1048576;
+
+    private ServiceClassInfo classInfo;
 
     /**
      * Constructs a new {@link Rpcifier}. <i>Subclasses must not use this
@@ -114,49 +110,13 @@ public class Rpcifier extends RpcPrint {
         this.id = id;
     }
 
-    /**
-     * Prints the ASM source code to generate the given class to the standard
-     * output.
-     * <p>
-     * Usage: ASMifier [-debug] &lt;binary class name or class file name&gt;
-     *
-     * @param args
-     *            the command line arguments.
-     *
-     * @throws Exception
-     *             if the class cannot be found, or if an IO exception occurs.
-     */
-    public static void main(final String[] args) throws Exception {
-        int i = 0;
-        int flags = ClassReader.SKIP_DEBUG;
 
-        boolean ok = true;
-        if (args.length < 1 || args.length > 2) {
-            ok = false;
-        }
-        if (ok && "-debug".equals(args[0])) {
-            i = 1;
-            flags = 0;
-            if (args.length != 2) {
-                ok = false;
-            }
-        }
-        if (!ok) {
-            System.err
-                    .println("Prints the ASM code to generate the given class.");
-            System.err.println("Usage: ASMifier [-debug] "
-                    + "<fully qualified class name or class file name>");
-            return;
-        }
-        ClassReader cr;
-        if (args[i].endsWith(".class") || args[i].indexOf('\\') > -1
-                || args[i].indexOf('/') > -1) {
-            cr = new ClassReader(new FileInputStream(args[i]));
-        } else {
-            cr = new ClassReader(args[i]);
-        }
-        cr.accept(new RpcTraceClassVisitor(null, new Rpcifier(), new PrintWriter(
-                System.out)), flags);
+    public ServiceClassInfo parser(final String fullyQualifiedClassName, ServiceClassInfo classInfo) throws Exception {
+        this.classInfo = classInfo;
+        ClassReader cr = new ClassReader(fullyQualifiedClassName);
+        cr.accept(new RpcTraceClassVisitor(null, this, new PrintWriter(
+                System.out)), ClassReader.SKIP_DEBUG);
+        return this.classInfo;
     }
 
     // ------------------------------------------------------------------------
@@ -167,15 +127,19 @@ public class Rpcifier extends RpcPrint {
     public void visit(final int version, final int access, final String name,
                       final String signature, final String superName,
                       final String[] interfaces) {
+        classInfo.setVersion(version);
         String simpleName;
         int n = name.lastIndexOf('/');
         if (n == -1) {
             simpleName = name;
         } else {
-            text.add("package asm." + name.substring(0, n).replace('/', '.')
+            String packageName = name.substring(0, n).replace('/', '.');
+            classInfo.setPackageName(packageName);
+            text.add("package asm." + packageName
                     + ";\n");
             simpleName = name.substring(n + 1);
         }
+        classInfo.setSimpleName(simpleName);
         text.add("import java.util.*;\n");
         text.add("import org.objectweb.asm.*;\n");
         text.add("public class " + simpleName + "Dump implements Opcodes {\n\n");
@@ -215,12 +179,16 @@ public class Rpcifier extends RpcPrint {
         }
         buf.append(", ");
         appendAccess(access | ACCESS_CLASS);
+        classInfo.setAccess(access | ACCESS_CLASS);
         buf.append(", ");
         appendConstant(name);
+        classInfo.setName(name);
         buf.append(", ");
         appendConstant(signature);
+        classInfo.setSignature(signature);
         buf.append(", ");
         appendConstant(superName);
+        classInfo.setSuperName(superName);
         buf.append(", ");
         if (interfaces != null && interfaces.length > 0) {
             buf.append("new String[] {");
@@ -229,6 +197,7 @@ public class Rpcifier extends RpcPrint {
                 appendConstant(interfaces[i]);
             }
             buf.append(" }");
+            classInfo.setInterfaces(interfaces);
         } else {
             buf.append("null");
         }
@@ -241,8 +210,10 @@ public class Rpcifier extends RpcPrint {
         buf.setLength(0);
         buf.append("cw.visitSource(");
         appendConstant(file);
+        classInfo.setSource(file);
         buf.append(", ");
         appendConstant(debug);
+        classInfo.setDebug(debug);
         buf.append(");\n\n");
         text.add(buf.toString());
     }
@@ -297,39 +268,51 @@ public class Rpcifier extends RpcPrint {
     @Override
     public Rpcifier visitField(final int access, final String name,
                                final String desc, final String signature, final Object value) {
+        ServiceClassInfo.FieldInfo fieldInfo = new ServiceClassInfo.FieldInfo();
         buf.setLength(0);
         buf.append("{\n");
         buf.append("fv = cw.visitField(");
         appendAccess(access | ACCESS_FIELD);
+        fieldInfo.setAccess(access | ACCESS_FIELD);
         buf.append(", ");
         appendConstant(name);
+        fieldInfo.setName(name);
         buf.append(", ");
         appendConstant(desc);
+        fieldInfo.setDesc(desc);
         buf.append(", ");
         appendConstant(signature);
+        fieldInfo.setSignature(signature);
         buf.append(", ");
         appendConstant(value);
+        fieldInfo.setValue(value);
         buf.append(");\n");
         text.add(buf.toString());
         Rpcifier a = createASMifier("fv", 0);
         text.add(a.getText());
         text.add("}\n");
+        classInfo.getFields().add(fieldInfo);
         return a;
     }
 
     @Override
     public Rpcifier visitMethod(final int access, final String name,
                                 final String desc, final String signature, final String[] exceptions) {
+        ServiceClassInfo.MethodInfo methodInfo = new ServiceClassInfo.MethodInfo();
         buf.setLength(0);
         buf.append("{\n");
         buf.append("mv = cw.visitMethod(");
         appendAccess(access);
+        methodInfo.setAccess(access);
         buf.append(", ");
         appendConstant(name);
+        methodInfo.setName(name);
         buf.append(", ");
         appendConstant(desc);
+        methodInfo.setDesc(desc);
         buf.append(", ");
         appendConstant(signature);
+        methodInfo.setSignature(signature);
         buf.append(", ");
         if (exceptions != null && exceptions.length > 0) {
             buf.append("new String[] {");
@@ -338,6 +321,7 @@ public class Rpcifier extends RpcPrint {
                 appendConstant(exceptions[i]);
             }
             buf.append(" }");
+            methodInfo.setExceptions(exceptions);
         } else {
             buf.append("null");
         }
@@ -346,6 +330,9 @@ public class Rpcifier extends RpcPrint {
         Rpcifier a = createASMifier("mv", 0);
         text.add(a.getText());
         text.add("}\n");
+        if (!"<clinit>".equals(name)) {
+            classInfo.getMethods().put(methodInfo.getSignature(), methodInfo);
+        }
         return a;
     }
 
@@ -821,9 +808,9 @@ public class Rpcifier extends RpcPrint {
     }
 
     @Override
-    public RpcPrint visitLocalVariableAnnotation(int typeRef, TypePath typePath,
-                                                Label[] start, Label[] end, int[] index, String desc,
-                                                boolean visible) {
+    public RpcProxyParser visitLocalVariableAnnotation(int typeRef, TypePath typePath,
+                                                       Label[] start, Label[] end, int[] index, String desc,
+                                                       boolean visible) {
         buf.setLength(0);
         buf.append("{\n").append("av0 = ").append(name)
                 .append(".visitLocalVariableAnnotation(");

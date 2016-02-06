@@ -1,11 +1,10 @@
 package com.juaby.labs.rpc.util;
 
+import com.juaby.labs.rpc.proxy.Rpcifier;
 import com.juaby.labs.rpc.proxy.ServiceClassInfo;
 
-import java.lang.reflect.Field;
-import java.lang.reflect.Method;
-import java.lang.reflect.ParameterizedType;
-import java.lang.reflect.Type;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
@@ -27,49 +26,39 @@ public class ServiceClassInfoHelper {
         if (serviceClassInfoCache.containsKey(service.getName())) {
             return serviceClassInfoCache.get(service.getName());
         }
-        ServiceClassInfo serviceClassInfo = new ServiceClassInfo(service.getName());
-        Field[] fields = service.getFields();
-        serviceClassInfo.setFields(fields);
-        Method[] methods = service.getMethods();
-        if (methods == null || methods.length == 0) {
-            return serviceClassInfo;
-        }
-        ServiceClassInfo.MethodInfo[] methodInfos = new ServiceClassInfo.MethodInfo[methods.length];
-        for (int i = 0; i < methods.length; i++) {
-            Method method = methods[i];
-            ServiceClassInfo.MethodInfo methodInfo = serviceClassInfo.new MethodInfo();
-            methodInfo.setMethod(method); // 方法
-            // 方法的参数
-            Type[] paramTypes = method.getGenericParameterTypes();// 方法的参数列表
-            ServiceClassInfo.ParamInfo[] paramInfos = new ServiceClassInfo.ParamInfo[paramTypes.length];
+        String name = service.getCanonicalName();
+        ServiceClassInfo mailClassInfo = new ServiceClassInfo();
+        ServiceClassInfo othersClassInfo;
+        try {
+            mailClassInfo = new Rpcifier().parser(name, mailClassInfo);
 
-            for (int p = 0; p < paramTypes.length; p++) {
-                Type paramType = paramTypes[p];
-                ServiceClassInfo.ParamInfo paramInfo = serviceClassInfo.new ParamInfo();
-                paramInfo.setParamType(paramType);
-                // 如果是泛型类型
-                if (paramType instanceof ParameterizedType) {
-                    Type[] types = ((ParameterizedType) paramType).getActualTypeArguments();
-                    paramInfo.setParameterizedTypes(types);
+            String[] interfaces = mailClassInfo.getInterfaces();
+            while (interfaces != null && interfaces.length > 0) {
+                List<String> othersInterfaces = new ArrayList<String>();
+                for (String interfaceName : interfaces) {
+                    othersClassInfo = new ServiceClassInfo();
+                    othersClassInfo = new Rpcifier().parser(interfaceName, othersClassInfo);
+                    if (!othersClassInfo.getMethods().isEmpty()) {
+                        mailClassInfo.getMethods().putAll(othersClassInfo.getMethods());
+                    }
+                    if (othersClassInfo.getInterfaces() != null && othersClassInfo.getInterfaces().length > 0) {
+                        for (String newInterfaceName : othersClassInfo.getInterfaces()) {
+                            othersInterfaces.add(newInterfaceName);
+                        }
+                    }
                 }
-                paramInfos[p] = paramInfo;
+
+                interfaces = new String[othersInterfaces.size()];
+                if (!othersInterfaces.isEmpty()) {
+                    othersInterfaces.toArray(interfaces);
+                }
             }
-            methodInfo.setParamTypes(paramInfos);
-            // 方法的返回值
-            Type returnType = method.getGenericReturnType();// 返回类型
-            ServiceClassInfo.ReturnInfo returnInfo = serviceClassInfo.new ReturnInfo();
-            returnInfo.setReturnType(returnType);
-            //* 如果是泛型类型
-            if (returnType instanceof ParameterizedType) {
-                Type[] types = ((ParameterizedType) returnType).getActualTypeArguments();
-                returnInfo.setParameterizedTypes(types);
-            }
-            methodInfo.setReturnInfo(returnInfo);
-            methodInfos[i] = methodInfo;
+            serviceClassInfoCache.put(service.getName(), mailClassInfo);
+        } catch (Exception e) {
+            //TODO
         }
-        serviceClassInfo.setMethods(methodInfos);
-        serviceClassInfoCache.put(service.getName(), serviceClassInfo);
-        return serviceClassInfo;
+
+        return mailClassInfo;
     }
 
 }

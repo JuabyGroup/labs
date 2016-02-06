@@ -44,7 +44,7 @@ import org.objectweb.asm.TypePath;
  *
  * Created by Juaby on 2015/8/29.
  */
-public abstract class RpcPrint {
+public abstract class RpcProxyParser {
 
     /**
      * The names of the Java Virtual Machine opcodes.
@@ -141,9 +141,9 @@ public abstract class RpcPrint {
     public final List<Object> text;
 
     /**
-     * Constructs a new {@link RpcPrint}.
+     * Constructs a new {@link RpcProxyParser}.
      */
-    protected RpcPrint(final int api) {
+    protected RpcProxyParser(final int api) {
         this.api = api;
         this.buf = new StringBuffer();
         this.text = new ArrayList<Object>();
@@ -172,15 +172,15 @@ public abstract class RpcPrint {
      * Class annotation. See
      * {@link org.objectweb.asm.ClassVisitor#visitAnnotation}.
      */
-    public abstract RpcPrint visitClassAnnotation(final String desc,
-                                                 final boolean visible);
+    public abstract RpcProxyParser visitClassAnnotation(final String desc,
+                                                        final boolean visible);
 
     /**
      * Class type annotation. See
      * {@link org.objectweb.asm.ClassVisitor#visitTypeAnnotation}.
      */
-    public RpcPrint visitClassTypeAnnotation(final int typeRef,
-                                            final TypePath typePath, final String desc, final boolean visible) {
+    public RpcProxyParser visitClassTypeAnnotation(final int typeRef,
+                                                   final TypePath typePath, final String desc, final boolean visible) {
         throw new RuntimeException("Must be overriden");
     }
 
@@ -200,14 +200,14 @@ public abstract class RpcPrint {
     /**
      * Class field. See {@link org.objectweb.asm.ClassVisitor#visitField}.
      */
-    public abstract RpcPrint visitField(final int access, final String name,
-                                       final String desc, final String signature, final Object value);
+    public abstract RpcProxyParser visitField(final int access, final String name,
+                                              final String desc, final String signature, final Object value);
 
     /**
      * Class method. See {@link org.objectweb.asm.ClassVisitor#visitMethod}.
      */
-    public abstract RpcPrint visitMethod(final int access, final String name,
-                                        final String desc, final String signature, final String[] exceptions);
+    public abstract RpcProxyParser visitMethod(final int access, final String name,
+                                               final String desc, final String signature, final String[] exceptions);
 
     /**
      * Class end. See {@link org.objectweb.asm.ClassVisitor#visitEnd}.
@@ -234,13 +234,13 @@ public abstract class RpcPrint {
      * Nested annotation value. See
      * {@link org.objectweb.asm.AnnotationVisitor#visitAnnotation}.
      */
-    public abstract RpcPrint visitAnnotation(final String name, final String desc);
+    public abstract RpcProxyParser visitAnnotation(final String name, final String desc);
 
     /**
      * Annotation array value. See
      * {@link org.objectweb.asm.AnnotationVisitor#visitArray}.
      */
-    public abstract RpcPrint visitArray(final String name);
+    public abstract RpcProxyParser visitArray(final String name);
 
     /**
      * Annotation end. See {@link org.objectweb.asm.AnnotationVisitor#visitEnd}.
@@ -255,15 +255,15 @@ public abstract class RpcPrint {
      * Field annotation. See
      * {@link org.objectweb.asm.FieldVisitor#visitAnnotation}.
      */
-    public abstract RpcPrint visitFieldAnnotation(final String desc,
-                                                 final boolean visible);
+    public abstract RpcProxyParser visitFieldAnnotation(final String desc,
+                                                        final boolean visible);
 
     /**
      * Field type annotation. See
      * {@link org.objectweb.asm.FieldVisitor#visitTypeAnnotation}.
      */
-    public RpcPrint visitFieldTypeAnnotation(final int typeRef,
-                                            final TypePath typePath, final String desc, final boolean visible) {
+    public RpcProxyParser visitFieldTypeAnnotation(final int typeRef,
+                                                   final TypePath typePath, final String desc, final boolean visible) {
         throw new RuntimeException("Must be overriden");
     }
 
@@ -294,21 +294,21 @@ public abstract class RpcPrint {
      * Method default annotation. See
      * {@link org.objectweb.asm.MethodVisitor#visitAnnotationDefault}.
      */
-    public abstract RpcPrint visitAnnotationDefault();
+    public abstract RpcProxyParser visitAnnotationDefault();
 
     /**
      * Method annotation. See
      * {@link org.objectweb.asm.MethodVisitor#visitAnnotation}.
      */
-    public abstract RpcPrint visitMethodAnnotation(final String desc,
-                                                  final boolean visible);
+    public abstract RpcProxyParser visitMethodAnnotation(final String desc,
+                                                         final boolean visible);
 
     /**
      * Method type annotation. See
      * {@link org.objectweb.asm.MethodVisitor#visitTypeAnnotation}.
      */
-    public RpcPrint visitMethodTypeAnnotation(final int typeRef,
-                                             final TypePath typePath, final String desc, final boolean visible) {
+    public RpcProxyParser visitMethodTypeAnnotation(final int typeRef,
+                                                    final TypePath typePath, final String desc, final boolean visible) {
         throw new RuntimeException("Must be overriden");
     }
 
@@ -316,8 +316,8 @@ public abstract class RpcPrint {
      * Method parameter annotation. See
      * {@link org.objectweb.asm.MethodVisitor#visitParameterAnnotation}.
      */
-    public abstract RpcPrint visitParameterAnnotation(final int parameter,
-                                                     final String desc, final boolean visible);
+    public abstract RpcProxyParser visitParameterAnnotation(final int parameter,
+                                                            final String desc, final boolean visible);
 
     /**
      * Method attribute. See
@@ -455,8 +455,8 @@ public abstract class RpcPrint {
      * Instruction type annotation. See
      * {@link org.objectweb.asm.MethodVisitor#visitInsnAnnotation}.
      */
-    public RpcPrint visitInsnAnnotation(final int typeRef,
-                                       final TypePath typePath, final String desc, final boolean visible) {
+    public RpcProxyParser visitInsnAnnotation(final int typeRef,
+                                              final TypePath typePath, final String desc, final boolean visible) {
         throw new RuntimeException("Must be overriden");
     }
 
@@ -471,8 +471,8 @@ public abstract class RpcPrint {
      * Try catch block type annotation. See
      * {@link org.objectweb.asm.MethodVisitor#visitTryCatchAnnotation}.
      */
-    public RpcPrint visitTryCatchAnnotation(final int typeRef,
-                                           final TypePath typePath, final String desc, final boolean visible) {
+    public RpcProxyParser visitTryCatchAnnotation(final int typeRef,
+                                                  final TypePath typePath, final String desc, final boolean visible) {
         throw new RuntimeException("Must be overriden");
     }
 
@@ -488,9 +488,9 @@ public abstract class RpcPrint {
      * Local variable type annotation. See
      * {@link org.objectweb.asm.MethodVisitor#visitTryCatchAnnotation}.
      */
-    public RpcPrint visitLocalVariableAnnotation(final int typeRef,
-                                                final TypePath typePath, final Label[] start, final Label[] end,
-                                                final int[] index, final String desc, final boolean visible) {
+    public RpcProxyParser visitLocalVariableAnnotation(final int typeRef,
+                                                       final TypePath typePath, final Label[] start, final Label[] end,
+                                                       final int[] index, final String desc, final boolean visible) {
         throw new RuntimeException("Must be overriden");
     }
 

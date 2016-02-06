@@ -60,7 +60,7 @@ public class Check<O, F> implements MessageService<O, F> {
     }
 
     @Override
-    public <T> O messageENUM(List<F> param, com.juaby.labs.rpc.proxy.Type t) {
+    public <T> O messageENUM(List<F> param, com.juaby.labs.rpc.proxy.TypeObject t) {
         return null;
     }
 }

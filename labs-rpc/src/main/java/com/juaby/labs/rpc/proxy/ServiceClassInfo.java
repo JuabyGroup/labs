@@ -1,27 +1,60 @@
 package com.juaby.labs.rpc.proxy;
 
-import java.lang.reflect.Field;
-import java.lang.reflect.Method;
-import java.lang.reflect.Type;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Map;
+import java.util.Set;
 
 /**
  * Created by Juaby on 2015/8/26.
  */
 public class ServiceClassInfo {
 
+    private int version;
+
+    private String packageName;
+
     private String name;
 
     private String simpleName;
 
-    private Field[] fields;
+    private String superName;
 
-    private MethodInfo[] methods;
+    private String[] interfaces;
+
+    private int access;
+
+    private String signature;
+
+    private String source;
+
+    private String debug;
+
+    private Set<FieldInfo> fields = new HashSet<FieldInfo>();
+
+    private Map<String, MethodInfo> methods = new HashMap<String, MethodInfo>();
 
     public ServiceClassInfo() {
     }
 
     public ServiceClassInfo(String name) {
         this.name = name;
+    }
+
+    public int getVersion() {
+        return version;
+    }
+
+    public void setVersion(int version) {
+        this.version = version;
+    }
+
+    public String getPackageName() {
+        return packageName;
+    }
+
+    public void setPackageName(String packageName) {
+        this.packageName = packageName;
     }
 
     public String getName() {
@@ -40,119 +73,178 @@ public class ServiceClassInfo {
         this.simpleName = simpleName;
     }
 
-    public Field[] getFields() {
+    public String getSuperName() {
+        return superName;
+    }
+
+    public void setSuperName(String superName) {
+        this.superName = superName;
+    }
+
+    public String[] getInterfaces() {
+        return interfaces;
+    }
+
+    public void setInterfaces(String[] interfaces) {
+        this.interfaces = interfaces;
+    }
+
+    public int getAccess() {
+        return access;
+    }
+
+    public void setAccess(int access) {
+        this.access = access;
+    }
+
+    public String getSignature() {
+        return signature;
+    }
+
+    public void setSignature(String signature) {
+        this.signature = signature;
+    }
+
+    public String getSource() {
+        return source;
+    }
+
+    public void setSource(String source) {
+        this.source = source;
+    }
+
+    public String getDebug() {
+        return debug;
+    }
+
+    public void setDebug(String debug) {
+        this.debug = debug;
+    }
+
+    public Set<FieldInfo> getFields() {
         return fields;
     }
 
-    public void setFields(Field[] fields) {
+    public void setFields(Set<FieldInfo> fields) {
         this.fields = fields;
     }
 
-    public MethodInfo[] getMethods() {
+    public Map<String, MethodInfo> getMethods() {
         return methods;
     }
 
-    public void setMethods(MethodInfo[] methods) {
+    public void setMethods(Map<String, MethodInfo> methods) {
         this.methods = methods;
     }
 
-    public final class FieldInfo {
+    public final static class FieldInfo {
 
+        private int access;
 
+        private String name;
 
-    }
+        private String desc;
 
-    public final class MethodInfo {
+        private String signature;
 
-        private Method method;
+        private Object value;
 
-        private ParamInfo[] paramTypes;
+        public FieldInfo() {}
 
-        private ReturnInfo returnInfo;
-
-        public MethodInfo() {
+        public int getAccess() {
+            return access;
         }
 
-        public MethodInfo(Method method) {
-            this.method = method;
+        public void setAccess(int access) {
+            this.access = access;
         }
 
-        public Method getMethod() {
-            return method;
+        public String getName() {
+            return name;
         }
 
-        public void setMethod(Method method) {
-            this.method = method;
+        public void setName(String name) {
+            this.name = name;
         }
 
-        public ParamInfo[] getParamTypes() {
-            return paramTypes;
+        public String getDesc() {
+            return desc;
         }
 
-        public void setParamTypes(ParamInfo[] paramTypes) {
-            this.paramTypes = paramTypes;
+        public void setDesc(String desc) {
+            this.desc = desc;
         }
 
-        public ReturnInfo getReturnInfo() {
-            return returnInfo;
+        public String getSignature() {
+            return signature;
         }
 
-        public void setReturnInfo(ReturnInfo returnInfo) {
-            this.returnInfo = returnInfo;
+        public void setSignature(String signature) {
+            this.signature = signature;
         }
 
-    }
-
-    public final class ParamInfo {
-
-        private Type paramType;
-
-        private Type[] parameterizedTypes;
-
-        public ParamInfo() {
+        public Object getValue() {
+            return value;
         }
 
-        public Type getParamType() {
-            return paramType;
-        }
-
-        public void setParamType(Type paramType) {
-            this.paramType = paramType;
-        }
-
-        public Type[] getParameterizedTypes() {
-            return parameterizedTypes;
-        }
-
-        public void setParameterizedTypes(Type[] parameterizedTypes) {
-            this.parameterizedTypes = parameterizedTypes;
+        public void setValue(Object value) {
+            this.value = value;
         }
 
     }
 
-    public final class ReturnInfo {
+    public final static class MethodInfo {
 
-        private Type returnType;
+        private int access;
 
-        private Type[] parameterizedTypes;
+        private String name;
 
-        public ReturnInfo() {
+        private String desc;
+
+        private String signature;
+
+        private String[] exceptions;
+
+        public MethodInfo() {}
+
+        public int getAccess() {
+            return access;
         }
 
-        public Type getReturnType() {
-            return returnType;
+        public void setAccess(int access) {
+            this.access = access;
         }
 
-        public void setReturnType(Type returnType) {
-            this.returnType = returnType;
+        public String getName() {
+            return name;
         }
 
-        public Type[] getParameterizedTypes() {
-            return parameterizedTypes;
+        public void setName(String name) {
+            this.name = name;
         }
 
-        public void setParameterizedTypes(Type[] parameterizedTypes) {
-            this.parameterizedTypes = parameterizedTypes;
+        public String getDesc() {
+            return desc;
+        }
+
+        public void setDesc(String desc) {
+            this.desc = desc;
+        }
+
+        public String getSignature() {
+            return signature;
+        }
+
+        public void setSignature(String signature) {
+            this.signature = signature;
+        }
+
+        public String[] getExceptions() {
+            return exceptions;
+        }
+
+        public void setExceptions(String[] exceptions) {
+            this.exceptions = exceptions;
         }
 
     }

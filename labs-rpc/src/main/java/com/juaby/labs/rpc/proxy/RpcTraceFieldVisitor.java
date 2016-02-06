@@ -7,13 +7,13 @@ import org.objectweb.asm.*;
  */
 public class RpcTraceFieldVisitor extends FieldVisitor {
 
-    public final RpcPrint p;
+    public final RpcProxyParser p;
 
-    public RpcTraceFieldVisitor(final RpcPrint p) {
+    public RpcTraceFieldVisitor(final RpcProxyParser p) {
         this(null, p);
     }
 
-    public RpcTraceFieldVisitor(final FieldVisitor fv, final RpcPrint p) {
+    public RpcTraceFieldVisitor(final FieldVisitor fv, final RpcProxyParser p) {
         super(Opcodes.ASM5, fv);
         this.p = p;
     }
@@ -21,7 +21,7 @@ public class RpcTraceFieldVisitor extends FieldVisitor {
     @Override
     public AnnotationVisitor visitAnnotation(final String desc,
                                              final boolean visible) {
-        RpcPrint p = this.p.visitFieldAnnotation(desc, visible);
+        RpcProxyParser p = this.p.visitFieldAnnotation(desc, visible);
         AnnotationVisitor av = fv == null ? null : fv.visitAnnotation(desc,
                 visible);
         return new RpcTraceAnnotationVisitor(av, p);
@@ -30,7 +30,7 @@ public class RpcTraceFieldVisitor extends FieldVisitor {
     @Override
     public AnnotationVisitor visitTypeAnnotation(int typeRef,
                                                  TypePath typePath, String desc, boolean visible) {
-        RpcPrint p = this.p.visitFieldTypeAnnotation(typeRef, typePath, desc,
+        RpcProxyParser p = this.p.visitFieldTypeAnnotation(typeRef, typePath, desc,
                 visible);
         AnnotationVisitor av = fv == null ? null : fv.visitTypeAnnotation(
                 typeRef, typePath, desc, visible);

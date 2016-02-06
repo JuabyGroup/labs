@@ -7,13 +7,13 @@ import org.objectweb.asm.*;
  */
 public class RpcTraceMethodVisitor extends MethodVisitor {
 
-    public final RpcPrint p;
+    public final RpcProxyParser p;
 
-    public RpcTraceMethodVisitor(final RpcPrint p) {
+    public RpcTraceMethodVisitor(final RpcProxyParser p) {
         this(null, p);
     }
 
-    public RpcTraceMethodVisitor(final MethodVisitor mv, final RpcPrint p) {
+    public RpcTraceMethodVisitor(final MethodVisitor mv, final RpcProxyParser p) {
         super(Opcodes.ASM5, mv);
         this.p = p;
     }
@@ -27,7 +27,7 @@ public class RpcTraceMethodVisitor extends MethodVisitor {
     @Override
     public AnnotationVisitor visitAnnotation(final String desc,
                                              final boolean visible) {
-        RpcPrint p = this.p.visitMethodAnnotation(desc, visible);
+        RpcProxyParser p = this.p.visitMethodAnnotation(desc, visible);
         AnnotationVisitor av = mv == null ? null : mv.visitAnnotation(desc,
                 visible);
         return new RpcTraceAnnotationVisitor(av, p);
@@ -36,7 +36,7 @@ public class RpcTraceMethodVisitor extends MethodVisitor {
     @Override
     public AnnotationVisitor visitTypeAnnotation(int typeRef,
                                                  TypePath typePath, String desc, boolean visible) {
-        RpcPrint p = this.p.visitMethodTypeAnnotation(typeRef, typePath, desc,
+        RpcProxyParser p = this.p.visitMethodTypeAnnotation(typeRef, typePath, desc,
                 visible);
         AnnotationVisitor av = mv == null ? null : mv.visitTypeAnnotation(
                 typeRef, typePath, desc, visible);
@@ -51,7 +51,7 @@ public class RpcTraceMethodVisitor extends MethodVisitor {
 
     @Override
     public AnnotationVisitor visitAnnotationDefault() {
-        RpcPrint p = this.p.visitAnnotationDefault();
+        RpcProxyParser p = this.p.visitAnnotationDefault();
         AnnotationVisitor av = mv == null ? null : mv.visitAnnotationDefault();
         return new RpcTraceAnnotationVisitor(av, p);
     }
@@ -59,7 +59,7 @@ public class RpcTraceMethodVisitor extends MethodVisitor {
     @Override
     public AnnotationVisitor visitParameterAnnotation(final int parameter,
                                                       final String desc, final boolean visible) {
-        RpcPrint p = this.p.visitParameterAnnotation(parameter, desc, visible);
+        RpcProxyParser p = this.p.visitParameterAnnotation(parameter, desc, visible);
         AnnotationVisitor av = mv == null ? null : mv.visitParameterAnnotation(
                 parameter, desc, visible);
         return new RpcTraceAnnotationVisitor(av, p);
@@ -190,7 +190,7 @@ public class RpcTraceMethodVisitor extends MethodVisitor {
     @Override
     public AnnotationVisitor visitInsnAnnotation(int typeRef,
                                                  TypePath typePath, String desc, boolean visible) {
-        RpcPrint p = this.p
+        RpcProxyParser p = this.p
                 .visitInsnAnnotation(typeRef, typePath, desc, visible);
         AnnotationVisitor av = mv == null ? null : mv.visitInsnAnnotation(
                 typeRef, typePath, desc, visible);
@@ -207,7 +207,7 @@ public class RpcTraceMethodVisitor extends MethodVisitor {
     @Override
     public AnnotationVisitor visitTryCatchAnnotation(int typeRef,
                                                      TypePath typePath, String desc, boolean visible) {
-        RpcPrint p = this.p.visitTryCatchAnnotation(typeRef, typePath, desc,
+        RpcProxyParser p = this.p.visitTryCatchAnnotation(typeRef, typePath, desc,
                 visible);
         AnnotationVisitor av = mv == null ? null : mv.visitTryCatchAnnotation(
                 typeRef, typePath, desc, visible);
@@ -226,7 +226,7 @@ public class RpcTraceMethodVisitor extends MethodVisitor {
     public AnnotationVisitor visitLocalVariableAnnotation(int typeRef,
                                                           TypePath typePath, Label[] start, Label[] end, int[] index,
                                                           String desc, boolean visible) {
-        RpcPrint p = this.p.visitLocalVariableAnnotation(typeRef, typePath,
+        RpcProxyParser p = this.p.visitLocalVariableAnnotation(typeRef, typePath,
                 start, end, index, desc, visible);
         AnnotationVisitor av = mv == null ? null : mv
                 .visitLocalVariableAnnotation(typeRef, typePath, start, end,

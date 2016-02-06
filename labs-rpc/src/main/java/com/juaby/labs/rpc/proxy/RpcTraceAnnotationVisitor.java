@@ -8,13 +8,13 @@ import org.objectweb.asm.Opcodes;
  */
 public class RpcTraceAnnotationVisitor extends AnnotationVisitor {
 
-    private final RpcPrint p;
+    private final RpcProxyParser p;
 
-    public RpcTraceAnnotationVisitor(final RpcPrint p) {
+    public RpcTraceAnnotationVisitor(final RpcProxyParser p) {
         this(null, p);
     }
 
-    public RpcTraceAnnotationVisitor(final AnnotationVisitor av, final RpcPrint p) {
+    public RpcTraceAnnotationVisitor(final AnnotationVisitor av, final RpcProxyParser p) {
         super(Opcodes.ASM5, av);
         this.p = p;
     }
@@ -35,7 +35,7 @@ public class RpcTraceAnnotationVisitor extends AnnotationVisitor {
     @Override
     public AnnotationVisitor visitAnnotation(final String name,
                                              final String desc) {
-        RpcPrint p = this.p.visitAnnotation(name, desc);
+        RpcProxyParser p = this.p.visitAnnotation(name, desc);
         AnnotationVisitor av = this.av == null ? null : this.av
                 .visitAnnotation(name, desc);
         return new RpcTraceAnnotationVisitor(av, p);
@@ -43,7 +43,7 @@ public class RpcTraceAnnotationVisitor extends AnnotationVisitor {
 
     @Override
     public AnnotationVisitor visitArray(final String name) {
-        RpcPrint p = this.p.visitArray(name);
+        RpcProxyParser p = this.p.visitArray(name);
         AnnotationVisitor av = this.av == null ? null : this.av
                 .visitArray(name);
         return new RpcTraceAnnotationVisitor(av, p);

@@ -7,7 +7,7 @@ import org.objectweb.asm.*;
 public class MessageServiceClientProxyDump implements Opcodes {
 
     public static byte[] dump (Class service) throws Exception {
-
+        /**
         ServiceClassInfo serviceClassInfo = ServiceClassInfoHelper.parser(service);
 
         ClassWriter cw = new ClassWriter(0);
@@ -163,5 +163,7 @@ public class MessageServiceClientProxyDump implements Opcodes {
         cw.visitEnd();
 
         return cw.toByteArray();
+         */
+        return null;
     }
 }

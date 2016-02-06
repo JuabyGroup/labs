@@ -26,12 +26,12 @@ import java.util.concurrent.ConcurrentHashMap;
 @Deprecated
 public class RpcClientProxyExample<O, F> extends RpcClientProxy implements MessageService<O, F> {
 
-    private Map<String, List<Type>> map = new ConcurrentHashMap<String, List<Type>>();
-    public Map<String, List<Type>> map2 = new ConcurrentHashMap<String, List<Type>>();
-    protected Map<String, List<Type>> map3 = new ConcurrentHashMap<String, List<Type>>();
-    Map<String, List<Type>> map4 = new ConcurrentHashMap<String, List<Type>>();
-    private final Map<String, List<Type>> map5 = new ConcurrentHashMap<String, List<Type>>();
-    private static final Map<String, List<Type>> map6 = new ConcurrentHashMap<String, List<Type>>();
+    private Map<String, List<TypeObject>> map = new ConcurrentHashMap<String, List<TypeObject>>();
+    public Map<String, List<TypeObject>> map2 = new ConcurrentHashMap<String, List<TypeObject>>();
+    protected Map<String, List<TypeObject>> map3 = new ConcurrentHashMap<String, List<TypeObject>>();
+    Map<String, List<TypeObject>> map4 = new ConcurrentHashMap<String, List<TypeObject>>();
+    private final Map<String, List<TypeObject>> map5 = new ConcurrentHashMap<String, List<TypeObject>>();
+    private static final Map<String, List<TypeObject>> map6 = new ConcurrentHashMap<String, List<TypeObject>>();
 
     private RpcClientProxyExample() {
         setConfig(getClass().getInterfaces()[0].getName());
@@ -51,7 +51,7 @@ public class RpcClientProxyExample<O, F> extends RpcClientProxy implements Messa
 
     @Override
     public List<Map<String, File>> message3(TestBean testBean, Map<String, List<TestBean>> param) throws NegativeArraySizeException, IOException {
-        return null;
+        return sendMessage(getConfig().getName(), "message2", new Object());
     }
 
     @Override
@@ -80,7 +80,7 @@ public class RpcClientProxyExample<O, F> extends RpcClientProxy implements Messa
     }
 
     @Override
-    public <T> O messageENUM(List<F> param, Type t) {
+    public <T> O messageENUM(List<F> param, TypeObject t) {
         return null;
     }
 }

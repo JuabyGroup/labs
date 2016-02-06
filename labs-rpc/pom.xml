@@ -2,20 +2,28 @@
 <project xmlns="http://maven.apache.org/POM/4.0.0"
          xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+
     <parent>
         <artifactId>labs-parent</artifactId>
         <groupId>com.juaby.labs</groupId>
         <version>0.0.1-SNAPSHOT</version>
     </parent>
+
     <modelVersion>4.0.0</modelVersion>
 
     <artifactId>labs-rpc</artifactId>
 
     <properties>
-        <grizzly.version>2.3.22</grizzly.version>
+        <grizzly.version>2.3.24</grizzly.version>
         <netty.version>4.0.30.Final</netty.version>
-        <grizzly-npn-bootstrap.version>1.0</grizzly-npn-bootstrap.version>
+        <grizzly-npn-bootstrap.version>1.2</grizzly-npn-bootstrap.version>
         <asm.version>5.0.4</asm.version>
+        <protostuff.version>1.3.8</protostuff.version>
+        <guava.version>19.0</guava.version>
+        <jitescript.version>0.4.0</jitescript.version>
+        <protobuf-java.version>2.6.1</protobuf-java.version>
+        <barchart.version>2.3.0</barchart.version>
+        <junit.version>4.12</junit.version>
     </properties>
 
     <dependencies>
@@ -181,37 +189,37 @@
         <dependency>
             <groupId>com.google.protobuf</groupId>
             <artifactId>protobuf-java</artifactId>
-            <version>2.6.1</version>
+            <version>${protobuf-java.version}</version>
         </dependency>
 
         <dependency>
             <groupId>com.barchart.udt</groupId>
             <artifactId>barchart-udt-core</artifactId>
-            <version>2.3.0</version>
+            <version>${barchart.version}</version>
         </dependency>
 
         <dependency>
             <groupId>io.protostuff</groupId>
             <artifactId>protostuff-core</artifactId>
-            <version>1.3.6</version>
+            <version>${protostuff.version}</version>
         </dependency>
 
         <dependency>
             <groupId>io.protostuff</groupId>
             <artifactId>protostuff-runtime</artifactId>
-            <version>1.3.6</version>
+            <version>${protostuff.version}</version>
         </dependency>
 
         <dependency>
             <groupId>io.protostuff</groupId>
             <artifactId>protostuff-api</artifactId>
-            <version>1.3.6</version>
+            <version>${protostuff.version}</version>
         </dependency>
 
         <dependency>
             <groupId>com.google.guava</groupId>
             <artifactId>guava</artifactId>
-            <version>18.0</version>
+            <version>${guava.version}</version>
         </dependency>
 
         <dependency>
@@ -230,6 +238,18 @@
             <groupId>org.ow2.asm</groupId>
             <artifactId>asm-util</artifactId>
             <version>${asm.version}</version>
+        </dependency>
+
+        <dependency>
+            <groupId>me.qmx.jitescript</groupId>
+            <artifactId>jitescript</artifactId>
+            <version>${jitescript.version}</version>
+        </dependency>
+
+        <dependency>
+            <groupId>junit</groupId>
+            <artifactId>junit</artifactId>
+            <version>${junit.version}</version>
         </dependency>
 
     </dependencies>
