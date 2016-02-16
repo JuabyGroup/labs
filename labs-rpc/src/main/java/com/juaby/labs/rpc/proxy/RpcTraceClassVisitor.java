@@ -3,17 +3,10 @@ package com.juaby.labs.rpc.proxy;
 import org.objectweb.asm.*;
 import org.objectweb.asm.util.*;
 
-import java.io.PrintWriter;
-
 /**
  * Created by Juaby on 2015/8/29.
  */
 public class RpcTraceClassVisitor extends ClassVisitor {
-
-    /**
-     * The print writer to be used to print the class. May be null.
-     */
-    private final PrintWriter pw;
 
     /**
      * The object that actually converts visit events into text.
@@ -23,11 +16,9 @@ public class RpcTraceClassVisitor extends ClassVisitor {
     /**
      * Constructs a new {@link TraceClassVisitor}.
      *
-     * @param pw
-     *            the print writer to be used to print the class.
      */
-    public RpcTraceClassVisitor(final PrintWriter pw) {
-        this(null, pw);
+    public RpcTraceClassVisitor() {
+        this(null);
     }
 
     /**
@@ -36,11 +27,9 @@ public class RpcTraceClassVisitor extends ClassVisitor {
      * @param cv
      *            the {@link ClassVisitor} to which this visitor delegates
      *            calls. May be <tt>null</tt>.
-     * @param pw
-     *            the print writer to be used to print the class.
      */
-    public RpcTraceClassVisitor(final ClassVisitor cv, final PrintWriter pw) {
-        this(cv, new Rpcifier(), pw);
+    public RpcTraceClassVisitor(final ClassVisitor cv) {
+        this(cv, new Rpcifier());
     }
 
     /**
@@ -51,15 +40,10 @@ public class RpcTraceClassVisitor extends ClassVisitor {
      *            calls. May be <tt>null</tt>.
      * @param p
      *            the object that actually converts visit events into text.
-     * @param pw
-     *            the print writer to be used to print the class. May be null if
-     *            you simply want to use the result via
-     *            {@link Printer#getText()}, instead of printing it.
+     *
      */
-    public RpcTraceClassVisitor(final ClassVisitor cv, final RpcProxyParser p,
-                                final PrintWriter pw) {
+    public RpcTraceClassVisitor(final ClassVisitor cv, final RpcProxyParser p) {
         super(Opcodes.ASM5, cv);
-        this.pw = pw;
         this.p = p;
     }
 
@@ -138,10 +122,6 @@ public class RpcTraceClassVisitor extends ClassVisitor {
     @Override
     public void visitEnd() {
         p.visitClassEnd();
-        if (pw != null) {
-            p.print(pw);
-            pw.flush();
-        }
         super.visitEnd();
     }
 

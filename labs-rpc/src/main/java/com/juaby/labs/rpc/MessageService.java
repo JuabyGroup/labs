@@ -1,5 +1,6 @@
 package com.juaby.labs.rpc;
 
+import com.juaby.labs.rpc.config.ServiceConfig;
 import com.juaby.labs.rpc.proxy.TypeObject;
 
 import java.io.File;
@@ -25,6 +26,7 @@ public interface MessageService<O, F> extends InterfaceObject {
     public <T> TestResult message2(TestBean testBean, List<String> param, T t);
     public <T> O message2(List<F> param, O t);
     public List<Map<String, File>> message3(TestBean testBean, Map<String, List<TestBean>> param) throws NegativeArraySizeException, IOException;
+    public List<Map<String, File>> message4(TestBean testBean, Map<String, List<TestBean>> param, List<TestBean> t) throws NegativeArraySizeException, IOException;
     public <T> O messageENUM(List<F> param, TypeObject t);
 
 }

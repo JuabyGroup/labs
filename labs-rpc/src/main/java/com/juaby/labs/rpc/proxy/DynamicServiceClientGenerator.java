@@ -1,9 +1,6 @@
 package com.juaby.labs.rpc.proxy;
 
-import org.objectweb.asm.ClassWriter;
-import org.objectweb.asm.FieldVisitor;
-import org.objectweb.asm.MethodVisitor;
-import org.objectweb.asm.Opcodes;
+import org.objectweb.asm.*;
 
 import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
@@ -27,87 +24,133 @@ public class DynamicServiceClientGenerator extends ClassLoader implements Opcode
         return (S)c1.newInstance(constructorParamValues);
     }
 
-    public Class<?> generator(String handlerClassFullName) throws Exception {
+    public <S> S newInstance(ServiceClassInfo classInfo, Class<S> service) throws IllegalAccessException,
+            InstantiationException,
+            ClassNotFoundException, NoSuchMethodException, InvocationTargetException {
+        Class<?> c = getProxyClass(classInfo);
+        /*以下调用带参的、私有构造函数*/
+        Constructor<?> c1 = c.getDeclaredConstructor(String.class);
+        c1.setAccessible(true);
+        return (S)c1.newInstance(classInfo.getName());
+    }
 
-        if (handlerClassFullName == null || !handlerClassFullName.contains("/")
-                || handlerClassFullName.lastIndexOf("Handler") == -1) {
-            throw new Exception(
-                    "HandlerClassFullName Specification Exception. f.e. com/mapbar/tas/service/handler/PoiByKeywordSearch[Handler]");
-        }
-
+    public Class<?> getProxyClass(ServiceClassInfo classInfo) {
         ClassWriter cw = new ClassWriter(0);
         FieldVisitor fv;
         MethodVisitor mv;
+        AnnotationVisitor av0;
 
-        cw.visit(V1_6, ACC_PUBLIC + ACC_SUPER, handlerClassFullName, null,
-                "com/mapbar/tas/handler/SearchHandler", null);
+        String clientProxyClassName = classInfo.getName() + "$ClientProxy";
+        cw.visit(classInfo.getVersion(), ACC_PUBLIC + ACC_SUPER, clientProxyClassName, classInfo.getSignature(), "com/juaby/labs/rpc/proxy/RpcClientProxy", new String[] {classInfo.getName()});
 
         {
-            fv = cw.visitField(0, "logger", "Lorg/slf4j/Logger;", null, null);
-            fv.visitEnd();
-        }
-        {
-            mv = cw.visitMethod(ACC_PUBLIC, "<init>", "()V", null, null);
+            mv = cw.visitMethod(ACC_PRIVATE, "<init>", "(Ljava/lang/String;)V", null, null);
             mv.visitCode();
             mv.visitVarInsn(ALOAD, 0);
-            mv.visitMethodInsn(INVOKESPECIAL,
-                    "com/mapbar/tas/handler/SearchHandler", "<init>", "()V",
-                    false);
-            mv.visitVarInsn(ALOAD, 0);
-            mv.visitVarInsn(ALOAD, 0);
-            mv.visitMethodInsn(INVOKEVIRTUAL, "java/lang/Object", "getClass",
-                    "()Ljava/lang/Class;", false);
-            mv.visitMethodInsn(INVOKEVIRTUAL, "java/lang/Class", "getName",
-                    "()Ljava/lang/String;", false);
-            mv.visitMethodInsn(INVOKESTATIC, "org/slf4j/LoggerFactory",
-                    "getLogger", "(Ljava/lang/String;)Lorg/slf4j/Logger;",
-                    false);
-            mv.visitFieldInsn(PUTFIELD, handlerClassFullName, "logger",
-                    "Lorg/slf4j/Logger;");
-            mv.visitVarInsn(ALOAD, 0);
-            mv.visitVarInsn(ALOAD, 0);
-            mv.visitMethodInsn(INVOKEVIRTUAL, "java/lang/Object", "getClass",
-                    "()Ljava/lang/Class;", false);
-            mv.visitMethodInsn(INVOKEVIRTUAL, "java/lang/Class", "getName",
-                    "()Ljava/lang/String;", false);
-            mv.visitMethodInsn(
-                    INVOKESTATIC,
-                    "com/mapbar/tas/service/SearchServiceFactory",
-                    "getSearchServiceInstance",
-                    "(Ljava/lang/String;)Lcom/mapbar/tas/service/ISearchService;",
-                    false);
-            mv.visitMethodInsn(INVOKESPECIAL,
-                    "com/mapbar/tas/handler/SearchHandler", "setIss",
-                    "(Lcom/mapbar/tas/service/ISearchService;)V", false);
-            mv.visitInsn(RETURN);
-            mv.visitMaxs(2, 1);
-            mv.visitEnd();
-        }
-        {
-            mv = cw.visitMethod(
-                    ACC_PUBLIC,
-                    "service",
-                    "(Lorg/glassfish/grizzly/http/server/Request;Lorg/glassfish/grizzly/http/server/Response;)V",
-                    null, new String[] { "java/lang/Exception" });
-            mv.visitCode();
+            mv.visitMethodInsn(INVOKESPECIAL, "com/juaby/labs/rpc/proxy/RpcClientProxy", "<init>", "()V", false);
             mv.visitVarInsn(ALOAD, 0);
             mv.visitVarInsn(ALOAD, 1);
-            mv.visitVarInsn(ALOAD, 2);
-            mv.visitMethodInsn(
-                    INVOKESPECIAL,
-                    "com/mapbar/tas/handler/SearchHandler",
-                    "service",
-                    "(Lorg/glassfish/grizzly/http/server/Request;Lorg/glassfish/grizzly/http/server/Response;)V",
-                    false);
+            mv.visitMethodInsn(INVOKEVIRTUAL, clientProxyClassName, "setConfig", "(Ljava/lang/String;)V", false);
             mv.visitInsn(RETURN);
-            mv.visitMaxs(3, 3);
+            mv.visitMaxs(2, 2);
             mv.visitEnd();
         }
-        cw.visitSource(handlerClassFullName.substring(handlerClassFullName.lastIndexOf("/") + 1) + ".java", null);
-        cw.visitEnd();
-        byte[] code = cw.toByteArray();
 
-        Class<?> handlerClass = defineClass(handlerClassFullName.replace("/", "."), code, 0, code.length);
+        for (String methodSignature : classInfo.getMethods().keySet()) {
+            ServiceClassInfo.MethodInfo methodInfo = classInfo.getMethods().get(methodSignature);
+            String returnTypeDesc = methodInfo.getReturnTypeDesc();
+            boolean isReturnVoid = methodInfo.isReturnVoid();
+            int paramsLength = methodInfo.getParamsLength();
+
+            {
+                mv = cw.visitMethod(ACC_PUBLIC, methodInfo.getName(), methodInfo.getDesc(), methodInfo.getSignature(), methodInfo.getExceptions());
+                mv.visitCode();
+
+                int maxStackSize = 0;
+                int currStackSize = 0;
+                int localStackPos = 2;
+
+                mv.visitVarInsn(ALOAD, 0);
+                currStackSize = currStackSize + 1;
+                if (maxStackSize < currStackSize) {
+                    maxStackSize = currStackSize;
+                }
+
+                mv.visitVarInsn(ALOAD, 0);
+                currStackSize = currStackSize + 1;
+                if (maxStackSize < currStackSize) {
+                    maxStackSize = currStackSize;
+                }
+
+                mv.visitMethodInsn(INVOKEVIRTUAL, clientProxyClassName, "getConfig", "()Lcom/juaby/labs/rpc/config/ServiceConfig;", false);
+                currStackSize = currStackSize - 1 + 1;
+
+                mv.visitMethodInsn(INVOKEVIRTUAL, "com/juaby/labs/rpc/config/ServiceConfig", "getName", "()Ljava/lang/String;", false);
+                currStackSize = currStackSize - 1 + 1;
+
+                mv.visitLdcInsn(methodInfo.getSignature());
+                currStackSize = currStackSize + 1;
+                if (maxStackSize < currStackSize) {
+                    maxStackSize = currStackSize;
+                }
+
+                //mv.visitInsn(ICONST_0 + paramsLength);
+                mv.visitIntInsn(SIPUSH, paramsLength);
+                currStackSize = currStackSize + 1;
+                if (maxStackSize < currStackSize) {
+                    maxStackSize = currStackSize;
+                }
+
+                mv.visitTypeInsn(ANEWARRAY, "java/lang/Object");
+                currStackSize = currStackSize - 1 + 1;
+
+                for (int p = 0; p < paramsLength; p++) {
+                    mv.visitInsn(DUP);
+                    currStackSize = currStackSize + 1;
+                    if (maxStackSize < currStackSize) {
+                        maxStackSize = currStackSize;
+                    }
+
+                    //mv.visitInsn(ICONST_0 + p);
+                    mv.visitIntInsn(SIPUSH, p);
+                    currStackSize = currStackSize + 1;
+                    if (maxStackSize < currStackSize) {
+                        maxStackSize = currStackSize;
+                    }
+
+                    mv.visitVarInsn(ALOAD, p + 1);
+                    currStackSize = currStackSize + 1;
+                    if (maxStackSize < currStackSize) {
+                        maxStackSize = currStackSize;
+                    }
+
+                    mv.visitInsn(AASTORE);
+                    currStackSize = currStackSize - 3;
+                }
+
+                mv.visitMethodInsn(INVOKEVIRTUAL, clientProxyClassName, "sendMessage", "(Ljava/lang/String;Ljava/lang/String;[Ljava/lang/Object;)Ljava/lang/Object;", false);
+                currStackSize = currStackSize - 3 - 1 + 1;
+
+                if (!isReturnVoid) {
+                    mv.visitTypeInsn(CHECKCAST, returnTypeDesc);
+                    mv.visitInsn(ARETURN);
+                } else {
+                    mv.visitInsn(POP);
+                    currStackSize = currStackSize - 1;
+                    mv.visitInsn(RETURN);
+                }
+
+                mv.visitMaxs(maxStackSize, paramsLength + 1); //4 ==> paramsLength == 0 else 7
+
+                mv.visitEnd();
+            }
+
+        }
+
+        cw.visitEnd();
+
+        byte[] code =  cw.toByteArray();
+        Class<?> handlerClass = defineClass(clientProxyClassName.replace("/", "."), code, 0, code.length);
         return handlerClass;
     }
 

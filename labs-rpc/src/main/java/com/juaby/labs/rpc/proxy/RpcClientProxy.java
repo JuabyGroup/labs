@@ -1,15 +1,9 @@
 package com.juaby.labs.rpc.proxy;
 
-import com.juaby.labs.rpc.*;
 import com.juaby.labs.rpc.base.RequestMessageBody;
 import com.juaby.labs.rpc.client.RpcClient;
 import com.juaby.labs.rpc.config.ServiceConfig;
 import com.juaby.labs.rpc.config.ServiceConfigHelper;
-
-import java.io.File;
-import java.io.IOException;
-import java.util.List;
-import java.util.Map;
 
 /**
  * Title: <br>
@@ -27,13 +21,6 @@ public class RpcClientProxy {
         RequestMessageBody requestMessageBody = new RequestMessageBody(service);
         requestMessageBody.setMethod(method);
         requestMessageBody.setParams(params);
-        return RpcClient.sendMessage(requestMessageBody);
-    }
-
-    protected <R> R sendMessage(String service, String method, Object params) {
-        RequestMessageBody requestMessageBody = new RequestMessageBody(service);
-        requestMessageBody.setMethod(method);
-        //requestMessageBody.setParams(params);
         return RpcClient.sendMessage(requestMessageBody);
     }
 

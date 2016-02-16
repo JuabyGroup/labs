@@ -1,9 +1,6 @@
 package com.juaby.labs.rpc.proxy;
 
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 
 /**
  * Created by Juaby on 2015/8/26.
@@ -195,6 +192,8 @@ public class ServiceClassInfo {
 
     public final static class MethodInfo {
 
+        private int id;
+
         private int access;
 
         private String name;
@@ -205,7 +204,27 @@ public class ServiceClassInfo {
 
         private String[] exceptions;
 
+        private int maxStack;
+
+        private int maxLocals;
+
+        private int paramsLength;
+
+        private boolean isReturnVoid = false;
+
+        private String returnTypeDesc;
+
+        private String [] paramsTypes;
+
         public MethodInfo() {}
+
+        public int getId() {
+            return id;
+        }
+
+        public void setId(int id) {
+            this.id = id;
+        }
 
         public int getAccess() {
             return access;
@@ -245,6 +264,68 @@ public class ServiceClassInfo {
 
         public void setExceptions(String[] exceptions) {
             this.exceptions = exceptions;
+        }
+
+        public int getMaxStack() {
+            return maxStack;
+        }
+
+        public void setMaxStack(int maxStack) {
+            this.maxStack = maxStack;
+        }
+
+        public int getMaxLocals() {
+            return maxLocals;
+        }
+
+        public void setMaxLocals(int maxLocals) {
+            this.maxLocals = maxLocals;
+        }
+
+        public int getParamsLength() {
+            return paramsLength;
+        }
+
+        public void setParamsLength(int paramsLength) {
+            this.paramsLength = paramsLength;
+        }
+
+        public boolean isReturnVoid() {
+            return isReturnVoid;
+        }
+
+        public void setReturnVoid(boolean returnVoid) {
+            isReturnVoid = returnVoid;
+        }
+
+        public String getReturnTypeDesc() {
+            return returnTypeDesc;
+        }
+
+        public void setReturnTypeDesc(String returnTypeDesc) {
+            this.returnTypeDesc = returnTypeDesc;
+        }
+
+        public String[] getParamsTypes() {
+            return paramsTypes;
+        }
+
+        public void setParamsTypes(String[] paramsTypes) {
+            this.paramsTypes = paramsTypes;
+        }
+
+        @Override
+        public String toString() {
+            return "MethodInfo{" +
+                    "id=" + id +
+                    ", access=" + access +
+                    ", name='" + name + '\'' +
+                    ", desc='" + desc + '\'' +
+                    ", signature='" + signature + '\'' +
+                    ", exceptions=" + Arrays.toString(exceptions) +
+                    ", maxStack=" + maxStack +
+                    ", maxLocals=" + maxLocals +
+                    '}';
         }
 
     }

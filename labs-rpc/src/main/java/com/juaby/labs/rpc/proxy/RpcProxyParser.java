@@ -29,10 +29,6 @@
  */
 package com.juaby.labs.rpc.proxy;
 
-import java.io.PrintWriter;
-import java.util.ArrayList;
-import java.util.List;
-
 import org.objectweb.asm.Attribute;
 import org.objectweb.asm.Handle;
 import org.objectweb.asm.Label;
@@ -122,31 +118,10 @@ public abstract class RpcProxyParser {
     protected final int api;
 
     /**
-     * A buffer that can be used to create strings.
-     */
-    protected final StringBuffer buf;
-
-    /**
-     * The text to be printed. Since the code of methods is not necessarily
-     * visited in sequential order, one method after the other, but can be
-     * interlaced (some instructions from method one, then some instructions
-     * from method two, then some instructions from method one again...), it is
-     * not possible to print the visited instructions directly to a sequential
-     * stream. A class is therefore printed in a two steps process: a string
-     * tree is constructed during the visit, and printed to a sequential stream
-     * at the end of the visit. This string tree is stored in this field, as a
-     * string list that can contain other string lists, which can themselves
-     * contain other string lists, and so on.
-     */
-    public final List<Object> text;
-
-    /**
      * Constructs a new {@link RpcProxyParser}.
      */
     protected RpcProxyParser(final int api) {
         this.api = api;
-        this.buf = new StringBuffer();
-        this.text = new ArrayList<Object>();
     }
 
     /**
@@ -512,25 +487,6 @@ public abstract class RpcProxyParser {
     public abstract void visitMethodEnd();
 
     /**
-     * Returns the text constructed by this visitor.
-     *
-     * @return the text constructed by this visitor.
-     */
-    public List<Object> getText() {
-        return text;
-    }
-
-    /**
-     * Prints the text constructed by this visitor.
-     *
-     * @param pw
-     *            the print writer to be used.
-     */
-    public void print(final PrintWriter pw) {
-        printList(pw, text);
-    }
-
-    /**
      * Appends a quoted string to a given buffer.
      *
      * @param buf
@@ -565,26 +521,6 @@ public abstract class RpcProxyParser {
             }
         }
         buf.append('\"');
-    }
-
-    /**
-     * Prints the given string tree.
-     *
-     * @param pw
-     *            the writer to be used to print the tree.
-     * @param l
-     *            a string tree, i.e., a string list that can contain other
-     *            string lists, and so on recursively.
-     */
-    static void printList(final PrintWriter pw, final List<?> l) {
-        for (int i = 0; i < l.size(); ++i) {
-            Object o = l.get(i);
-            if (o instanceof List) {
-                printList(pw, (List<?>) o);
-            } else {
-                pw.print(o.toString());
-            }
-        }
     }
 
 }

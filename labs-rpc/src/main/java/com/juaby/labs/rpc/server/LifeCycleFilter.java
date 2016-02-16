@@ -61,6 +61,7 @@ import java.util.concurrent.atomic.AtomicInteger;
  * @author Alexey Stashok
  */
 public class LifeCycleFilter extends BaseFilter {
+
     private Attribute<Integer> connectionIdAttribute =
             Grizzly.DEFAULT_ATTRIBUTE_BUILDER.createAttribute("connection-id");
 
@@ -146,4 +147,5 @@ public class LifeCycleFilter extends BaseFilter {
     public Set<Connection> getActiveConnections() {
         return activeConnectionsMap.keySet();
     }
+
 }

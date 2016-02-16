@@ -13,6 +13,8 @@ public class ProxyHelper {
 
     private static final Map<String, ProviderService> providerServiceProxyCache = new ConcurrentHashMap<String, ProviderService>();
 
+    private static final Map<String, Object> providerServiceCache = new ConcurrentHashMap<String, Object>();
+
     private static final Map<String, String> javaTypes = new HashMap<String, String>();
 
     static {
@@ -56,8 +58,17 @@ public class ProxyHelper {
         return providerServiceProxyCache;
     }
 
+    public static Map<String, Object> addServiceInstance(String key, Object service) {
+        providerServiceCache.put(key, service);
+        return providerServiceCache;
+    }
+
     public static ProviderService getProxyInstance(String key) {
         return providerServiceProxyCache.get(key);
+    }
+
+    public static Object getServiceInstance(String key) {
+        return providerServiceCache.get(key);
     }
 
     public static Map<String, String> javaTypes() {

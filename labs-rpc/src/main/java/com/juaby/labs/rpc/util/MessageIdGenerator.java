@@ -1,6 +1,7 @@
 package com.juaby.labs.rpc.util;
 
 import java.util.UUID;
+import java.util.concurrent.atomic.AtomicInteger;
 
 /**
  * Title: <br>
@@ -12,9 +13,11 @@ import java.util.UUID;
  */
 public class MessageIdGenerator {
 
-    public static String id() {
-        String messageId = UUID.randomUUID().toString().replaceAll("-", "");
-        return messageId;
+    private static AtomicInteger idCounter = new AtomicInteger();
+
+    public static Integer id() {
+        //String messageId = UUID.randomUUID().toString().replaceAll("-", "");
+        return idCounter.getAndIncrement();
     }
 
 }

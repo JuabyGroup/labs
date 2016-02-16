@@ -38,12 +38,22 @@ public class MessageServerServiceImpl<O, F> implements MessageService<O, F> {
     }
 
     @Override
+    public List<Map<String, File>> message4(TestBean testBean, Map<String, List<TestBean>> param, List<TestBean> t) {
+        return null;
+    }
+
+    @Override
     public <V> V vmethod() {
         return null;
     }
 
     @Override
     public <V> void vmethod(V v) {
+
+    }
+
+    @Override
+    public void vmethod3() {
 
     }
 

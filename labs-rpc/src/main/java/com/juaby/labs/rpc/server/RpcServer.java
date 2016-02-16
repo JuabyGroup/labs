@@ -42,8 +42,10 @@ package com.juaby.labs.rpc.server;
 
 import com.juaby.labs.rpc.MessageServerServiceImpl;
 import com.juaby.labs.rpc.MessageService;
-import com.juaby.labs.rpc.proxy.ProviderServiceProxy;
+import com.juaby.labs.rpc.proxy.DynamicServiceServerGenerator;
 import com.juaby.labs.rpc.proxy.ProxyHelper;
+import com.juaby.labs.rpc.proxy.ServiceClassInfo;
+import com.juaby.labs.rpc.util.ServiceClassInfoHelper;
 import org.glassfish.grizzly.filterchain.FilterChainBuilder;
 import org.glassfish.grizzly.filterchain.TransportFilter;
 import org.glassfish.grizzly.nio.transport.TCPNIOTransport;
@@ -55,15 +57,19 @@ import org.glassfish.grizzly.nio.transport.TCPNIOTransportBuilder;
  * @author Alexey Stashok
  */
 public class RpcServer {
+
     public static final String HOST = "localhost";
     public static final int PORT = 9098;
     
     public static void main(String[] args) throws Exception {
-
+        ServiceClassInfo classInfo = ServiceClassInfoHelper.get(MessageService.class);
         MessageService messageServerService = new MessageServerServiceImpl();
-        ProviderService providerService = new ProviderServiceProxy(messageServerService);
-        String method = "message";
-        ProxyHelper.addProxyInstance(MessageService.class.getName() + method, providerService);
+        ProxyHelper.addServiceInstance(classInfo.getName(), messageServerService);
+        Class<ProviderService> serviceClass = ProviderService.class;
+        for (String methodSignature : classInfo.getMethods().keySet()) {
+            ProviderService providerService = new DynamicServiceServerGenerator().newInstance(classInfo, classInfo.getMethods().get(methodSignature), serviceClass);
+            ProxyHelper.addProxyInstance(classInfo.getName() + methodSignature, providerService);
+        }
 
         LifeCycleFilter lifeCycleFilter = new LifeCycleFilter();
         // Create a FilterChain using FilterChainBuilder

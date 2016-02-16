@@ -9,6 +9,7 @@ package com.juaby.labs.rpc.proxy;
  * @date Created by yanjiabao on 2015/9/2 10:10.
  */
 public enum TypeObject {
+
     A(1),B(2),C(3);
 
     TypeObject(Integer i) {
@@ -20,4 +21,5 @@ public enum TypeObject {
     public Integer value() {
         return value;
     }
+
 }

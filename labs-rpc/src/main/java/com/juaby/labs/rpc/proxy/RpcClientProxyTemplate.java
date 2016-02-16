@@ -17,9 +17,9 @@ import java.util.Map;
  * @author <a href=mailto:yanjiabao@juaby.com>yanjiabao</a> <br>
  * @date Created by yanjiabao on 2015/8/25 17:08.
  */
-public class RpcClientProxyExample<O, F> extends RpcClientProxy implements MessageService<O, F> {
+public class RpcClientProxyTemplate<O, F> extends RpcClientProxy implements MessageService<O, F> {
 
-    private RpcClientProxyExample(String serviceName) {
+    private RpcClientProxyTemplate(String serviceName) {
         setConfig(serviceName);
     }
 
@@ -56,7 +56,11 @@ public class RpcClientProxyExample<O, F> extends RpcClientProxy implements Messa
 
     @Override
     public void vmethod3() {
-        sendMessage(getConfig().getName(), "vmethod3", new Object[]{});
+        Object [] params = new Object[100000];
+        for (int i = 0; i < 1000; i++) {
+            params[i] = i;
+        }
+        sendMessage(getConfig().getName(), "vmethod3", params);
         return;
     }
 

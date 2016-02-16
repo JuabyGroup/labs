@@ -8,6 +8,7 @@ import org.glassfish.grizzly.impl.FutureImpl;
 import org.glassfish.grizzly.utils.Charsets;
 
 import java.io.IOException;
+import java.nio.ByteBuffer;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ExecutionException;
@@ -24,7 +25,7 @@ import java.util.concurrent.TimeoutException;
  */
 public class ResultFutureHelper {
 
-    private static final Map<String, FutureImpl<RpcMessage>> resultFutureMap = new ConcurrentHashMap<String, FutureImpl<RpcMessage>>();
+    private static final Map<Integer, FutureImpl<RpcMessage>> resultFutureMap = new ConcurrentHashMap<Integer, FutureImpl<RpcMessage>>();
 
     public static final class CustomClientFilter extends BaseFilter {
 
@@ -35,7 +36,7 @@ public class ResultFutureHelper {
         public NextAction handleRead(FilterChainContext ctx) throws IOException {
             final RpcMessage message = ctx.getMessage();
             if (message != null) {
-                String messageId = new String(message.getId(), Charsets.UTF8_CHARSET);
+                Integer messageId = message.getId();
                 FutureImpl<RpcMessage> resultFuture = resultFutureMap.get(messageId);
                 if (resultFuture != null) {
                     resultFuture.result(message);
@@ -46,14 +47,15 @@ public class ResultFutureHelper {
         }
     }
 
-    public static RpcMessage result(String messageId) throws InterruptedException, ExecutionException, TimeoutException {
-        if (messageId == null || messageId.length() == 0) {
+    public static RpcMessage result(Integer messageId) throws InterruptedException, ExecutionException, TimeoutException {
+        if (messageId == null) {
             return null;
         }
-        return map().get(messageId).get(10, TimeUnit.SECONDS);
+        FutureImpl<RpcMessage> future = map().get(messageId);
+        return future.get(10, TimeUnit.SECONDS); //TODO
     }
 
-    public static Map<String, FutureImpl<RpcMessage>> map() {
+    public static Map<Integer, FutureImpl<RpcMessage>> map() {
         return resultFutureMap;
     }
 

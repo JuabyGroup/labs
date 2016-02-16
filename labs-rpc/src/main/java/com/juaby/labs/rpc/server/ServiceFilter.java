@@ -69,8 +69,7 @@ public class ServiceFilter extends BaseFilter {
      * @throws IOException
      */
     @Override
-    public NextAction handleRead(FilterChainContext ctx)
-            throws IOException {
+    public NextAction handleRead(FilterChainContext ctx) throws IOException {
         // Peer address is used for non-connected UDP Connection :)
         final Object peerAddress = ctx.getAddress();
 

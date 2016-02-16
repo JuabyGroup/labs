@@ -47,16 +47,16 @@ package com.juaby.labs.rpc.base;
  */
 public class BaseMessage {
 
-    private byte[] id;
+    private Integer id;
 
     public BaseMessage() {
     }
 
-    public byte[] getId() {
+    public Integer getId() {
         return id;
     }
 
-    public void setId(byte[] id) {
+    public void setId(Integer id) {
         this.id = id;
     }
 

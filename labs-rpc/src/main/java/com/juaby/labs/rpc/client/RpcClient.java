@@ -48,7 +48,6 @@ import com.juaby.labs.rpc.util.*;
 import org.glassfish.grizzly.Connection;
 import org.glassfish.grizzly.impl.FutureImpl;
 import org.glassfish.grizzly.impl.SafeFutureImpl;
-import org.glassfish.grizzly.utils.Charsets;
 
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeoutException;
@@ -64,7 +63,7 @@ public class RpcClient {
         Connection connection = null;
         Endpoint endpoint = EndpointHelper.cache(requestMessageBody.getService()).iterator().next();
         final FutureImpl<RpcMessage> resultFuture = SafeFutureImpl.create();
-        String messageId = MessageIdGenerator.id();
+        Integer messageId = MessageIdGenerator.id();
         ResponseMessageBody<R> messageBody = new ResponseMessageBody<R>();
         try {
             // Connect client to the GIOP server
@@ -75,7 +74,7 @@ public class RpcClient {
             RpcMessage sentMessage = new RpcMessage((byte) 1, (byte) 2,
                     (byte) 0x0F, (byte) 0, testMessage);
 
-            sentMessage.setId(messageId.getBytes(Charsets.UTF8_CHARSET));
+            sentMessage.setId(messageId);
             ResultFutureHelper.map().put(messageId, resultFuture);
 
             connection.write(sentMessage);

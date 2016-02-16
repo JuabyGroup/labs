@@ -16,11 +16,11 @@ import java.util.List;
  * @author <a href=mailto:yanjiabao@juaby.com>yanjiabao</a> <br>
  * @date Created by yanjiabao on 2015/8/26 13:14.
  */
-public class ProviderServiceProxy implements ProviderService {
+public class ProviderServiceProxyWithResultTemplate implements ProviderService {
 
     private MessageService messageService;
 
-    public ProviderServiceProxy(MessageService messageService) {
+    public ProviderServiceProxyWithResultTemplate(MessageService messageService) {
         this.messageService = messageService;
     }
 
