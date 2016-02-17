@@ -40,14 +40,11 @@
 
 package com.juaby.labs.rpc.client;
 
-import com.juaby.labs.rpc.base.RpcMessage;
-import com.juaby.labs.rpc.util.SerializeTool;
 import com.juaby.labs.rpc.base.RequestMessageBody;
 import com.juaby.labs.rpc.base.ResponseMessageBody;
+import com.juaby.labs.rpc.base.RpcMessage;
 import com.juaby.labs.rpc.util.*;
-import org.glassfish.grizzly.Connection;
-import org.glassfish.grizzly.impl.FutureImpl;
-import org.glassfish.grizzly.impl.SafeFutureImpl;
+import io.netty.channel.Channel;
 
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeoutException;
@@ -57,19 +54,19 @@ import java.util.concurrent.TimeoutException;
  * 
  * @author Alexey Stashok
  */
-public class RpcClient {
+public class Rpc2Client {
 
     private static final int HEADER_SIZE = 12 + 4 + 4;
 
     public static <R> R sendMessage(RequestMessageBody requestMessageBody) {
-        Connection connection = null;
+        Channel channel = null;
         Endpoint endpoint = EndpointHelper.cache(requestMessageBody.getService()).iterator().next();
         final RpcFutureImpl<RpcMessage> resultFuture = RpcSafeFutureImpl.create();
         Integer messageId = MessageIdGenerator.id();
         ResponseMessageBody<R> messageBody = new ResponseMessageBody<R>();
         try {
             // Connect client to the GIOP server
-            connection = ConnectionFactory.get(endpoint);
+            channel = ChannelFactory.get(endpoint);
 
             // Initialize sample GIOP message
             byte[] testMessage = SerializeTool.serialize(requestMessageBody);
@@ -79,11 +76,11 @@ public class RpcClient {
             sentMessage.setId(messageId);
             sentMessage.setTotalLength(HEADER_SIZE + testMessage.length);
 
-            ResultFutureHelper.map().put(messageId, resultFuture);
+            Result2FutureHelper.map().put(messageId, resultFuture);
 
-            connection.write(sentMessage);
+            channel.writeAndFlush(sentMessage, channel.voidPromise());
 
-            final RpcMessage rcvMessage = ResultFutureHelper.result(messageId);
+            final RpcMessage rcvMessage = Result2FutureHelper.result(messageId);
 
             SerializeTool.deserialize(rcvMessage.getBody(), messageBody);
         } catch (InterruptedException e) {
@@ -95,10 +92,8 @@ public class RpcClient {
         } catch (Exception e) {
             //TODO
         } finally {
-            if (connection != null) {
-                ConnectionFactory.release(endpoint, connection);
-            }
-            ResultFutureHelper.map().remove(messageId);
+            //TODO
+            Result2FutureHelper.map().remove(messageId);
         }
         return messageBody.getBody();
     }

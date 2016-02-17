@@ -1,6 +1,7 @@
 package com.juaby.labs.rpc.proxy;
 
 import com.juaby.labs.rpc.base.RequestMessageBody;
+import com.juaby.labs.rpc.client.Rpc2Client;
 import com.juaby.labs.rpc.client.RpcClient;
 import com.juaby.labs.rpc.config.ServiceConfig;
 import com.juaby.labs.rpc.config.ServiceConfigHelper;
@@ -21,7 +22,14 @@ public class RpcClientProxy {
         RequestMessageBody requestMessageBody = new RequestMessageBody(service);
         requestMessageBody.setMethod(method);
         requestMessageBody.setParams(params);
-        return RpcClient.sendMessage(requestMessageBody);
+        if (config.getServerType() == 1) {
+            return RpcClient.sendMessage(requestMessageBody);
+        } else if (config.getServerType() == 2) {
+            return Rpc2Client.sendMessage(requestMessageBody);
+        } else {
+            //TODO
+            return null;
+        }
     }
 
     protected void setConfig(String service) {

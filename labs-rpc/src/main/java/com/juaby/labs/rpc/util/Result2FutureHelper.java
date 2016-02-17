@@ -1,14 +1,9 @@
 package com.juaby.labs.rpc.util;
 
 import com.juaby.labs.rpc.base.RpcMessage;
-import org.glassfish.grizzly.filterchain.BaseFilter;
-import org.glassfish.grizzly.filterchain.FilterChainContext;
-import org.glassfish.grizzly.filterchain.NextAction;
-import org.glassfish.grizzly.impl.FutureImpl;
-import org.glassfish.grizzly.utils.Charsets;
+import io.netty.channel.ChannelHandlerContext;
+import io.netty.channel.ChannelInboundHandlerAdapter;
 
-import java.io.IOException;
-import java.nio.ByteBuffer;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ExecutionException;
@@ -23,18 +18,31 @@ import java.util.concurrent.TimeoutException;
  * @author <a href=mailto:yanjiabao@juaby.com>yanjiabao</a> <br>
  * @date Created by yanjiabao on 2015/8/25 13:38.
  */
-public class ResultFutureHelper {
+public class Result2FutureHelper {
 
     private static final Map<Integer, RpcFutureImpl<RpcMessage>> resultFutureMap = new ConcurrentHashMap<Integer, RpcFutureImpl<RpcMessage>>();
 
-    public static final class CustomClientFilter extends BaseFilter {
+    /**
+     * Handler implementation for the object echo client.  It initiates the
+     * ping-pong traffic between the object echo client and server by sending the
+     * first message to the server.
+     */
+    public static final class Rpc2ClientHandler extends ChannelInboundHandlerAdapter {
 
-        public CustomClientFilter() {
+        /**
+         * Creates a client-side handler.
+         */
+        public Rpc2ClientHandler() {
         }
 
         @Override
-        public NextAction handleRead(FilterChainContext ctx) throws IOException {
-            final RpcMessage message = ctx.getMessage();
+        public void channelActive(ChannelHandlerContext ctx) {
+            // Send the first message if this handler is a client-side handler.
+        }
+
+        @Override
+        public void channelRead(ChannelHandlerContext ctx, Object msg) {
+            final RpcMessage message = (RpcMessage) msg;
             if (message != null) {
                 Integer messageId = message.getId();
                 RpcFutureImpl<RpcMessage> resultFuture = resultFutureMap.get(messageId);
@@ -42,8 +50,17 @@ public class ResultFutureHelper {
                     resultFuture.result(message);
                 }
             }
+        }
 
-            return ctx.getStopAction();
+        @Override
+        public void channelReadComplete(ChannelHandlerContext ctx) {
+            ctx.flush();
+        }
+
+        @Override
+        public void exceptionCaught(ChannelHandlerContext ctx, Throwable cause) {
+            cause.printStackTrace();
+            ctx.close();
         }
     }
 

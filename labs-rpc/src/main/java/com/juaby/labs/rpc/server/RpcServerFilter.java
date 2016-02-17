@@ -58,7 +58,7 @@ import java.util.logging.Filter;
  */
 public final class RpcServerFilter extends BaseFilter {
 
-    private static final int HEADER_SIZE = 12 + 4;
+    private static final int HEADER_SIZE = 12 + 4 + 4;
 
     /**
      * Method is called, when new data was read from the Connection and ready
@@ -124,6 +124,9 @@ public final class RpcServerFilter extends BaseFilter {
         // Set id
         giopMessage.setId(sourceBuffer.getInt());
 
+        // Set Total length
+        giopMessage.setTotalLength(sourceBuffer.getInt());
+
         // Set body length
         giopMessage.setBodyLength(sourceBuffer.getInt());
 
@@ -185,6 +188,9 @@ public final class RpcServerFilter extends BaseFilter {
 
         // ID
         output.putInt(giopMessage.getId());
+
+        // Total length
+        output.putInt(giopMessage.getTotalLength());
 
         // Body length
         output.putInt(giopMessage.getBodyLength());

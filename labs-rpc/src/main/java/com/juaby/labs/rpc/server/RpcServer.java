@@ -42,6 +42,7 @@ package com.juaby.labs.rpc.server;
 
 import com.juaby.labs.rpc.MessageServerServiceImpl;
 import com.juaby.labs.rpc.MessageService;
+import com.juaby.labs.rpc.config.ServiceConfig;
 import com.juaby.labs.rpc.proxy.DynamicServiceServerGenerator;
 import com.juaby.labs.rpc.proxy.ProxyHelper;
 import com.juaby.labs.rpc.proxy.ServiceClassInfo;
@@ -51,26 +52,58 @@ import org.glassfish.grizzly.filterchain.TransportFilter;
 import org.glassfish.grizzly.nio.transport.TCPNIOTransport;
 import org.glassfish.grizzly.nio.transport.TCPNIOTransportBuilder;
 
+import java.io.IOException;
+import java.lang.reflect.InvocationTargetException;
+
 /**
  * Simple GIOP echo server
  * 
  * @author Alexey Stashok
  */
-public class RpcServer {
+public class RpcServer implements Server {
 
-    public static final String HOST = "localhost";
-    public static final int PORT = 9098;
-    
-    public static void main(String[] args) throws Exception {
+    private String hsot = "localhost";
+    private int port = 9098;
+
+    private ServiceConfig config;
+
+    private final TCPNIOTransport transport;
+
+    public RpcServer() {
+        this.transport = TCPNIOTransportBuilder.newInstance().build();
+    }
+
+    public RpcServer(ServiceConfig config) {
+        this.config = config;
+        this.transport = TCPNIOTransportBuilder.newInstance().build();
+    }
+
+    @Override
+    public void init() {
         ServiceClassInfo classInfo = ServiceClassInfoHelper.get(MessageService.class);
         MessageService messageServerService = new MessageServerServiceImpl();
         ProxyHelper.addServiceInstance(classInfo.getName(), messageServerService);
         Class<ProviderService> serviceClass = ProviderService.class;
         for (String methodSignature : classInfo.getMethods().keySet()) {
-            ProviderService providerService = new DynamicServiceServerGenerator().newInstance(classInfo, classInfo.getMethods().get(methodSignature), serviceClass);
+            ProviderService providerService = null;
+            try {
+                providerService = new DynamicServiceServerGenerator().newInstance(classInfo, classInfo.getMethods().get(methodSignature), serviceClass);
+            } catch (IllegalAccessException e) {
+                e.printStackTrace();
+            } catch (InstantiationException e) {
+                e.printStackTrace();
+            } catch (ClassNotFoundException e) {
+                e.printStackTrace();
+            } catch (NoSuchMethodException e) {
+                e.printStackTrace();
+            } catch (InvocationTargetException e) {
+                e.printStackTrace();
+            }
             ProxyHelper.addProxyInstance(classInfo.getName() + methodSignature, providerService);
         }
-
+    }
+    
+    public void start() {
         LifeCycleFilter lifeCycleFilter = new LifeCycleFilter();
         // Create a FilterChain using FilterChainBuilder
         FilterChainBuilder filterChainBuilder = FilterChainBuilder.stateless();
@@ -81,14 +114,11 @@ public class RpcServer {
         filterChainBuilder.add(new RpcServerFilter());
         filterChainBuilder.add(new ServiceFilter());
 
-        // Create TCP NIO transport
-        final TCPNIOTransport transport =
-                TCPNIOTransportBuilder.newInstance().build();
         transport.setProcessor(filterChainBuilder.build());
 
         try {
             // Bind server socket and start transport
-            transport.bind(PORT);
+            transport.bind(hsot, port);
             transport.start();
 
             System.out.println("Press 'q and ENTER' to exit, or just ENTER to see statistics...");
@@ -96,8 +126,10 @@ public class RpcServer {
             do {
                 printStats(lifeCycleFilter);
             } while (System.in.read() != 'q');
+        } catch (IOException e) {
+            e.printStackTrace();
         } finally {
-            transport.shutdownNow();
+
         }
     }
 
@@ -106,11 +138,26 @@ public class RpcServer {
      *
      * @param lifeCycleFilter the {@link LifeCycleFilter}
      */
-    private static void printStats(LifeCycleFilter lifeCycleFilter) {
+    private void printStats(LifeCycleFilter lifeCycleFilter) {
         System.out.println("The total number of connections ever connected: " +
                 lifeCycleFilter.getTotalConnections());
         System.out.println("The number of active connections: " +
                 lifeCycleFilter.getActiveConnections().size());
+    }
+
+    @Override
+    public void startup() {
+        init();
+        start();
+    }
+
+    @Override
+    public void shutdown() {
+        try {
+            transport.shutdownNow();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
     }
 
 }

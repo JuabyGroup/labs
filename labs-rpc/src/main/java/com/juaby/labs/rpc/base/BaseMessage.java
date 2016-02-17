@@ -40,14 +40,18 @@
 
 package com.juaby.labs.rpc.base;
 
+import java.io.Serializable;
+
 /**
  * Simple representation of GIOP message
  *
  * @author Alexey Stashok
  */
-public class BaseMessage {
+public class BaseMessage implements Serializable {
 
     private Integer id;
+
+    private int totalLength;
 
     public BaseMessage() {
     }
@@ -58,6 +62,14 @@ public class BaseMessage {
 
     public void setId(Integer id) {
         this.id = id;
+    }
+
+    public int getTotalLength() {
+        return totalLength;
+    }
+
+    public void setTotalLength(int totalLength) {
+        this.totalLength = totalLength;
     }
 
 }
