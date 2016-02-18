@@ -3,8 +3,8 @@ package com.juaby.labs.rpc.proxy;
 import com.juaby.labs.rpc.MessageService;
 import com.juaby.labs.rpc.TestBean;
 import com.juaby.labs.rpc.TestResult;
-import com.juaby.labs.rpc.base.ResponseMessageBody;
-import com.juaby.labs.rpc.server.ProviderService;
+import com.juaby.labs.rpc.message.ResponseMessageBody;
+import com.juaby.labs.rpc.server.RpcServiceHandler;
 
 import java.util.List;
 
@@ -16,11 +16,11 @@ import java.util.List;
  * @author <a href=mailto:yanjiabao@juaby.com>yanjiabao</a> <br>
  * @date Created by yanjiabao on 2015/8/26 13:14.
  */
-public class ProviderServiceProxy implements ProviderService {
+public class RpcServerProxyWithoutResultTemplate implements RpcServiceHandler {
 
     private MessageService messageService;
 
-    public ProviderServiceProxy(MessageService messageService) {
+    public RpcServerProxyWithoutResultTemplate(MessageService messageService) {
         this.messageService = messageService;
     }
 
@@ -28,9 +28,9 @@ public class ProviderServiceProxy implements ProviderService {
     public ResponseMessageBody<TestResult> handler(Object[] params) {
         TestBean testBean = (TestBean)params[0];
         List<String> param = (List<String>)params[1];
-        TestResult result = messageService.message(testBean, param);
+        messageService.vmethod(param);
         ResponseMessageBody<TestResult> messageBody = new ResponseMessageBody<TestResult>();
-        messageBody.setBody(result);
+        messageBody.setBody(null);
         messageBody.setReturnClass("ReturnTypeDesc");
         return messageBody;
     }

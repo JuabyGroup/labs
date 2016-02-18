@@ -1,8 +1,5 @@
 package com.juaby.labs.rpc;
 
-import com.juaby.labs.rpc.config.ServiceConfig;
-import com.juaby.labs.rpc.proxy.TypeObject;
-
 import java.io.File;
 import java.io.IOException;
 import java.util.List;

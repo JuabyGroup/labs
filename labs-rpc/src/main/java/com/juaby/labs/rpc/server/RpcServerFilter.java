@@ -40,7 +40,7 @@
 
 package com.juaby.labs.rpc.server;
 
-import com.juaby.labs.rpc.base.RpcMessage;
+import com.juaby.labs.rpc.message.RpcMessage;
 import org.glassfish.grizzly.Buffer;
 import org.glassfish.grizzly.filterchain.BaseFilter;
 import org.glassfish.grizzly.filterchain.FilterChainContext;

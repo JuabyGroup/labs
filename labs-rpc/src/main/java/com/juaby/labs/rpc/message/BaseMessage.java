@@ -38,7 +38,7 @@
  * holder.
  */
 
-package com.juaby.labs.rpc.base;
+package com.juaby.labs.rpc.message;
 
 import java.io.Serializable;
 

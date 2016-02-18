@@ -8,10 +8,10 @@ import java.lang.reflect.InvocationTargetException;
 /**
  * Created by Juaby on 2015/8/25.
  */
-public class DynamicServiceServerGenerator extends ClassLoader implements Opcodes {
+public class RpcServerProxyGenerator extends ClassLoader implements Opcodes {
 
-    public DynamicServiceServerGenerator() {
-        super(DynamicServiceServerGenerator.class.getClassLoader());
+    public RpcServerProxyGenerator() {
+        super(RpcServerProxyGenerator.class.getClassLoader());
     }
 
     public <S> S newInstance(Class[] constructorParamTypes, Object[] constructorParamValues) throws IllegalAccessException,
@@ -43,7 +43,7 @@ public class DynamicServiceServerGenerator extends ClassLoader implements Opcode
         String methodName = methodInfo.getName().substring(0, 1).toUpperCase() + methodInfo.getName().substring(1);
         String clientProxyClassName = classInfo.getName() + "$ServerProxy$" + methodName;
 
-        cw.visit(classInfo.getVersion(), ACC_PUBLIC + ACC_SUPER, clientProxyClassName, null, "java/lang/Object", new String[] { "com/juaby/labs/rpc/server/ProviderService" });
+        cw.visit(classInfo.getVersion(), ACC_PUBLIC + ACC_SUPER, clientProxyClassName, null, "java/lang/Object", new String[] { "com/juaby/labs/rpc/server/RpcServiceHandler" });
 
         {
             fv = cw.visitField(ACC_PRIVATE, "service", "L" + classInfo.getName() + ";", null, null);
@@ -63,7 +63,7 @@ public class DynamicServiceServerGenerator extends ClassLoader implements Opcode
         }
         if (methodInfo.isReturnVoid()) {
             {
-                mv = cw.visitMethod(ACC_PUBLIC, "handler", "([Ljava/lang/Object;)Lcom/juaby/labs/rpc/base/ResponseMessageBody;", "([Ljava/lang/Object;)Lcom/juaby/labs/rpc/base/ResponseMessageBody<Ljava/lang/Object;>;", null);
+                mv = cw.visitMethod(ACC_PUBLIC, "handler", "([Ljava/lang/Object;)Lcom/juaby/labs/rpc/message/ResponseMessageBody;", "([Ljava/lang/Object;)Lcom/juaby/labs/rpc/message/ResponseMessageBody<Ljava/lang/Object;>;", null);
                 mv.visitCode();
 
                 int maxStackSize = 0;
@@ -115,7 +115,7 @@ public class DynamicServiceServerGenerator extends ClassLoader implements Opcode
                     currStackSize = currStackSize - 1;
                 }
 
-                mv.visitTypeInsn(NEW, "com/juaby/labs/rpc/base/ResponseMessageBody");
+                mv.visitTypeInsn(NEW, "com/juaby/labs/rpc/message/ResponseMessageBody");
                 currStackSize = currStackSize + 1;
                 if (maxStackSize < currStackSize) {
                     maxStackSize = currStackSize;
@@ -127,7 +127,7 @@ public class DynamicServiceServerGenerator extends ClassLoader implements Opcode
                     maxStackSize = currStackSize;
                 }
 
-                mv.visitMethodInsn(INVOKESPECIAL, "com/juaby/labs/rpc/base/ResponseMessageBody", "<init>", "()V", false);
+                mv.visitMethodInsn(INVOKESPECIAL, "com/juaby/labs/rpc/message/ResponseMessageBody", "<init>", "()V", false);
                 currStackSize = currStackSize - 1;
 
                 mv.visitVarInsn(ASTORE, localStackPos);
@@ -145,7 +145,7 @@ public class DynamicServiceServerGenerator extends ClassLoader implements Opcode
                     maxStackSize = currStackSize;
                 }
 
-                mv.visitMethodInsn(INVOKEVIRTUAL, "com/juaby/labs/rpc/base/ResponseMessageBody", "setBody", "(Ljava/lang/Object;)V", false);
+                mv.visitMethodInsn(INVOKEVIRTUAL, "com/juaby/labs/rpc/message/ResponseMessageBody", "setBody", "(Ljava/lang/Object;)V", false);
                 currStackSize = currStackSize - 2;
                 mv.visitVarInsn(ALOAD, localStackPos);
                 currStackSize = currStackSize + 1;
@@ -157,7 +157,7 @@ public class DynamicServiceServerGenerator extends ClassLoader implements Opcode
                 if (maxStackSize < currStackSize) {
                     maxStackSize = currStackSize;
                 }
-                mv.visitMethodInsn(INVOKEVIRTUAL, "com/juaby/labs/rpc/base/ResponseMessageBody", "setReturnClass", "(Ljava/lang/String;)V", false);
+                mv.visitMethodInsn(INVOKEVIRTUAL, "com/juaby/labs/rpc/message/ResponseMessageBody", "setReturnClass", "(Ljava/lang/String;)V", false);
                 currStackSize = currStackSize - 2;
                 mv.visitVarInsn(ALOAD, localStackPos);
                 currStackSize = currStackSize + 1;
@@ -170,7 +170,7 @@ public class DynamicServiceServerGenerator extends ClassLoader implements Opcode
             }
         } else {
             {
-                mv = cw.visitMethod(ACC_PUBLIC, "handler", "([Ljava/lang/Object;)Lcom/juaby/labs/rpc/base/ResponseMessageBody;", "([Ljava/lang/Object;)Lcom/juaby/labs/rpc/base/ResponseMessageBody<L" + methodInfo.getReturnTypeDesc() + ";>;", null);
+                mv = cw.visitMethod(ACC_PUBLIC, "handler", "([Ljava/lang/Object;)Lcom/juaby/labs/rpc/message/ResponseMessageBody;", "([Ljava/lang/Object;)Lcom/juaby/labs/rpc/message/ResponseMessageBody<L" + methodInfo.getReturnTypeDesc() + ";>;", null);
                 mv.visitCode();
                 int maxStackSize = 0;
                 int currStackSize = 0;
@@ -226,7 +226,7 @@ public class DynamicServiceServerGenerator extends ClassLoader implements Opcode
                 currStackSize = currStackSize - 1;
                 localStackPos = localStackPos + 1;
 
-                mv.visitTypeInsn(NEW, "com/juaby/labs/rpc/base/ResponseMessageBody");
+                mv.visitTypeInsn(NEW, "com/juaby/labs/rpc/message/ResponseMessageBody");
                 currStackSize = currStackSize + 1;
                 if (maxStackSize < currStackSize) {
                     maxStackSize = currStackSize;
@@ -238,7 +238,7 @@ public class DynamicServiceServerGenerator extends ClassLoader implements Opcode
                     maxStackSize = currStackSize;
                 }
 
-                mv.visitMethodInsn(INVOKESPECIAL, "com/juaby/labs/rpc/base/ResponseMessageBody", "<init>", "()V", false);
+                mv.visitMethodInsn(INVOKESPECIAL, "com/juaby/labs/rpc/message/ResponseMessageBody", "<init>", "()V", false);
                 currStackSize = currStackSize - 1;
 
                 mv.visitVarInsn(ASTORE, localStackPos);
@@ -256,7 +256,7 @@ public class DynamicServiceServerGenerator extends ClassLoader implements Opcode
                     maxStackSize = currStackSize;
                 }
 
-                mv.visitMethodInsn(INVOKEVIRTUAL, "com/juaby/labs/rpc/base/ResponseMessageBody", "setBody", "(Ljava/lang/Object;)V", false);
+                mv.visitMethodInsn(INVOKEVIRTUAL, "com/juaby/labs/rpc/message/ResponseMessageBody", "setBody", "(Ljava/lang/Object;)V", false);
                 currStackSize = currStackSize - 2;
 
                 mv.visitVarInsn(ALOAD, localStackPos);
@@ -271,7 +271,7 @@ public class DynamicServiceServerGenerator extends ClassLoader implements Opcode
                     maxStackSize = currStackSize;
                 }
 
-                mv.visitMethodInsn(INVOKEVIRTUAL, "com/juaby/labs/rpc/base/ResponseMessageBody", "setReturnClass", "(Ljava/lang/String;)V", false);
+                mv.visitMethodInsn(INVOKEVIRTUAL, "com/juaby/labs/rpc/message/ResponseMessageBody", "setReturnClass", "(Ljava/lang/String;)V", false);
                 currStackSize = currStackSize - 2;
 
                 mv.visitVarInsn(ALOAD, localStackPos);

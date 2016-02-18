@@ -1,6 +1,6 @@
 package com.juaby.labs.rpc.proxy;
 
-import com.juaby.labs.rpc.server.ProviderService;
+import com.juaby.labs.rpc.server.RpcServiceHandler;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -11,7 +11,7 @@ import java.util.concurrent.ConcurrentHashMap;
  */
 public class ProxyHelper {
 
-    private static final Map<String, ProviderService> providerServiceProxyCache = new ConcurrentHashMap<String, ProviderService>();
+    private static final Map<String, RpcServiceHandler> providerServiceProxyCache = new ConcurrentHashMap<String, RpcServiceHandler>();
 
     private static final Map<String, Object> providerServiceCache = new ConcurrentHashMap<String, Object>();
 
@@ -53,7 +53,7 @@ public class ProxyHelper {
         javaTypes.put("void", "V");
     }
 
-    public static Map<String, ProviderService> addProxyInstance(String key, ProviderService proxy) {
+    public static Map<String, RpcServiceHandler> addProxyInstance(String key, RpcServiceHandler proxy) {
         providerServiceProxyCache.put(key, proxy);
         return providerServiceProxyCache;
     }
@@ -63,7 +63,7 @@ public class ProxyHelper {
         return providerServiceCache;
     }
 
-    public static ProviderService getProxyInstance(String key) {
+    public static RpcServiceHandler getProxyInstance(String key) {
         return providerServiceProxyCache.get(key);
     }
 

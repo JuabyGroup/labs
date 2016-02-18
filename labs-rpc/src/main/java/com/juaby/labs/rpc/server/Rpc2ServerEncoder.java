@@ -15,7 +15,7 @@
  */
 package com.juaby.labs.rpc.server;
 
-import com.juaby.labs.rpc.base.RpcMessage;
+import com.juaby.labs.rpc.message.RpcMessage;
 import io.netty.buffer.ByteBuf;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.handler.codec.MessageToByteEncoder;

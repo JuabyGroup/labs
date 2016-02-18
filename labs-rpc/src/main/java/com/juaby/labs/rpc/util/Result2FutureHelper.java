@@ -1,6 +1,6 @@
 package com.juaby.labs.rpc.util;
 
-import com.juaby.labs.rpc.base.RpcMessage;
+import com.juaby.labs.rpc.message.RpcMessage;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.ChannelInboundHandlerAdapter;
 

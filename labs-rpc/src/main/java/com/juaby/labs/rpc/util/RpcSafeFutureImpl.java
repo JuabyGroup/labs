@@ -278,7 +278,7 @@ public class RpcSafeFutureImpl<R> implements RpcFutureImpl<R> {
         }
 
         /**
-         * Implements AQS base acquire to succeed if ran or cancelled
+         * Implements AQS message acquire to succeed if ran or cancelled
          */
         @Override
         protected int tryAcquireShared(int ignore) {
@@ -286,7 +286,7 @@ public class RpcSafeFutureImpl<R> implements RpcFutureImpl<R> {
         }
 
         /**
-         * Implements AQS base release to always signal after setting
+         * Implements AQS message release to always signal after setting
          * final done status by nulling runner thread.
          */
         @Override

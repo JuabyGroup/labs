@@ -1,4 +1,4 @@
-package com.juaby.labs.rpc.proxy;
+package com.juaby.labs.rpc;
 
 /**
  * Title: <br>

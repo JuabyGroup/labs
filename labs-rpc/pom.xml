@@ -38,7 +38,7 @@
         </dependency>
         <!--
         HTTP framework
-        grizzly-http contains the base logic for dealing with HTTP messages on both the server and client sides.
+        grizzly-http contains the message logic for dealing with HTTP messages on both the server and client sides.
         -->
         <dependency>
             <groupId>org.glassfish.grizzly</groupId>

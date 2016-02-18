@@ -2,7 +2,7 @@ package com.juaby.labs.rpc;
 
 import com.juaby.labs.rpc.config.ServiceConfig;
 import com.juaby.labs.rpc.config.ServiceConfigHelper;
-import com.juaby.labs.rpc.proxy.DynamicServiceClientGenerator;
+import com.juaby.labs.rpc.proxy.RpcClientProxyGenerator;
 import com.juaby.labs.rpc.proxy.ServiceClassInfo;
 import com.juaby.labs.rpc.util.Endpoint;
 import com.juaby.labs.rpc.util.EndpointHelper;
@@ -21,7 +21,7 @@ public class RpcTest {
         ServiceConfig config = new ServiceConfig(classInfo.getName(), 1);
         ServiceConfigHelper.addConfig(config);
         Class<MessageService> s = MessageService.class;
-        MessageService messageService = new DynamicServiceClientGenerator().newInstance(classInfo, s);
+        MessageService messageService = new RpcClientProxyGenerator().newInstance(classInfo, s);
         Endpoint endpoint = new Endpoint("localhost", 9098);
         EndpointHelper.add(classInfo.getName(), endpoint);
         TestBean testBean = new TestBean();
@@ -31,7 +31,7 @@ public class RpcTest {
         TestResult result = messageService.message(testBean, params);
         System.out.println(result.getId());
         messageService.vmethod("hello");
-        //classInfo = ServiceClassInfoHelper.get(ProviderServiceProxy.class);
+        //classInfo = ServiceClassInfoHelper.get(RpcServerProxy.class);
         boolean flag = true;
     }
 

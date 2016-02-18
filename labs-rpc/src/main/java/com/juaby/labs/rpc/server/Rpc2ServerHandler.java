@@ -15,9 +15,9 @@
  */
 package com.juaby.labs.rpc.server;
 
-import com.juaby.labs.rpc.base.RequestMessageBody;
-import com.juaby.labs.rpc.base.ResponseMessageBody;
-import com.juaby.labs.rpc.base.RpcMessage;
+import com.juaby.labs.rpc.message.RequestMessageBody;
+import com.juaby.labs.rpc.message.ResponseMessageBody;
+import com.juaby.labs.rpc.message.RpcMessage;
 import com.juaby.labs.rpc.proxy.ProxyHelper;
 import com.juaby.labs.rpc.util.SerializeTool;
 import io.netty.channel.ChannelHandlerContext;
@@ -36,8 +36,8 @@ public class Rpc2ServerHandler extends ChannelInboundHandlerAdapter {
         final RpcMessage message = (RpcMessage) msg;
         RequestMessageBody requestMessageBody = new RequestMessageBody();
         SerializeTool.deserialize(message.getBody(), requestMessageBody);
-        ProviderService providerService = ProxyHelper.getProxyInstance(requestMessageBody.getService() + requestMessageBody.getMethod());
-        ResponseMessageBody messageBody = providerService.handler(requestMessageBody.getParams());
+        RpcServiceHandler rpcServiceHandler = ProxyHelper.getProxyInstance(requestMessageBody.getService() + requestMessageBody.getMethod());
+        ResponseMessageBody messageBody = rpcServiceHandler.handler(requestMessageBody.getParams());
         byte[] body = SerializeTool.serialize(messageBody);
         message.setTotalLength(HEADER_SIZE + body.length);
         message.setBodyLength(body.length);

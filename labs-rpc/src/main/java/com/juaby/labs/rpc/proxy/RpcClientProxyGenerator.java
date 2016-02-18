@@ -8,10 +8,10 @@ import java.lang.reflect.InvocationTargetException;
 /**
  * Created by Juaby on 2015/8/25.
  */
-public class DynamicServiceClientGenerator extends ClassLoader implements Opcodes {
+public class RpcClientProxyGenerator extends ClassLoader implements Opcodes {
 
-    public DynamicServiceClientGenerator() {
-        super(DynamicServiceClientGenerator.class.getClassLoader());
+    public RpcClientProxyGenerator() {
+        super(RpcClientProxyGenerator.class.getClassLoader());
     }
 
     public <S> S newInstance(Class[] constructorParamTypes, Object[] constructorParamValues) throws IllegalAccessException,

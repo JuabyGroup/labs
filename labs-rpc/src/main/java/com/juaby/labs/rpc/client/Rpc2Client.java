@@ -40,9 +40,9 @@
 
 package com.juaby.labs.rpc.client;
 
-import com.juaby.labs.rpc.base.RequestMessageBody;
-import com.juaby.labs.rpc.base.ResponseMessageBody;
-import com.juaby.labs.rpc.base.RpcMessage;
+import com.juaby.labs.rpc.message.RequestMessageBody;
+import com.juaby.labs.rpc.message.ResponseMessageBody;
+import com.juaby.labs.rpc.message.RpcMessage;
 import com.juaby.labs.rpc.util.*;
 import io.netty.channel.Channel;
 

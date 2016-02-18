@@ -1,6 +1,6 @@
 package com.juaby.labs.rpc.proxy;
 
-import com.juaby.labs.rpc.base.RequestMessageBody;
+import com.juaby.labs.rpc.message.RequestMessageBody;
 import com.juaby.labs.rpc.client.Rpc2Client;
 import com.juaby.labs.rpc.client.RpcClient;
 import com.juaby.labs.rpc.config.ServiceConfig;

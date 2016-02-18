@@ -18,7 +18,7 @@ package com.juaby.labs.rpc.server;
 import com.juaby.labs.rpc.MessageServerServiceImpl;
 import com.juaby.labs.rpc.MessageService;
 import com.juaby.labs.rpc.config.ServiceConfig;
-import com.juaby.labs.rpc.proxy.DynamicServiceServerGenerator;
+import com.juaby.labs.rpc.proxy.RpcServerProxyGenerator;
 import com.juaby.labs.rpc.proxy.ProxyHelper;
 import com.juaby.labs.rpc.proxy.ServiceClassInfo;
 import com.juaby.labs.rpc.util.NamedThreadFactory;
@@ -68,11 +68,11 @@ public final class Rpc2Server implements Server {
         ServiceClassInfo classInfo = ServiceClassInfoHelper.get(MessageService.class);
         MessageService messageServerService = new MessageServerServiceImpl();
         ProxyHelper.addServiceInstance(classInfo.getName(), messageServerService);
-        Class<ProviderService> serviceClass = ProviderService.class;
+        Class<RpcServiceHandler> serviceClass = RpcServiceHandler.class;
         for (String methodSignature : classInfo.getMethods().keySet()) {
-            ProviderService providerService = null;
+            RpcServiceHandler rpcServiceHandler = null;
             try {
-                providerService = new DynamicServiceServerGenerator().newInstance(classInfo, classInfo.getMethods().get(methodSignature), serviceClass);
+                rpcServiceHandler = new RpcServerProxyGenerator().newInstance(classInfo, classInfo.getMethods().get(methodSignature), serviceClass);
             } catch (IllegalAccessException e) {
                 e.printStackTrace();
             } catch (InstantiationException e) {
@@ -84,7 +84,7 @@ public final class Rpc2Server implements Server {
             } catch (InvocationTargetException e) {
                 e.printStackTrace();
             }
-            ProxyHelper.addProxyInstance(classInfo.getName() + methodSignature, providerService);
+            ProxyHelper.addProxyInstance(classInfo.getName() + methodSignature, rpcServiceHandler);
         }
     }
 

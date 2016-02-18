@@ -3,6 +3,7 @@ package com.juaby.labs.rpc.proxy;
 import com.juaby.labs.rpc.MessageService;
 import com.juaby.labs.rpc.TestBean;
 import com.juaby.labs.rpc.TestResult;
+import com.juaby.labs.rpc.TypeObject;
 
 import java.io.File;
 import java.io.IOException;

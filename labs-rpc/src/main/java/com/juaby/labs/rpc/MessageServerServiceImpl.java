@@ -1,7 +1,5 @@
 package com.juaby.labs.rpc;
 
-import com.juaby.labs.rpc.proxy.TypeObject;
-
 import java.io.File;
 import java.util.Date;
 import java.util.List;
