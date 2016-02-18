@@ -14,12 +14,33 @@ public class ResponseMessageBody<T> {
 
     private T body;
 
+    private Exception exception;
+
     public ResponseMessageBody() {
+    }
+
+    public ResponseMessageBody(T body) {
+        this.body = body;
+    }
+
+    public ResponseMessageBody(Exception exception) {
+        this.exception = exception;
     }
 
     public ResponseMessageBody(String returnClass, T body) {
         this.returnClass = returnClass;
         this.body = body;
+    }
+
+    public ResponseMessageBody(T body, Exception exception) {
+        this.body = body;
+        this.exception = exception;
+    }
+
+    public ResponseMessageBody(String returnClass, T body, Exception exception) {
+        this.returnClass = returnClass;
+        this.body = body;
+        this.exception = exception;
     }
 
     public String getReturnClass() {

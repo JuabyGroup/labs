@@ -17,11 +17,11 @@ import java.util.List;
 public class RpcTest {
 
     public static void main(String[] args) throws Exception {
-        ServiceClassInfo classInfo = ServiceClassInfoHelper.get(MessageService.class);
+        Class<MessageService> serviceClass = MessageService.class;
+        ServiceClassInfo classInfo = ServiceClassInfoHelper.get(serviceClass);
         ServiceConfig config = new ServiceConfig(classInfo.getName(), 1);
         ServiceConfigHelper.addConfig(config);
-        Class<MessageService> s = MessageService.class;
-        MessageService messageService = new RpcClientProxyGenerator().newInstance(classInfo, s);
+        MessageService messageService = new RpcClientProxyGenerator().newInstance(classInfo, serviceClass);
         Endpoint endpoint = new Endpoint("localhost", 9098);
         EndpointHelper.add(classInfo.getName(), endpoint);
         TestBean testBean = new TestBean();

@@ -15,6 +15,7 @@
  */
 package com.juaby.labs.rpc.server;
 
+import com.juaby.labs.rpc.exception.RpcException;
 import com.juaby.labs.rpc.message.RequestMessageBody;
 import com.juaby.labs.rpc.message.ResponseMessageBody;
 import com.juaby.labs.rpc.message.RpcMessage;
@@ -37,7 +38,17 @@ public class Rpc2ServerHandler extends ChannelInboundHandlerAdapter {
         RequestMessageBody requestMessageBody = new RequestMessageBody();
         SerializeTool.deserialize(message.getBody(), requestMessageBody);
         RpcServiceHandler rpcServiceHandler = ProxyHelper.getProxyInstance(requestMessageBody.getService() + requestMessageBody.getMethod());
-        ResponseMessageBody messageBody = rpcServiceHandler.handler(requestMessageBody.getParams());
+
+        ResponseMessageBody messageBody;
+        try {
+            messageBody = rpcServiceHandler.handler(requestMessageBody.getParams());
+            if (messageBody == null) {
+                messageBody = new ResponseMessageBody();
+            }
+        } catch (Exception e) {
+            messageBody = new ResponseMessageBody(new RpcException(e));
+        }
+
         byte[] body = SerializeTool.serialize(messageBody);
         message.setTotalLength(HEADER_SIZE + body.length);
         message.setBodyLength(body.length);
