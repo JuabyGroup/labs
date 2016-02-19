@@ -15,11 +15,11 @@ public class ServiceClassInfoHelper {
 
     private static final Map<String, ServiceClassInfo> serviceClassInfoCache = new ConcurrentHashMap<String, ServiceClassInfo>();
 
-    public static ServiceClassInfo get(Class service) {
+    public static ServiceClassInfo get(String service) {
         if (service == null) {
             return null;
         }
-        return parser(service);
+        return serviceClassInfoCache.get(service);
     }
 
     public static ServiceClassInfo parser(Class service) {

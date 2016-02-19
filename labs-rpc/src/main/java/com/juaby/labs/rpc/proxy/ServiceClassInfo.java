@@ -216,6 +216,10 @@ public class ServiceClassInfo {
 
         private String [] paramsTypes;
 
+        private boolean isCallback = false;
+
+        private int callbackIndex;
+
         public MethodInfo() {}
 
         public int getId() {
@@ -314,6 +318,22 @@ public class ServiceClassInfo {
             this.paramsTypes = paramsTypes;
         }
 
+        public int getCallbackIndex() {
+            return callbackIndex;
+        }
+
+        public void setCallbackIndex(int callbackIndex) {
+            this.callbackIndex = callbackIndex;
+        }
+
+        public boolean isCallback() {
+            return isCallback;
+        }
+
+        public void setCallback(boolean callback) {
+            isCallback = callback;
+        }
+
         @Override
         public String toString() {
             return "MethodInfo{" +
@@ -325,6 +345,11 @@ public class ServiceClassInfo {
                     ", exceptions=" + Arrays.toString(exceptions) +
                     ", maxStack=" + maxStack +
                     ", maxLocals=" + maxLocals +
+                    ", paramsLength=" + paramsLength +
+                    ", isReturnVoid=" + isReturnVoid +
+                    ", returnTypeDesc='" + returnTypeDesc + '\'' +
+                    ", paramsTypes=" + Arrays.toString(paramsTypes) +
+                    ", isCallback=" + isCallback +
                     '}';
         }
 

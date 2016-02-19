@@ -2,6 +2,7 @@ package com.juaby.labs.rpc.util;
 
 import com.juaby.labs.rpc.client.Rpc2ClientDecoder;
 import com.juaby.labs.rpc.client.Rpc2ClientEncoder;
+import com.juaby.labs.rpc.config.ServiceConfig;
 import io.netty.bootstrap.Bootstrap;
 import io.netty.channel.*;
 import io.netty.channel.nio.NioEventLoopGroup;
@@ -30,7 +31,6 @@ public class ChannelFactory {
     static final String HOST = System.getProperty("host", "127.0.0.1");
     static final int PORT = Integer.parseInt(System.getProperty("port", "8007"));
     static final int SIZE = Integer.parseInt(System.getProperty("size", "256"));
-    static final int maxObjectSize = 1 * 1024 * 1024;
 
     private static final Map<String, Channel> channelCache = new ConcurrentHashMap<String, Channel>();
 
@@ -85,7 +85,7 @@ public class ChannelFactory {
                                     //write
                                     new Rpc2ClientEncoder(),
                                     //read
-                                    new Rpc2ClientDecoder(maxObjectSize),
+                                    new Rpc2ClientDecoder(ServiceConfig.MAX_OBJECT_SIZE),
                                     new Result2FutureHelper.Rpc2ClientHandler());
                         }
                     });

@@ -80,7 +80,7 @@ public class RpcServer implements Server {
 
     @Override
     public void init() {
-        ServiceClassInfo classInfo = ServiceClassInfoHelper.get(MessageService.class);
+        ServiceClassInfo classInfo = ServiceClassInfoHelper.parser(MessageService.class);
         MessageService messageServerService = new MessageServerServiceImpl();
         ProxyHelper.addServiceInstance(classInfo.getName(), messageServerService);
         Class<RpcServiceHandler> serviceClass = RpcServiceHandler.class;

@@ -4,6 +4,7 @@ import com.juaby.labs.rpc.MessageService;
 import com.juaby.labs.rpc.TestBean;
 import com.juaby.labs.rpc.TestResult;
 import com.juaby.labs.rpc.TypeObject;
+import com.juaby.labs.rpc.util.RpcCallback;
 
 import java.io.File;
 import java.io.IOException;
@@ -27,6 +28,11 @@ public class RpcClientProxyTemplate<O, F> extends RpcClientProxy implements Mess
     @Override
     public TestResult message(TestBean testBean, List<String> params) {
         return sendMessage(getConfig().getName(), "message", new Object[]{testBean, params});
+    }
+
+    @Override
+    public TestResult message(TestBean testBean, List<String> params, RpcCallback callback) {
+        return sendMessage(getConfig().getName(), "message", new Object[]{testBean, params, callback});
     }
 
     @Override

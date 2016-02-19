@@ -50,8 +50,6 @@ public final class Rpc2Server implements Server {
 
     private ServiceConfig config;
 
-    private int maxObjectSize = 1 * 1024 * 1024;
-
     private EventLoopGroup bossGroup;
 
     private EventLoopGroup workerGroup;
@@ -65,7 +63,7 @@ public final class Rpc2Server implements Server {
 
     @Override
     public void init() {
-        ServiceClassInfo classInfo = ServiceClassInfoHelper.get(MessageService.class);
+        ServiceClassInfo classInfo = ServiceClassInfoHelper.parser(MessageService.class);
         MessageService messageServerService = new MessageServerServiceImpl();
         ProxyHelper.addServiceInstance(classInfo.getName(), messageServerService);
         Class<RpcServiceHandler> serviceClass = RpcServiceHandler.class;
@@ -120,7 +118,7 @@ public final class Rpc2Server implements Server {
                             //output
                             new Rpc2ServerEncoder(),
                             //input
-                            new Rpc2ServerDecoder(maxObjectSize),
+                            new Rpc2ServerDecoder(ServiceConfig.MAX_OBJECT_SIZE),
                             new Rpc2ServerHandler());
                 }
              });

@@ -41,7 +41,30 @@ public class RpcClientProxyGenerator extends ClassLoader implements Opcodes {
         AnnotationVisitor av0;
 
         String clientProxyClassName = classInfo.getName() + "$ClientProxy";
-        cw.visit(classInfo.getVersion(), ACC_PUBLIC + ACC_SUPER, clientProxyClassName, classInfo.getSignature(), "com/juaby/labs/rpc/proxy/RpcClientProxy", new String[] {classInfo.getName()});
+        String classSignature = "<O:Ljava/lang/Object;F:Ljava/lang/Object;>Lcom/juaby/labs/rpc/proxy/RpcClientProxy;Lcom/juaby/labs/rpc/MessageService<TO;TF;>;";
+
+        if (classInfo.getSignature().startsWith("<")) {
+            String beforeSignature = classInfo.getSignature().substring(0, classInfo.getSignature().indexOf(">") + 1);
+            String tmpSignature = beforeSignature.substring(1, beforeSignature.indexOf(">"));
+            String middleSignature = "Lcom/juaby/labs/rpc/proxy/RpcClientProxy;L" + classInfo.getName();
+            String afterSignature = "";
+            if (tmpSignature != null) {
+                String[] signatureArr = tmpSignature.split(";");
+                if (signatureArr != null && signatureArr.length > 0) {
+                    afterSignature = afterSignature + "<";
+                    for (String signature : signatureArr) {
+                        String[] sarr = signature.split(":");
+                        if (sarr != null && sarr.length > 0) {
+                            afterSignature = afterSignature + "T:" + sarr[0] + ";";
+                        }
+                    }
+                    afterSignature = afterSignature + ">";
+                }
+            }
+            classSignature = beforeSignature + middleSignature + afterSignature;
+        }
+
+        cw.visit(classInfo.getVersion(), ACC_PUBLIC + ACC_SUPER, clientProxyClassName, classSignature, "com/juaby/labs/rpc/proxy/RpcClientProxy", new String[] {classInfo.getName()});
 
         {
             mv = cw.visitMethod(ACC_PRIVATE, "<init>", "(Ljava/lang/String;)V", null, null);

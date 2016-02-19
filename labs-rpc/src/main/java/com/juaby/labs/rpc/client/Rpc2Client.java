@@ -40,6 +40,7 @@
 
 package com.juaby.labs.rpc.client;
 
+import com.juaby.labs.rpc.config.ServiceConfig;
 import com.juaby.labs.rpc.message.RequestMessageBody;
 import com.juaby.labs.rpc.message.ResponseMessageBody;
 import com.juaby.labs.rpc.message.RpcMessage;
@@ -55,8 +56,6 @@ import java.util.concurrent.TimeoutException;
  * @author Alexey Stashok
  */
 public class Rpc2Client {
-
-    private static final int HEADER_SIZE = 12 + 4 + 4;
 
     public static <R> R sendMessage(RequestMessageBody requestMessageBody) {
         Channel channel = null;
@@ -74,7 +73,7 @@ public class Rpc2Client {
                     (byte) 0x0F, (byte) 0, testMessage);
 
             sentMessage.setId(messageId);
-            sentMessage.setTotalLength(HEADER_SIZE + testMessage.length);
+            sentMessage.setTotalLength(ServiceConfig.HEADER_SIZE + testMessage.length);
 
             Result2FutureHelper.map().put(messageId, resultFuture);
 

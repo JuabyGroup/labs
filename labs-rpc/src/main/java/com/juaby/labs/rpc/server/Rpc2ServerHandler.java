@@ -15,6 +15,7 @@
  */
 package com.juaby.labs.rpc.server;
 
+import com.juaby.labs.rpc.config.ServiceConfig;
 import com.juaby.labs.rpc.exception.RpcException;
 import com.juaby.labs.rpc.message.RequestMessageBody;
 import com.juaby.labs.rpc.message.ResponseMessageBody;
@@ -29,8 +30,6 @@ import io.netty.channel.ChannelInboundHandlerAdapter;
  * constructor was called.
  */
 public class Rpc2ServerHandler extends ChannelInboundHandlerAdapter {
-
-    private static final int HEADER_SIZE = 12 + 4 + 4;
 
     @Override
     public void channelRead(ChannelHandlerContext ctx, Object msg) {
@@ -50,7 +49,7 @@ public class Rpc2ServerHandler extends ChannelInboundHandlerAdapter {
         }
 
         byte[] body = SerializeTool.serialize(messageBody);
-        message.setTotalLength(HEADER_SIZE + body.length);
+        message.setTotalLength(ServiceConfig.HEADER_SIZE + body.length);
         message.setBodyLength(body.length);
         message.setBody(body);
         ctx.writeAndFlush(message, ctx.voidPromise());

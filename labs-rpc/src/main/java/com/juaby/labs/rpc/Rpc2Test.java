@@ -18,7 +18,7 @@ public class Rpc2Test {
 
     public static void main(String[] args) throws Exception {
         Class<MessageService> serviceClass = MessageService.class;
-        ServiceClassInfo classInfo = ServiceClassInfoHelper.get(MessageService.class);
+        ServiceClassInfo classInfo = ServiceClassInfoHelper.parser(MessageService.class);
         ServiceConfig config = new ServiceConfig(classInfo.getName(), 2); //TODO
         ServiceConfigHelper.addConfig(config);
         MessageService messageService = new RpcClientProxyGenerator().newInstance(classInfo, serviceClass);

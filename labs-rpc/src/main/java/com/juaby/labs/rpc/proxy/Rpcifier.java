@@ -32,6 +32,7 @@ package com.juaby.labs.rpc.proxy;
 import java.util.HashMap;
 import java.util.Map;
 
+import com.juaby.labs.rpc.util.RpcCallback;
 import org.objectweb.asm.*;
 import org.objectweb.asm.util.ASMifiable;
 
@@ -220,6 +221,14 @@ public class Rpcifier extends RpcProxyParser {
                 String [] paramsTypes = paramsType.split(";");
                 methodInfo.setParamsTypes(paramsTypes);
                 paramsLength = paramsTypes.length;
+
+                for (int p = 0; p < paramsTypes.length; p++) {
+                    if (RpcCallback.class.getName().equals(paramsTypes[p].substring(1).replaceAll("/", "."))) {
+                        methodInfo.setCallback(true);
+                        methodInfo.setCallbackIndex(p);
+                        break;
+                    }
+                }
             }
             methodInfo.setReturnVoid(isReturnVoid);
             methodInfo.setParamsLength(paramsLength);

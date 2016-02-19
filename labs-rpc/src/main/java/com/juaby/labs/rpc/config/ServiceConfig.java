@@ -1,5 +1,7 @@
 package com.juaby.labs.rpc.config;
 
+import java.lang.management.ManagementFactory;
+
 /**
  * Title: <br>
  * Description: <br>
@@ -13,6 +15,12 @@ public class ServiceConfig {
     private volatile String name;
 
     private volatile int serverType;
+
+    public final static String PID = ManagementFactory.getRuntimeMXBean().getName().split("@")[0];
+
+    public static final int HEADER_SIZE = 12 + 4 + 4;
+
+    public static final int MAX_OBJECT_SIZE = 1 * 1024 * 1024;
 
     public ServiceConfig() {
     }

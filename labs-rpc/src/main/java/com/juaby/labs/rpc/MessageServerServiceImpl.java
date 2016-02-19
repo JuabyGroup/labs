@@ -1,5 +1,7 @@
 package com.juaby.labs.rpc;
 
+import com.juaby.labs.rpc.util.RpcCallback;
+
 import java.io.File;
 import java.util.Date;
 import java.util.List;
@@ -17,6 +19,16 @@ public class MessageServerServiceImpl<O, F> implements MessageService<O, F> {
 
     @Override
     public TestResult message(TestBean testBean, List<String> param) {
+        TestResult result = new TestResult();
+        result.setId("2000");
+        result.setName("RESULT_NAME");
+        result.setContent("COME ON BABY");
+        result.setTime(new Date());
+        return result;
+    }
+
+    @Override
+    public TestResult message(TestBean testBean, List<String> param, RpcCallback callback) {
         TestResult result = new TestResult();
         result.setId("2000");
         result.setName("RESULT_NAME");

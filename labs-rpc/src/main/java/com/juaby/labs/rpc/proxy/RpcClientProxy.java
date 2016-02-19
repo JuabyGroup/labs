@@ -5,6 +5,9 @@ import com.juaby.labs.rpc.client.Rpc2Client;
 import com.juaby.labs.rpc.client.RpcClient;
 import com.juaby.labs.rpc.config.ServiceConfig;
 import com.juaby.labs.rpc.config.ServiceConfigHelper;
+import com.juaby.labs.rpc.util.RpcCallback;
+import com.juaby.labs.rpc.util.RpcCallbackHandler;
+import com.juaby.labs.rpc.util.ServiceClassInfoHelper;
 
 /**
  * Title: <br>
@@ -22,6 +25,14 @@ public class RpcClientProxy {
         RequestMessageBody requestMessageBody = new RequestMessageBody(service);
         requestMessageBody.setMethod(method);
         requestMessageBody.setParams(params);
+
+        ServiceClassInfo.MethodInfo methodInfo = ServiceClassInfoHelper.get(service.replaceAll("/", ".")).getMethods().get(method);
+        if(methodInfo.isCallback()) {
+            //TODO
+            RpcCallbackHandler.addCallback(service + method, (RpcCallback) params[methodInfo.getCallbackIndex()]);
+            params[methodInfo.getCallbackIndex()] = null;
+        }
+
         if (config.getServerType() == 1) {
             return RpcClient.sendMessage(requestMessageBody);
         } else if (config.getServerType() == 2) {

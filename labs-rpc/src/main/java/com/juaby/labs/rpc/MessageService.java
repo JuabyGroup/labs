@@ -1,5 +1,7 @@
 package com.juaby.labs.rpc;
 
+import com.juaby.labs.rpc.util.RpcCallback;
+
 import java.io.File;
 import java.io.IOException;
 import java.util.List;
@@ -19,6 +21,7 @@ public interface MessageService<O, F> extends InterfaceObject {
     public static final int B = TypeObject.B.value();
 
     public TestResult message(TestBean testBean, List<String> param);
+    public TestResult message(TestBean testBean, List<String> param, RpcCallback callback);
     public <T> TestResult message2(TestBean testBean, List<String> param);
     public <T> TestResult message2(TestBean testBean, List<String> param, T t);
     public <T> O message2(List<F> param, O t);

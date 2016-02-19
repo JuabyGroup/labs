@@ -40,6 +40,7 @@
 
 package com.juaby.labs.rpc.server;
 
+import com.juaby.labs.rpc.config.ServiceConfig;
 import com.juaby.labs.rpc.message.RpcMessage;
 import org.glassfish.grizzly.Buffer;
 import org.glassfish.grizzly.filterchain.BaseFilter;
@@ -57,8 +58,6 @@ import java.util.logging.Filter;
  * @author Alexey Stashok
  */
 public final class RpcServerFilter extends BaseFilter {
-
-    private static final int HEADER_SIZE = 12 + 4 + 4;
 
     /**
      * Method is called, when new data was read from the Connection and ready
@@ -78,16 +77,16 @@ public final class RpcServerFilter extends BaseFilter {
         final int sourceBufferLength = sourceBuffer.remaining();
 
         // If source buffer doesn't contain header
-        if (sourceBufferLength < HEADER_SIZE) {
+        if (sourceBufferLength < ServiceConfig.HEADER_SIZE) {
             // stop the filterchain processing and store sourceBuffer to be
             // used next time
             return ctx.getStopAction(sourceBuffer);
         }
 
         // Get the body length
-        final int bodyLength = sourceBuffer.getInt(HEADER_SIZE - 4);
+        final int bodyLength = sourceBuffer.getInt(ServiceConfig.HEADER_SIZE - 4);
         // The complete message length
-        final int completeMessageLength = HEADER_SIZE + bodyLength;
+        final int completeMessageLength = ServiceConfig.HEADER_SIZE + bodyLength;
         
         // If the source message doesn't contain entire body
         if (sourceBufferLength < completeMessageLength) {
@@ -159,7 +158,7 @@ public final class RpcServerFilter extends BaseFilter {
         // Get the source GIOP message to be written
         final RpcMessage giopMessage = ctx.getMessage();
 
-        final int size = HEADER_SIZE + giopMessage.getBodyLength();
+        final int size = ServiceConfig.HEADER_SIZE + giopMessage.getBodyLength();
 
         // Retrieve the memory manager
         final MemoryManager memoryManager =

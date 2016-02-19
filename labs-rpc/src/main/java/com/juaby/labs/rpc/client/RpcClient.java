@@ -40,7 +40,9 @@
 
 package com.juaby.labs.rpc.client;
 
+import com.juaby.labs.rpc.config.ServiceConfig;
 import com.juaby.labs.rpc.message.RpcMessage;
+import com.juaby.labs.rpc.proxy.ServiceClassInfo;
 import com.juaby.labs.rpc.util.SerializeTool;
 import com.juaby.labs.rpc.message.RequestMessageBody;
 import com.juaby.labs.rpc.message.ResponseMessageBody;
@@ -56,8 +58,6 @@ import java.util.concurrent.TimeoutException;
  * @author Alexey Stashok
  */
 public class RpcClient {
-
-    private static final int HEADER_SIZE = 12 + 4 + 4;
 
     public static <R> R sendMessage(RequestMessageBody requestMessageBody) {
         Connection connection = null;
@@ -75,15 +75,21 @@ public class RpcClient {
                     (byte) 0x0F, (byte) 0, testMessage);
 
             sentMessage.setId(messageId);
-            sentMessage.setTotalLength(HEADER_SIZE + testMessage.length);
+            sentMessage.setTotalLength(ServiceConfig.HEADER_SIZE + testMessage.length);
 
             ResultFutureHelper.map().put(messageId, resultFuture);
 
             connection.write(sentMessage);
 
             final RpcMessage rcvMessage = ResultFutureHelper.result(messageId);
-
             SerializeTool.deserialize(rcvMessage.getBody(), messageBody);
+
+            ServiceClassInfo.MethodInfo methodInfo = ServiceClassInfoHelper.get(requestMessageBody.getService().replaceAll("/", ".")).getMethods().get(requestMessageBody.getMethod());
+            if(methodInfo.isCallback()) {
+                //TODO
+                RpcCallback callback = RpcCallbackHandler.getCallback(requestMessageBody.getService() + requestMessageBody.getMethod());
+                RpcCallbackHandler.handler(callback, messageBody.getBody());
+            }
         } catch (InterruptedException e) {
             //TODO
         } catch (ExecutionException e) {
@@ -98,6 +104,7 @@ public class RpcClient {
             }
             ResultFutureHelper.map().remove(messageId);
         }
+
         return messageBody.getBody();
     }
 
