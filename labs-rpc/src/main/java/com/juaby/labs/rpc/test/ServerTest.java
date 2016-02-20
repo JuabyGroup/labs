@@ -1,4 +1,4 @@
-package com.juaby.labs.rpc;
+package com.juaby.labs.rpc.test;
 
 import com.juaby.labs.rpc.server.Rpc2Server;
 import com.juaby.labs.rpc.server.RpcServer;

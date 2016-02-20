@@ -7,6 +7,8 @@ import java.util.*;
  */
 public class ServiceClassInfo {
 
+    private String id;
+
     private int version;
 
     private String packageName;
@@ -36,6 +38,14 @@ public class ServiceClassInfo {
 
     public ServiceClassInfo(String name) {
         this.name = name;
+    }
+
+    public String getId() {
+        return id;
+    }
+
+    public void setId(String id) {
+        this.id = id;
     }
 
     public int getVersion() {

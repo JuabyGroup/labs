@@ -1,9 +1,8 @@
-package com.juaby.labs.rpc;
+package com.juaby.labs.rpc.test;
 
 import com.juaby.labs.rpc.config.ServiceConfig;
 import com.juaby.labs.rpc.config.ServiceConfigHelper;
 import com.juaby.labs.rpc.proxy.RpcClientProxyGenerator;
-import com.juaby.labs.rpc.proxy.RpcClientProxyTemplate;
 import com.juaby.labs.rpc.proxy.ServiceClassInfo;
 import com.juaby.labs.rpc.util.Endpoint;
 import com.juaby.labs.rpc.util.EndpointHelper;
@@ -30,9 +29,10 @@ public class RpcTest {
         testBean.setId("007");
         List<String> params = new ArrayList<String>();
         params.add("hello");
-        TestResult result = messageService.message(testBean, params, new RpcCallback() {
+        TestResult result = messageService.message(testBean, params, new RpcCallback<TestResult, TestResult>() {
             @Override
-            public Object callback(Object o) {
+            public TestResult callback(TestResult o) {
+                System.out.println("callback : " + o.getTime());
                 return null;
             }
         });
@@ -40,6 +40,7 @@ public class RpcTest {
         //messageService.vmethod("hello");
         //classInfo = ServiceClassInfoHelper.get(RpcServerProxy.class);
         boolean flag = true;
+        Thread.currentThread().join();
     }
 
 }

@@ -1,4 +1,4 @@
-package com.juaby.labs.rpc;
+package com.juaby.labs.rpc.test;
 
 /**
  * Created by Juaby on 2015/8/28.

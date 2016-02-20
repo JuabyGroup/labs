@@ -15,8 +15,8 @@
  */
 package com.juaby.labs.rpc.server;
 
-import com.juaby.labs.rpc.MessageServerServiceImpl;
-import com.juaby.labs.rpc.MessageService;
+import com.juaby.labs.rpc.test.MessageServerServiceImpl;
+import com.juaby.labs.rpc.test.MessageService;
 import com.juaby.labs.rpc.config.ServiceConfig;
 import com.juaby.labs.rpc.proxy.RpcServerProxyGenerator;
 import com.juaby.labs.rpc.proxy.ProxyHelper;

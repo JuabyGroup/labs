@@ -84,7 +84,7 @@ public class RpcClient {
             final RpcMessage rcvMessage = ResultFutureHelper.result(messageId);
             SerializeTool.deserialize(rcvMessage.getBody(), messageBody);
 
-            ServiceClassInfo.MethodInfo methodInfo = ServiceClassInfoHelper.get(requestMessageBody.getService().replaceAll("/", ".")).getMethods().get(requestMessageBody.getMethod());
+            ServiceClassInfo.MethodInfo methodInfo = ServiceClassInfoHelper.get(requestMessageBody.getService()).getMethods().get(requestMessageBody.getMethod());
             if(methodInfo.isCallback()) {
                 //TODO
                 RpcCallback callback = RpcCallbackHandler.getCallback(requestMessageBody.getService() + requestMessageBody.getMethod());

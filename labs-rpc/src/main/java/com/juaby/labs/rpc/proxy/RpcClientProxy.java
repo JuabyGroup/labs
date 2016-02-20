@@ -26,7 +26,7 @@ public class RpcClientProxy {
         requestMessageBody.setMethod(method);
         requestMessageBody.setParams(params);
 
-        ServiceClassInfo.MethodInfo methodInfo = ServiceClassInfoHelper.get(service.replaceAll("/", ".")).getMethods().get(method);
+        ServiceClassInfo.MethodInfo methodInfo = ServiceClassInfoHelper.get(service).getMethods().get(method);
         if(methodInfo.isCallback()) {
             //TODO
             RpcCallbackHandler.addCallback(service + method, (RpcCallback) params[methodInfo.getCallbackIndex()]);

@@ -1,4 +1,4 @@
-package com.juaby.labs.rpc;
+package com.juaby.labs.rpc.test;
 
 import static java.lang.annotation.ElementType.FIELD;
 import static java.lang.annotation.ElementType.METHOD;
@@ -17,7 +17,6 @@ import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 import java.util.Arrays;
 
-import com.juaby.labs.rpc.JiteClassTest.DynamicClassLoader;
 import me.qmx.jitescript.CodeBlock;
 import me.qmx.jitescript.JiteClass;
 import me.qmx.jitescript.VisibleAnnotation;
@@ -36,7 +35,7 @@ public class AnnotationsTest {
             }
         };
 
-        Class<?> clazz = new DynamicClassLoader().define(jiteClass);
+        Class<?> clazz = new JiteClassTest.DynamicClassLoader().define(jiteClass);
         ScalarAnnotation annotation = clazz.getAnnotation(ScalarAnnotation.class);
 
         assertNotNull("ScalarAnnotation was not on class", annotation);
@@ -54,7 +53,7 @@ public class AnnotationsTest {
             }
         };
 
-        Class<?> clazz = new DynamicClassLoader().define(jiteClass);
+        Class<?> clazz = new JiteClassTest.DynamicClassLoader().define(jiteClass);
         AnnotationWithArray annotation = clazz.getAnnotation(AnnotationWithArray.class);
 
         assertNotNull("AnnotationWithArray was not on class", annotation);
@@ -72,7 +71,7 @@ public class AnnotationsTest {
             }
         };
 
-        Class<?> clazz = new DynamicClassLoader().define(jiteClass);
+        Class<?> clazz = new JiteClassTest.DynamicClassLoader().define(jiteClass);
         AnnotationWithAnnotation annotation = clazz.getAnnotation(AnnotationWithAnnotation.class);
 
         assertNotNull("AnnotationWithAnnotation was not on class", annotation);
@@ -90,7 +89,7 @@ public class AnnotationsTest {
             }
         };
 
-        Class<?> clazz = new DynamicClassLoader().define(jiteClass);
+        Class<?> clazz = new JiteClassTest.DynamicClassLoader().define(jiteClass);
         AnnotationWithEnum annotation = clazz.getAnnotation(AnnotationWithEnum.class);
 
         assertNotNull("AnnotationWithEnum was not on class", annotation);
@@ -112,7 +111,7 @@ public class AnnotationsTest {
             }
         };
 
-        Class<?> clazz = new DynamicClassLoader().define(jiteClass);
+        Class<?> clazz = new JiteClassTest.DynamicClassLoader().define(jiteClass);
         Method method = clazz.getMethod("annotatedMethod");
         ScalarAnnotation annotation = method.getAnnotation(ScalarAnnotation.class);
 
@@ -130,7 +129,7 @@ public class AnnotationsTest {
             }
         };
 
-        Class<?> clazz = new DynamicClassLoader().define(jiteClass);
+        Class<?> clazz = new JiteClassTest.DynamicClassLoader().define(jiteClass);
         Field field = clazz.getField("annotatedField");
         ScalarAnnotation annotation = field.getAnnotation(ScalarAnnotation.class);
 

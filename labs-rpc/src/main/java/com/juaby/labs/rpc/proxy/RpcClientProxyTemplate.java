@@ -1,9 +1,9 @@
 package com.juaby.labs.rpc.proxy;
 
-import com.juaby.labs.rpc.MessageService;
-import com.juaby.labs.rpc.TestBean;
-import com.juaby.labs.rpc.TestResult;
-import com.juaby.labs.rpc.TypeObject;
+import com.juaby.labs.rpc.test.MessageService;
+import com.juaby.labs.rpc.test.TestBean;
+import com.juaby.labs.rpc.test.TestResult;
+import com.juaby.labs.rpc.test.TypeObject;
 import com.juaby.labs.rpc.util.RpcCallback;
 
 import java.io.File;

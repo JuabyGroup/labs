@@ -29,7 +29,7 @@ public class RpcServerProxyGenerator extends ClassLoader implements Opcodes {
             ClassNotFoundException, NoSuchMethodException, InvocationTargetException {
         Class<?> c = getProxyClass(classInfo, methodInfo);
         /*以下调用带参的、私有构造函数*/
-        Constructor<?> constructor = c.getDeclaredConstructor(Class.forName(classInfo.getName().replaceAll("/", ".")));
+        Constructor<?> constructor = c.getDeclaredConstructor(Class.forName(classInfo.getId()));
         constructor.setAccessible(true);
         return (S)constructor.newInstance(ProxyHelper.getServiceInstance(classInfo.getName()));
     }

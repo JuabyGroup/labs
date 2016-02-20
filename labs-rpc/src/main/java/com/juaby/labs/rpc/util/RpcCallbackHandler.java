@@ -31,7 +31,7 @@ public class RpcCallbackHandler {
         return callbackChannelCache.get(key);
     }
 
-    public static void addCallbackChannel(String key, Connection connection) {
+    public static void addCallbackConnection(String key, Connection connection) {
         callbackConnectionCache.put(key, connection);
     }
 

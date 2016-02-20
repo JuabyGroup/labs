@@ -1,6 +1,8 @@
 package com.juaby.labs.rpc.util;
 
+import com.juaby.labs.rpc.message.ResponseMessageBody;
 import com.juaby.labs.rpc.message.RpcMessage;
+import com.juaby.labs.rpc.proxy.ServiceClassInfo;
 import org.glassfish.grizzly.filterchain.BaseFilter;
 import org.glassfish.grizzly.filterchain.FilterChainContext;
 import org.glassfish.grizzly.filterchain.NextAction;
@@ -32,6 +34,18 @@ public class ResultFutureHelper {
         @Override
         public NextAction handleRead(FilterChainContext ctx) throws IOException {
             final RpcMessage message = ctx.getMessage();
+
+            //TODO
+            String key = "com/juaby/labs/rpc/test/MessageService(Lcom/juaby/labs/rpc/test/TestBean;Ljava/util/List<Ljava/lang/String;>;Lcom/juaby/labs/rpc/util/RpcCallback;)Lcom/juaby/labs/rpc/test/TestResult;";
+            ServiceClassInfo.MethodInfo methodInfo = ServiceClassInfoHelper.get("com/juaby/labs/rpc/test/MessageService").getMethods().get("(Lcom/juaby/labs/rpc/test/TestBean;Ljava/util/List<Ljava/lang/String;>;Lcom/juaby/labs/rpc/util/RpcCallback;)Lcom/juaby/labs/rpc/test/TestResult;");
+            if(methodInfo.isCallback()) {
+                //TODO
+                RpcCallback callback = RpcCallbackHandler.getCallback(key);
+                ResponseMessageBody responseMessageBody = new ResponseMessageBody();
+                SerializeTool.deserialize(message.getBody(), responseMessageBody);
+                RpcCallbackHandler.handler(callback, responseMessageBody.getBody());
+            }
+
             if (message != null) {
                 Integer messageId = message.getId();
                 RpcFutureImpl<RpcMessage> resultFuture = resultFutureMap.get(messageId);

@@ -28,6 +28,7 @@ public class ServiceClassInfoHelper {
         }
         String name = service.getCanonicalName();
         ServiceClassInfo mailClassInfo = new ServiceClassInfo();
+        mailClassInfo.setId(service.getName());
         ServiceClassInfo othersClassInfo;
         try {
             mailClassInfo = new Rpcifier().parser(name, mailClassInfo);
@@ -53,7 +54,7 @@ public class ServiceClassInfoHelper {
                     othersInterfaces.toArray(interfaces);
                 }
             }
-            serviceClassInfoCache.put(service.getName(), mailClassInfo);
+            serviceClassInfoCache.put(mailClassInfo.getName(), mailClassInfo);
         } catch (Exception e) {
             //TODO
         }

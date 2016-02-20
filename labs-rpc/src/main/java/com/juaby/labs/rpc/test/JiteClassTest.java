@@ -1,4 +1,4 @@
-package com.juaby.labs.rpc;
+package com.juaby.labs.rpc.test;
 
 import static me.qmx.jitescript.CodeBlock.newCodeBlock;
 import static me.qmx.jitescript.util.CodegenUtils.c;

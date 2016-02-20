@@ -45,7 +45,12 @@ import com.juaby.labs.rpc.message.RequestMessageBody;
 import com.juaby.labs.rpc.message.ResponseMessageBody;
 import com.juaby.labs.rpc.message.RpcMessage;
 import com.juaby.labs.rpc.proxy.ProxyHelper;
+import com.juaby.labs.rpc.proxy.ServiceClassInfo;
+import com.juaby.labs.rpc.test.CallbackTest;
+import com.juaby.labs.rpc.util.RpcCallback;
+import com.juaby.labs.rpc.util.RpcCallbackHandler;
 import com.juaby.labs.rpc.util.SerializeTool;
+import com.juaby.labs.rpc.util.ServiceClassInfoHelper;
 import org.glassfish.grizzly.filterchain.BaseFilter;
 import org.glassfish.grizzly.filterchain.FilterChain;
 import org.glassfish.grizzly.filterchain.FilterChainContext;
@@ -80,6 +85,12 @@ public class ServiceFilter extends BaseFilter {
         SerializeTool.deserialize(message.getBody(), requestMessageBody);
         RpcServiceHandler rpcServiceHandler = ProxyHelper.getProxyInstance(requestMessageBody.getService() + requestMessageBody.getMethod());
 
+        ServiceClassInfo.MethodInfo methodInfo = ServiceClassInfoHelper.get(requestMessageBody.getService()).getMethods().get(requestMessageBody.getMethod());
+        if(methodInfo.isCallback()) {
+            //TODO
+            RpcCallbackHandler.addCallbackConnection(requestMessageBody.getService() + requestMessageBody.getMethod(), ctx.getConnection());
+        }
+
         ResponseMessageBody messageBody;
         try {
             messageBody = rpcServiceHandler.handler(requestMessageBody.getParams());
@@ -94,6 +105,8 @@ public class ServiceFilter extends BaseFilter {
         message.setBodyLength(body.length);
         message.setBody(body);
         ctx.write(peerAddress, message, null);
+
+        CallbackTest.main(new String[] {}); //TODO
 
         return ctx.getStopAction();
     }
