@@ -62,9 +62,9 @@ public class RpcClient {
     public static <R> R sendMessage(RequestMessageBody requestMessageBody) {
         Connection connection = null;
         Endpoint endpoint = EndpointHelper.cache(requestMessageBody.getService()).iterator().next();
-        final RpcFutureImpl<RpcMessage> resultFuture = RpcSafeFutureImpl.create();
+        final RpcFutureImpl<ResponseMessageBody> resultFuture = RpcSafeFutureImpl.create();
         Integer messageId = MessageIdGenerator.id();
-        ResponseMessageBody<R> messageBody = new ResponseMessageBody<R>();
+        ResponseMessageBody<R> rcvMessage = new ResponseMessageBody<R>();
         try {
             // Connect client to the GIOP server
             connection = ConnectionFactory.get(endpoint);
@@ -81,14 +81,13 @@ public class RpcClient {
 
             connection.write(sentMessage);
 
-            final RpcMessage rcvMessage = ResultFutureHelper.result(messageId);
-            SerializeTool.deserialize(rcvMessage.getBody(), messageBody);
+            rcvMessage = ResultFutureHelper.result(messageId);
 
-            ServiceClassInfo.MethodInfo methodInfo = ServiceClassInfoHelper.get(requestMessageBody.getService()).getMethods().get(requestMessageBody.getMethod());
+            ServiceClassInfo.MethodInfo methodInfo = ServiceClassInfoHelper.get(rcvMessage.getService()).getMethods().get(rcvMessage.getMethod());
             if(methodInfo.isCallback()) {
                 //TODO
-                RpcCallback callback = RpcCallbackHandler.getCallback(requestMessageBody.getService() + requestMessageBody.getMethod());
-                RpcCallbackHandler.handler(callback, messageBody.getBody());
+                RpcCallback callback = RpcCallbackHandler.getCallback(rcvMessage.getService() + rcvMessage.getMethod());
+                RpcCallbackHandler.handler(callback, rcvMessage.getBody());
             }
         } catch (InterruptedException e) {
             //TODO
@@ -105,7 +104,7 @@ public class RpcClient {
             ResultFutureHelper.map().remove(messageId);
         }
 
-        return messageBody.getBody();
+        return rcvMessage.getBody();
     }
 
 }

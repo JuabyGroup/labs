@@ -20,7 +20,7 @@ public class RpcTest {
     public static void main(String[] args) throws Exception {
         Class<MessageService> serviceClass = MessageService.class;
         ServiceClassInfo classInfo = ServiceClassInfoHelper.parser(serviceClass);
-        ServiceConfig config = new ServiceConfig(classInfo.getName(), 1);
+        ServiceConfig config = new ServiceConfig(1, classInfo.getName());
         ServiceConfigHelper.addConfig(config);
         MessageService messageService = new RpcClientProxyGenerator().newInstance(classInfo, serviceClass);
         Endpoint endpoint = new Endpoint("localhost", 9098);

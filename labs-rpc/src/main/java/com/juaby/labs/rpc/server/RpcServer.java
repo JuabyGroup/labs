@@ -40,20 +40,13 @@
 
 package com.juaby.labs.rpc.server;
 
-import com.juaby.labs.rpc.test.MessageServerServiceImpl;
-import com.juaby.labs.rpc.test.MessageService;
 import com.juaby.labs.rpc.config.ServiceConfig;
-import com.juaby.labs.rpc.proxy.RpcServerProxyGenerator;
-import com.juaby.labs.rpc.proxy.ProxyHelper;
-import com.juaby.labs.rpc.proxy.ServiceClassInfo;
-import com.juaby.labs.rpc.util.ServiceClassInfoHelper;
 import org.glassfish.grizzly.filterchain.FilterChainBuilder;
 import org.glassfish.grizzly.filterchain.TransportFilter;
 import org.glassfish.grizzly.nio.transport.TCPNIOTransport;
 import org.glassfish.grizzly.nio.transport.TCPNIOTransportBuilder;
 
 import java.io.IOException;
-import java.lang.reflect.InvocationTargetException;
 
 /**
  * Simple GIOP echo server
@@ -62,7 +55,7 @@ import java.lang.reflect.InvocationTargetException;
  */
 public class RpcServer implements Server {
 
-    private String hsot = "localhost";
+    private String host = "localhost";
     private int port = 9098;
 
     private ServiceConfig config;
@@ -73,6 +66,12 @@ public class RpcServer implements Server {
         this.transport = TCPNIOTransportBuilder.newInstance().build();
     }
 
+    public RpcServer(String host, int port) {
+        this();
+        this.host = host;
+        this.port = port;
+    }
+
     public RpcServer(ServiceConfig config) {
         this.config = config;
         this.transport = TCPNIOTransportBuilder.newInstance().build();
@@ -80,27 +79,7 @@ public class RpcServer implements Server {
 
     @Override
     public void init() {
-        ServiceClassInfo classInfo = ServiceClassInfoHelper.parser(MessageService.class);
-        MessageService messageServerService = new MessageServerServiceImpl();
-        ProxyHelper.addServiceInstance(classInfo.getName(), messageServerService);
-        Class<RpcServiceHandler> serviceClass = RpcServiceHandler.class;
-        for (String methodSignature : classInfo.getMethods().keySet()) {
-            RpcServiceHandler rpcServiceHandler = null;
-            try {
-                rpcServiceHandler = new RpcServerProxyGenerator().newInstance(classInfo, classInfo.getMethods().get(methodSignature), serviceClass);
-            } catch (IllegalAccessException e) {
-                e.printStackTrace();
-            } catch (InstantiationException e) {
-                e.printStackTrace();
-            } catch (ClassNotFoundException e) {
-                e.printStackTrace();
-            } catch (NoSuchMethodException e) {
-                e.printStackTrace();
-            } catch (InvocationTargetException e) {
-                e.printStackTrace();
-            }
-            ProxyHelper.addProxyInstance(classInfo.getName() + methodSignature, rpcServiceHandler);
-        }
+        //TODO
     }
     
     public void start() {
@@ -118,7 +97,7 @@ public class RpcServer implements Server {
 
         try {
             // Bind server socket and start transport
-            transport.bind(hsot, port);
+            transport.bind(host, port);
             transport.start();
 
             System.out.println("Press 'q and ENTER' to exit, or just ENTER to see statistics...");

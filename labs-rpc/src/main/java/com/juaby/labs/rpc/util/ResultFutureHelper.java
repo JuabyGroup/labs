@@ -6,6 +6,7 @@ import com.juaby.labs.rpc.proxy.ServiceClassInfo;
 import org.glassfish.grizzly.filterchain.BaseFilter;
 import org.glassfish.grizzly.filterchain.FilterChainContext;
 import org.glassfish.grizzly.filterchain.NextAction;
+import org.glassfish.grizzly.streams.Stream;
 
 import java.io.IOException;
 import java.util.Map;
@@ -24,7 +25,7 @@ import java.util.concurrent.TimeoutException;
  */
 public class ResultFutureHelper {
 
-    private static final Map<Integer, RpcFutureImpl<RpcMessage>> resultFutureMap = new ConcurrentHashMap<Integer, RpcFutureImpl<RpcMessage>>();
+    private static final Map<Integer, RpcFutureImpl<ResponseMessageBody>> resultFutureMap = new ConcurrentHashMap<Integer, RpcFutureImpl<ResponseMessageBody>>();
 
     public static final class CustomClientFilter extends BaseFilter {
 
@@ -35,22 +36,25 @@ public class ResultFutureHelper {
         public NextAction handleRead(FilterChainContext ctx) throws IOException {
             final RpcMessage message = ctx.getMessage();
 
+            ResponseMessageBody responseMessageBody = new ResponseMessageBody();
+            SerializeTool.deserialize(message.getBody(), responseMessageBody);
+
             //TODO
-            String key = "com/juaby/labs/rpc/test/MessageService(Lcom/juaby/labs/rpc/test/TestBean;Ljava/util/List<Ljava/lang/String;>;Lcom/juaby/labs/rpc/util/RpcCallback;)Lcom/juaby/labs/rpc/test/TestResult;";
-            ServiceClassInfo.MethodInfo methodInfo = ServiceClassInfoHelper.get("com/juaby/labs/rpc/test/MessageService").getMethods().get("(Lcom/juaby/labs/rpc/test/TestBean;Ljava/util/List<Ljava/lang/String;>;Lcom/juaby/labs/rpc/util/RpcCallback;)Lcom/juaby/labs/rpc/test/TestResult;");
+            String service = responseMessageBody.getService();
+            String method = responseMessageBody.getMethod();
+            String key = service + method;
+            ServiceClassInfo.MethodInfo methodInfo = ServiceClassInfoHelper.get(service).getMethods().get(method);
             if(methodInfo.isCallback()) {
                 //TODO
                 RpcCallback callback = RpcCallbackHandler.getCallback(key);
-                ResponseMessageBody responseMessageBody = new ResponseMessageBody();
-                SerializeTool.deserialize(message.getBody(), responseMessageBody);
                 RpcCallbackHandler.handler(callback, responseMessageBody.getBody());
             }
 
             if (message != null) {
                 Integer messageId = message.getId();
-                RpcFutureImpl<RpcMessage> resultFuture = resultFutureMap.get(messageId);
+                RpcFutureImpl<ResponseMessageBody> resultFuture = resultFutureMap.get(messageId);
                 if (resultFuture != null) {
-                    resultFuture.result(message);
+                    resultFuture.result(responseMessageBody);
                 }
             }
 
@@ -58,15 +62,15 @@ public class ResultFutureHelper {
         }
     }
 
-    public static RpcMessage result(Integer messageId) throws InterruptedException, ExecutionException, TimeoutException {
+    public static ResponseMessageBody result(Integer messageId) throws InterruptedException, ExecutionException, TimeoutException {
         if (messageId == null) {
             return null;
         }
-        RpcFutureImpl<RpcMessage> future = map().get(messageId);
+        RpcFutureImpl<ResponseMessageBody> future = map().get(messageId);
         return future.get(10, TimeUnit.SECONDS); //TODO
     }
 
-    public static Map<Integer, RpcFutureImpl<RpcMessage>> map() {
+    public static Map<Integer, RpcFutureImpl<ResponseMessageBody>> map() {
         return resultFutureMap;
     }
 

@@ -8,7 +8,7 @@ package com.juaby.labs.rpc.message;
  * @author <a href=mailto:yanjiabao@juaby.com>yanjiabao</a> <br>
  * @date Created by yanjiabao on 2015/8/26 11:01.
  */
-public class ResponseMessageBody<T> {
+public class ResponseMessageBody<T> extends MessageBody {
 
     private String returnClass;
 

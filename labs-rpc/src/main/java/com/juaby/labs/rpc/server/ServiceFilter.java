@@ -101,6 +101,9 @@ public class ServiceFilter extends BaseFilter {
             messageBody = new ResponseMessageBody(new RpcException(e));
         }
 
+        messageBody.setService(requestMessageBody.getService());
+        messageBody.setMethod(requestMessageBody.getMethod());
+
         byte[] body = SerializeTool.serialize(messageBody);
         message.setBodyLength(body.length);
         message.setBody(body);

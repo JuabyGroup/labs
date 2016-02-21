@@ -33,9 +33,9 @@ public class RpcClientProxy {
             params[methodInfo.getCallbackIndex()] = null;
         }
 
-        if (config.getServerType() == 1) {
+        if (config.getServerConfig().getServerType() == 1) {
             return RpcClient.sendMessage(requestMessageBody);
-        } else if (config.getServerType() == 2) {
+        } else if (config.getServerConfig().getServerType() == 2) {
             return Rpc2Client.sendMessage(requestMessageBody);
         } else {
             //TODO
