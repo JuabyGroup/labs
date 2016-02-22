@@ -6,7 +6,7 @@ import java.io.PrintWriter;
 /**
  * Created by juaby on 16-2-18.
  */
-public class RpcException extends Exception {
+public class RpcException extends RuntimeException {
 
     public RpcException() {
         super();

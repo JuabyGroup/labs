@@ -15,14 +15,8 @@
  */
 package com.juaby.labs.rpc.server;
 
-import com.juaby.labs.rpc.test.MessageServerServiceImpl;
-import com.juaby.labs.rpc.test.MessageService;
 import com.juaby.labs.rpc.config.ServiceConfig;
-import com.juaby.labs.rpc.proxy.RpcServerProxyGenerator;
-import com.juaby.labs.rpc.proxy.ProxyHelper;
-import com.juaby.labs.rpc.proxy.ServiceClassInfo;
 import com.juaby.labs.rpc.util.NamedThreadFactory;
-import com.juaby.labs.rpc.util.ServiceClassInfoHelper;
 import io.netty.bootstrap.ServerBootstrap;
 import io.netty.channel.ChannelInitializer;
 import io.netty.channel.ChannelPipeline;
@@ -36,8 +30,6 @@ import io.netty.handler.ssl.SslContext;
 import io.netty.handler.ssl.SslContextBuilder;
 import io.netty.handler.ssl.util.SelfSignedCertificate;
 
-import java.lang.reflect.InvocationTargetException;
-
 /**
  *
  */
@@ -45,7 +37,7 @@ public final class Rpc2Server implements Server {
 
     static final boolean SSL = System.getProperty("ssl") != null;
 
-    private String hsot = "localhost";
+    private String host = "localhost";
     private int port = 8007;
 
     private ServiceConfig config;
@@ -57,33 +49,20 @@ public final class Rpc2Server implements Server {
     public Rpc2Server() {
     }
 
+    public Rpc2Server(String host, int port) {
+        this();
+        this.host = host;
+        this.port = port;
+    }
+
     public Rpc2Server(ServiceConfig config) {
+        this();
         this.config = config;
     }
 
     @Override
     public void init() {
-        ServiceClassInfo classInfo = ServiceClassInfoHelper.parser(MessageService.class);
-        MessageService messageServerService = new MessageServerServiceImpl();
-        ProxyHelper.addServiceInstance(classInfo.getName(), messageServerService);
-        Class<RpcServiceHandler> serviceClass = RpcServiceHandler.class;
-        for (String methodSignature : classInfo.getMethods().keySet()) {
-            RpcServiceHandler rpcServiceHandler = null;
-            try {
-                rpcServiceHandler = new RpcServerProxyGenerator().newInstance(classInfo, classInfo.getMethods().get(methodSignature), serviceClass);
-            } catch (IllegalAccessException e) {
-                e.printStackTrace();
-            } catch (InstantiationException e) {
-                e.printStackTrace();
-            } catch (ClassNotFoundException e) {
-                e.printStackTrace();
-            } catch (NoSuchMethodException e) {
-                e.printStackTrace();
-            } catch (InvocationTargetException e) {
-                e.printStackTrace();
-            }
-            ProxyHelper.addProxyInstance(classInfo.getName() + methodSignature, rpcServiceHandler);
-        }
+        //TODO
     }
 
     public void start() {
@@ -125,7 +104,7 @@ public final class Rpc2Server implements Server {
 
             // Bind and start to accept incoming connections.
             //b.bind(HOST, PORT).sync().channel().closeFuture().sync();
-            b.bind(hsot, port);
+            b.bind(host, port);
         } finally {
         }
     }

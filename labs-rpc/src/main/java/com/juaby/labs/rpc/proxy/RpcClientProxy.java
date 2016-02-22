@@ -1,5 +1,6 @@
 package com.juaby.labs.rpc.proxy;
 
+import com.juaby.labs.rpc.common.RpcEnum;
 import com.juaby.labs.rpc.message.RequestMessageBody;
 import com.juaby.labs.rpc.client.Rpc2Client;
 import com.juaby.labs.rpc.client.RpcClient;
@@ -30,12 +31,13 @@ public class RpcClientProxy {
         if(methodInfo.isCallback()) {
             //TODO
             RpcCallbackHandler.addCallback(service + method, (RpcCallback) params[methodInfo.getCallbackIndex()]);
-            params[methodInfo.getCallbackIndex()] = null;
+            //params[methodInfo.getCallbackIndex()] = null;
         }
 
-        if (config.getServerConfig().getServerType() == 1) {
+        //TODO
+        if (config.getServerType() == RpcEnum.Grizzly.value()) {
             return RpcClient.sendMessage(requestMessageBody);
-        } else if (config.getServerConfig().getServerType() == 2) {
+        } else if (config.getServerType() == RpcEnum.Netty.value()) {
             return Rpc2Client.sendMessage(requestMessageBody);
         } else {
             //TODO

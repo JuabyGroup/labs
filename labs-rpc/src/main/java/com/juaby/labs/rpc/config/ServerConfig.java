@@ -1,5 +1,6 @@
 package com.juaby.labs.rpc.config;
 
+import com.juaby.labs.rpc.common.RpcEnum;
 import com.juaby.labs.rpc.util.Endpoint;
 
 import java.lang.management.ManagementFactory;
@@ -9,7 +10,7 @@ import java.lang.management.ManagementFactory;
  */
 public class ServerConfig {
 
-    private int serverType = 1;
+    private int serverType = RpcEnum.Grizzly.value();
 
     public final static String PID = ManagementFactory.getRuntimeMXBean().getName().split("@")[0];
 

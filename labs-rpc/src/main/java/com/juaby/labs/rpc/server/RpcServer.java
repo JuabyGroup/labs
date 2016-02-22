@@ -73,8 +73,8 @@ public class RpcServer implements Server {
     }
 
     public RpcServer(ServiceConfig config) {
+        this();
         this.config = config;
-        this.transport = TCPNIOTransportBuilder.newInstance().build();
     }
 
     @Override

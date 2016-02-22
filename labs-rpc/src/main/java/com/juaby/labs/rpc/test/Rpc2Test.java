@@ -4,6 +4,7 @@ import com.juaby.labs.rpc.config.ServiceConfig;
 import com.juaby.labs.rpc.config.ServiceConfigHelper;
 import com.juaby.labs.rpc.proxy.RpcClientProxyGenerator;
 import com.juaby.labs.rpc.proxy.ServiceClassInfo;
+import com.juaby.labs.rpc.proxy.ServiceFactory;
 import com.juaby.labs.rpc.util.Endpoint;
 import com.juaby.labs.rpc.util.EndpointHelper;
 import com.juaby.labs.rpc.util.ServiceClassInfoHelper;
@@ -17,13 +18,10 @@ import java.util.List;
 public class Rpc2Test {
 
     public static void main(String[] args) throws Exception {
-        Class<MessageService> serviceClass = MessageService.class;
-        ServiceClassInfo classInfo = ServiceClassInfoHelper.parser(MessageService.class);
-        ServiceConfig config = new ServiceConfig(classInfo.getName(), 2); //TODO
-        ServiceConfigHelper.addConfig(config);
-        MessageService messageService = new RpcClientProxyGenerator().newInstance(classInfo, serviceClass);
+        ServiceConfig<MessageService> serviceConfig = new ServiceConfig<MessageService>(2, MessageService.class);
+        MessageService messageService = ServiceFactory.getService(serviceConfig);
         Endpoint endpoint = new Endpoint("localhost", 8007);
-        EndpointHelper.add(classInfo.getName(), endpoint);
+        EndpointHelper.add(serviceConfig.getName(), endpoint);
         TestBean testBean = new TestBean();
         testBean.setId("007");
         List<String> params = new ArrayList<String>();
