@@ -24,7 +24,7 @@ public class RpcServerProxyGenerator extends ClassLoader implements Opcodes {
         return (S)c1.newInstance(constructorParamValues);
     }
 
-    public <S> S newInstance(ServiceClassInfo classInfo, ServiceClassInfo.MethodInfo methodInfo, Class<S> serviceClass) throws IllegalAccessException,
+    public <S> S newInstance(ServiceClassInfo classInfo, ServiceClassInfo.MethodInfo methodInfo) throws IllegalAccessException,
             InstantiationException,
             ClassNotFoundException, NoSuchMethodException, InvocationTargetException {
         Class<?> c = getProxyClass(classInfo, methodInfo);

@@ -44,6 +44,7 @@ import com.juaby.labs.rpc.config.ServiceConfig;
 import com.juaby.labs.rpc.message.RequestMessageBody;
 import com.juaby.labs.rpc.message.ResponseMessageBody;
 import com.juaby.labs.rpc.message.RpcMessage;
+import com.juaby.labs.rpc.proxy.ServiceClassInfo;
 import com.juaby.labs.rpc.util.*;
 import io.netty.channel.Channel;
 
@@ -60,9 +61,9 @@ public class Rpc2Client {
     public static <R> R sendMessage(RequestMessageBody requestMessageBody) {
         Channel channel = null;
         Endpoint endpoint = EndpointHelper.cache(requestMessageBody.getService()).iterator().next();
-        final RpcFutureImpl<RpcMessage> resultFuture = RpcSafeFutureImpl.create();
+        final RpcFutureImpl<ResponseMessageBody> resultFuture = RpcSafeFutureImpl.create();
         Integer messageId = MessageIdGenerator.id();
-        ResponseMessageBody<R> messageBody = new ResponseMessageBody<R>();
+        ResponseMessageBody<R> rcvMessage = new ResponseMessageBody<R>();
         try {
             // Connect client to the GIOP server
             channel = ChannelFactory.get(endpoint);
@@ -79,9 +80,14 @@ public class Rpc2Client {
 
             channel.writeAndFlush(sentMessage, channel.voidPromise());
 
-            final RpcMessage rcvMessage = Result2FutureHelper.result(messageId);
+            rcvMessage = Result2FutureHelper.result(messageId);
 
-            SerializeTool.deserialize(rcvMessage.getBody(), messageBody);
+            ServiceClassInfo.MethodInfo methodInfo = ServiceClassInfoHelper.get(rcvMessage.getService()).getMethods().get(rcvMessage.getMethod());
+            if(methodInfo.isCallback()) {
+                //TODO
+                RpcCallback callback = RpcCallbackHandler.getCallback(rcvMessage.getService() + rcvMessage.getMethod());
+                RpcCallbackHandler.handler(callback, rcvMessage.getBody());
+            }
         } catch (InterruptedException e) {
             //TODO
         } catch (ExecutionException e) {
@@ -94,7 +100,7 @@ public class Rpc2Client {
             //TODO
             Result2FutureHelper.map().remove(messageId);
         }
-        return messageBody.getBody();
+        return rcvMessage.getBody();
     }
 
 }

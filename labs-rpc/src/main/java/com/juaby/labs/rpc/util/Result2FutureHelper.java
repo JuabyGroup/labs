@@ -1,6 +1,8 @@
 package com.juaby.labs.rpc.util;
 
+import com.juaby.labs.rpc.message.ResponseMessageBody;
 import com.juaby.labs.rpc.message.RpcMessage;
+import com.juaby.labs.rpc.proxy.ServiceClassInfo;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.ChannelInboundHandlerAdapter;
 
@@ -20,7 +22,7 @@ import java.util.concurrent.TimeoutException;
  */
 public class Result2FutureHelper {
 
-    private static final Map<Integer, RpcFutureImpl<RpcMessage>> resultFutureMap = new ConcurrentHashMap<Integer, RpcFutureImpl<RpcMessage>>();
+    private static final Map<Integer, RpcFutureImpl<ResponseMessageBody>> resultFutureMap = new ConcurrentHashMap<Integer, RpcFutureImpl<ResponseMessageBody>>();
 
     /**
      * Handler implementation for the object echo client.  It initiates the
@@ -43,11 +45,26 @@ public class Result2FutureHelper {
         @Override
         public void channelRead(ChannelHandlerContext ctx, Object msg) {
             final RpcMessage message = (RpcMessage) msg;
+
+            ResponseMessageBody responseMessageBody = new ResponseMessageBody();
+            SerializeTool.deserialize(message.getBody(), responseMessageBody);
+
+            //TODO
+            String service = responseMessageBody.getService();
+            String method = responseMessageBody.getMethod();
+            String key = service + method;
+            ServiceClassInfo.MethodInfo methodInfo = ServiceClassInfoHelper.get(service).getMethods().get(method);
+            if(methodInfo.isCallback()) {
+                //TODO
+                RpcCallback callback = RpcCallbackHandler.getCallback(key);
+                RpcCallbackHandler.handler(callback, responseMessageBody.getBody());
+            }
+
             if (message != null) {
                 Integer messageId = message.getId();
-                RpcFutureImpl<RpcMessage> resultFuture = resultFutureMap.get(messageId);
+                RpcFutureImpl<ResponseMessageBody> resultFuture = resultFutureMap.get(messageId);
                 if (resultFuture != null) {
-                    resultFuture.result(message);
+                    resultFuture.result(responseMessageBody);
                 }
             }
         }
@@ -64,15 +81,15 @@ public class Result2FutureHelper {
         }
     }
 
-    public static RpcMessage result(Integer messageId) throws InterruptedException, ExecutionException, TimeoutException {
+    public static ResponseMessageBody result(Integer messageId) throws InterruptedException, ExecutionException, TimeoutException {
         if (messageId == null) {
             return null;
         }
-        RpcFutureImpl<RpcMessage> future = map().get(messageId);
+        RpcFutureImpl<ResponseMessageBody> future = map().get(messageId);
         return future.get(10, TimeUnit.SECONDS); //TODO
     }
 
-    public static Map<Integer, RpcFutureImpl<RpcMessage>> map() {
+    public static Map<Integer, RpcFutureImpl<ResponseMessageBody>> map() {
         return resultFutureMap;
     }
 

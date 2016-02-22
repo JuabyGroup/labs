@@ -31,7 +31,7 @@ public class RpcClientProxy {
         if(methodInfo.isCallback()) {
             //TODO
             RpcCallbackHandler.addCallback(service + method, (RpcCallback) params[methodInfo.getCallbackIndex()]);
-            //params[methodInfo.getCallbackIndex()] = null;
+            params[methodInfo.getCallbackIndex()] = null;
         }
 
         //TODO

@@ -16,12 +16,10 @@ public class ServerTest extends Thread {
     public static void main(String[] args) {
         ServiceConfig<MessageService> serviceConfig = new ServiceConfig<MessageService>(1, MessageService.class);
         serviceConfig.setServiceInstance(new MessageServerServiceImpl());
-        ServerConfig serverConfig = new ServerConfig(1, "localhost", 9098);
+        ServerConfig serverConfig = new ServerConfig(2, "localhost", 8007);
         serviceConfig.setServerConfig(serverConfig);
         Server server = ServerFactory.getServer(serverConfig);
-        Server server2 = new Rpc2Server();
         new ServerTest(server).start();
-        //new ServerTest(server2).start();
     }
 
     public ServerTest(Server server) {

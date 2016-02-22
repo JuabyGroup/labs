@@ -47,24 +47,7 @@ public class ServiceConfig<S> {
         this.name = classInfo.getName();
 
         if (serviceType == RpcEnum.Server.value()) {
-            Class<RpcServiceHandler> rpcServiceHandlerClass = RpcServiceHandler.class;
-            for (String methodSignature : classInfo.getMethods().keySet()) {
-                RpcServiceHandler rpcServiceHandler = null;
-                try {
-                    rpcServiceHandler = new RpcServerProxyGenerator().newInstance(classInfo, classInfo.getMethods().get(methodSignature), rpcServiceHandlerClass);
-                } catch (IllegalAccessException e) {
-                    e.printStackTrace();
-                } catch (InstantiationException e) {
-                    e.printStackTrace();
-                } catch (ClassNotFoundException e) {
-                    e.printStackTrace();
-                } catch (NoSuchMethodException e) {
-                    e.printStackTrace();
-                } catch (InvocationTargetException e) {
-                    e.printStackTrace();
-                }
-                ProxyHelper.addProxyInstance(classInfo.getName() + methodSignature, rpcServiceHandler);
-            }
+
         }
         if (serviceType == RpcEnum.Client.value()) {
 

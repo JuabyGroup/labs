@@ -21,7 +21,12 @@ import com.juaby.labs.rpc.message.RequestMessageBody;
 import com.juaby.labs.rpc.message.ResponseMessageBody;
 import com.juaby.labs.rpc.message.RpcMessage;
 import com.juaby.labs.rpc.proxy.ProxyHelper;
+import com.juaby.labs.rpc.proxy.ServiceClassInfo;
+import com.juaby.labs.rpc.test.Callback2Test;
+import com.juaby.labs.rpc.test.CallbackTest;
+import com.juaby.labs.rpc.util.RpcCallbackHandler;
 import com.juaby.labs.rpc.util.SerializeTool;
+import com.juaby.labs.rpc.util.ServiceClassInfoHelper;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.ChannelInboundHandlerAdapter;
 
@@ -38,6 +43,12 @@ public class Rpc2ServerHandler extends ChannelInboundHandlerAdapter {
         SerializeTool.deserialize(message.getBody(), requestMessageBody);
         RpcServiceHandler rpcServiceHandler = ProxyHelper.getProxyInstance(requestMessageBody.getService() + requestMessageBody.getMethod());
 
+        ServiceClassInfo.MethodInfo methodInfo = ServiceClassInfoHelper.get(requestMessageBody.getService()).getMethods().get(requestMessageBody.getMethod());
+        if(methodInfo.isCallback()) {
+            //TODO
+            RpcCallbackHandler.addCallbackChannel(requestMessageBody.getService() + requestMessageBody.getMethod(), ctx.channel());
+        }
+
         ResponseMessageBody messageBody;
         try {
             messageBody = rpcServiceHandler.handler(requestMessageBody.getParams());
@@ -48,10 +59,16 @@ public class Rpc2ServerHandler extends ChannelInboundHandlerAdapter {
             messageBody = new ResponseMessageBody(new RpcException(e));
         }
 
+        messageBody.setService(requestMessageBody.getService());
+        messageBody.setMethod(requestMessageBody.getMethod());
+
         byte[] body = SerializeTool.serialize(messageBody);
         message.setTotalLength(ServiceConfig.HEADER_SIZE + body.length);
         message.setBodyLength(body.length);
         message.setBody(body);
+
+        Callback2Test.main(new String[] {}); //TODO
+
         ctx.writeAndFlush(message, ctx.voidPromise());
     }
 
