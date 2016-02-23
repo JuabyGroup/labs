@@ -2,7 +2,10 @@ package com.juaby.labs.rpc.util;
 
 import com.juaby.labs.rpc.client.Rpc2ClientDecoder;
 import com.juaby.labs.rpc.client.Rpc2ClientEncoder;
+import com.juaby.labs.rpc.client.Rpc2ClientHandler;
 import com.juaby.labs.rpc.config.ServiceConfig;
+import com.juaby.labs.rpc.transport.NettyTransport;
+import com.juaby.labs.rpc.transport.RpcTransportFactory;
 import io.netty.bootstrap.Bootstrap;
 import io.netty.channel.*;
 import io.netty.channel.nio.NioEventLoopGroup;
@@ -35,11 +38,10 @@ public class ChannelFactory {
     private static final Map<String, Channel> channelCache = new ConcurrentHashMap<String, Channel>();
 
     public static Channel get(Endpoint endpoint) {
-        Channel channel = null;
-        if (!channelCache.containsKey(endpoint.key())) {
+        Channel channel = channelCache.get(endpoint.key());
+        if (channel == null) {
             initPool(endpoint);
         }
-        channel = channelCache.get(endpoint.key());
         return channel;
     }
 
@@ -49,6 +51,7 @@ public class ChannelFactory {
 
     public void release(Endpoint endpoint) {
         channelCache.get(endpoint.key()).close();
+        channelCache.remove(endpoint.key());
     }
 
     public static void initPool(Endpoint endpoint) {
@@ -86,7 +89,7 @@ public class ChannelFactory {
                                     new Rpc2ClientEncoder(),
                                     //read
                                     new Rpc2ClientDecoder(ServiceConfig.MAX_OBJECT_SIZE),
-                                    new Result2FutureHelper.Rpc2ClientHandler());
+                                    new Rpc2ClientHandler());
                         }
                     });
 
@@ -96,6 +99,7 @@ public class ChannelFactory {
             if (channelFuture.isSuccess()) {
                 channel = channelFuture.channel();
                 channelCache.put(endpoint.key(), channel);
+                RpcTransportFactory.cache(endpoint, new NettyTransport(channel));
             } else {
                 Throwable cause = channelFuture.cause();
             }

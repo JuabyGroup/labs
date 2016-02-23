@@ -1,5 +1,6 @@
 package com.juaby.labs.rpc.transport;
 
+import com.juaby.labs.rpc.util.Endpoint;
 import io.netty.channel.Channel;
 
 /**
@@ -16,6 +17,11 @@ public class NettyTransport implements RpcTransport {
     @Override
     public void sendMessage(Object message) {
         channel.write(message, channel.voidPromise());
+    }
+
+    @Override
+    public void release(Endpoint endpoint) {
+        //TODO
     }
 
 }

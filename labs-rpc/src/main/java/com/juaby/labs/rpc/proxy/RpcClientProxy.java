@@ -1,8 +1,6 @@
 package com.juaby.labs.rpc.proxy;
 
-import com.juaby.labs.rpc.common.RpcEnum;
 import com.juaby.labs.rpc.message.RequestMessageBody;
-import com.juaby.labs.rpc.client.Rpc2Client;
 import com.juaby.labs.rpc.client.RpcClient;
 import com.juaby.labs.rpc.config.ServiceConfig;
 import com.juaby.labs.rpc.config.ServiceConfigHelper;
@@ -35,14 +33,7 @@ public class RpcClientProxy {
         }
 
         //TODO
-        if (config.getServerType() == RpcEnum.Grizzly.value()) {
-            return RpcClient.sendMessage(requestMessageBody);
-        } else if (config.getServerType() == RpcEnum.Netty.value()) {
-            return Rpc2Client.sendMessage(requestMessageBody);
-        } else {
-            //TODO
-            return null;
-        }
+        return RpcClient.sendMessage(requestMessageBody);
     }
 
     protected void setConfig(String service) {

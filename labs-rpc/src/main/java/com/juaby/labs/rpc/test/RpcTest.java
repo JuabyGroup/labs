@@ -19,7 +19,7 @@ public class RpcTest {
         ServiceConfig<MessageService> serviceConfig = new ServiceConfig<MessageService>(2, MessageService.class);
         serviceConfig.setServerType(RpcEnum.Grizzly.value());
         MessageService messageService = ServiceFactory.getService(serviceConfig);
-        Endpoint endpoint = new Endpoint("localhost", 9098);
+        Endpoint endpoint = new Endpoint("localhost", 8007);
         EndpointHelper.add(serviceConfig.getName(), endpoint);
         TestBean testBean = new TestBean();
         testBean.setId("007");

@@ -1,5 +1,6 @@
 package com.juaby.labs.rpc.util;
 
+import com.juaby.labs.rpc.transport.RpcTransport;
 import io.netty.channel.Channel;
 import org.glassfish.grizzly.Connection;
 
@@ -14,6 +15,7 @@ public class RpcCallbackHandler {
     private final static Map<String, RpcCallback> callbackCache = new ConcurrentHashMap<String, RpcCallback>();
     private final static Map<String, Channel> callbackChannelCache = new ConcurrentHashMap<String, Channel>();
     private final static Map<String, Connection> callbackConnectionCache = new ConcurrentHashMap<String, Connection>();
+    private final static Map<String, RpcTransport> callbackRpcTransportCache = new ConcurrentHashMap<String, RpcTransport>();
 
     public static void addCallback(String key, RpcCallback callback) {
         callbackCache.put(key, callback);
@@ -37,6 +39,14 @@ public class RpcCallbackHandler {
 
     public static Connection getCallbackConnection(String key) {
         return callbackConnectionCache.get(key);
+    }
+
+    public static void addCallbackRpcTransport(String key, RpcTransport transport) {
+        callbackRpcTransportCache.put(key, transport);
+    }
+
+    public static RpcTransport getCallbackRpcTransportn(String key) {
+        return callbackRpcTransportCache.get(key);
     }
 
     public static <RES> void handler(RpcCallback callback, RES res) {

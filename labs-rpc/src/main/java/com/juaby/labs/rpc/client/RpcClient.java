@@ -41,8 +41,11 @@
 package com.juaby.labs.rpc.client;
 
 import com.juaby.labs.rpc.config.ServiceConfig;
+import com.juaby.labs.rpc.config.ServiceConfigHelper;
 import com.juaby.labs.rpc.message.RpcMessage;
 import com.juaby.labs.rpc.proxy.ServiceClassInfo;
+import com.juaby.labs.rpc.transport.RpcTransport;
+import com.juaby.labs.rpc.transport.RpcTransportFactory;
 import com.juaby.labs.rpc.util.SerializeTool;
 import com.juaby.labs.rpc.message.RequestMessageBody;
 import com.juaby.labs.rpc.message.ResponseMessageBody;
@@ -60,14 +63,14 @@ import java.util.concurrent.TimeoutException;
 public class RpcClient {
 
     public static <R> R sendMessage(RequestMessageBody requestMessageBody) {
-        Connection connection = null;
+        RpcTransport transport = null;
         Endpoint endpoint = EndpointHelper.cache(requestMessageBody.getService()).iterator().next();
         final RpcFutureImpl<ResponseMessageBody> resultFuture = RpcSafeFutureImpl.create();
         Integer messageId = MessageIdGenerator.id();
         ResponseMessageBody<R> rcvMessage = new ResponseMessageBody<R>();
         try {
             // Connect client to the GIOP server
-            connection = ConnectionFactory.get(endpoint);
+            transport = RpcTransportFactory.getTransport(endpoint, ServiceConfigHelper.getConfig(requestMessageBody.getService()));
 
             // Initialize sample GIOP message
             byte[] testMessage = SerializeTool.serialize(requestMessageBody);
@@ -79,7 +82,7 @@ public class RpcClient {
 
             ResultFutureHelper.map().put(messageId, resultFuture);
 
-            connection.write(sentMessage);
+            transport.sendMessage(sentMessage);
 
             rcvMessage = ResultFutureHelper.result(messageId);
 
@@ -98,12 +101,12 @@ public class RpcClient {
         } catch (Exception e) {
             //TODO
         } finally {
-            if (connection != null) {
-                ConnectionFactory.release(endpoint, connection);
+            //TODO
+            if (transport != null) {
+                transport.release(endpoint);
             }
             ResultFutureHelper.map().remove(messageId);
         }
-
         return rcvMessage.getBody();
     }
 

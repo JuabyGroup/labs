@@ -47,6 +47,7 @@ import com.juaby.labs.rpc.message.RpcMessage;
 import com.juaby.labs.rpc.proxy.ProxyHelper;
 import com.juaby.labs.rpc.proxy.ServiceClassInfo;
 import com.juaby.labs.rpc.test.CallbackTest;
+import com.juaby.labs.rpc.transport.GrizzlyTransport;
 import com.juaby.labs.rpc.util.RpcCallback;
 import com.juaby.labs.rpc.util.RpcCallbackHandler;
 import com.juaby.labs.rpc.util.SerializeTool;
@@ -88,7 +89,7 @@ public class ServiceFilter extends BaseFilter {
         ServiceClassInfo.MethodInfo methodInfo = ServiceClassInfoHelper.get(requestMessageBody.getService()).getMethods().get(requestMessageBody.getMethod());
         if(methodInfo.isCallback()) {
             //TODO
-            RpcCallbackHandler.addCallbackConnection(requestMessageBody.getService() + requestMessageBody.getMethod(), ctx.getConnection());
+            RpcCallbackHandler.addCallbackRpcTransport(requestMessageBody.getService() + requestMessageBody.getMethod(), new GrizzlyTransport(ctx.getConnection()));
         }
 
         ResponseMessageBody messageBody;

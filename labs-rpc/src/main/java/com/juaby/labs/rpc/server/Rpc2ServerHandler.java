@@ -24,6 +24,7 @@ import com.juaby.labs.rpc.proxy.ProxyHelper;
 import com.juaby.labs.rpc.proxy.ServiceClassInfo;
 import com.juaby.labs.rpc.test.Callback2Test;
 import com.juaby.labs.rpc.test.CallbackTest;
+import com.juaby.labs.rpc.transport.NettyTransport;
 import com.juaby.labs.rpc.util.RpcCallbackHandler;
 import com.juaby.labs.rpc.util.SerializeTool;
 import com.juaby.labs.rpc.util.ServiceClassInfoHelper;
@@ -46,7 +47,7 @@ public class Rpc2ServerHandler extends ChannelInboundHandlerAdapter {
         ServiceClassInfo.MethodInfo methodInfo = ServiceClassInfoHelper.get(requestMessageBody.getService()).getMethods().get(requestMessageBody.getMethod());
         if(methodInfo.isCallback()) {
             //TODO
-            RpcCallbackHandler.addCallbackChannel(requestMessageBody.getService() + requestMessageBody.getMethod(), ctx.channel());
+            RpcCallbackHandler.addCallbackRpcTransport(requestMessageBody.getService() + requestMessageBody.getMethod(), new NettyTransport(ctx.channel()));
         }
 
         ResponseMessageBody messageBody;
