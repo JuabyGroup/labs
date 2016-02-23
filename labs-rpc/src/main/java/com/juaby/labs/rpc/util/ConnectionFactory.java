@@ -65,8 +65,7 @@ public class ConnectionFactory {
         filterChainBuilder.add(new ResultFutureHelper.CustomClientFilter());
 
         // Create TCP NIO transport
-        final TCPNIOTransport transport =
-                TCPNIOTransportBuilder.newInstance().build();
+        final TCPNIOTransport transport = TCPNIOTransportBuilder.newInstance().build();
         transport.setProcessor(filterChainBuilder.build());
         transportCache.put(endpoint.key(), transport);
         try {
