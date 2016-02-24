@@ -7,6 +7,7 @@ import org.glassfish.grizzly.filterchain.FilterChainContext;
 import org.glassfish.grizzly.filterchain.NextAction;
 
 import java.io.IOException;
+import java.net.InetSocketAddress;
 
 /**
  * Created by chaos on 16-2-23.
@@ -18,9 +19,12 @@ public class CustomClientFilter extends BaseFilter {
 
     @Override
     public NextAction handleRead(FilterChainContext ctx) throws IOException {
+        final Object localAddress = ctx.getConnection().getLocalAddress();
+        final InetSocketAddress inetSocketAddress = (InetSocketAddress) localAddress;
+
         final RpcMessage message = ctx.getMessage();
 
-        ResultFutureHelper.handleRead(message);
+        ResultFutureHelper.handleRead(message, inetSocketAddress);
 
         return ctx.getStopAction();
     }

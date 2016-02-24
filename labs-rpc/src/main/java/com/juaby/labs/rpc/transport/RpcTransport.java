@@ -14,4 +14,8 @@ public interface RpcTransport {
 
     public boolean isWritable();
 
+    public String getHost();
+
+    public int getPort();
+
 }

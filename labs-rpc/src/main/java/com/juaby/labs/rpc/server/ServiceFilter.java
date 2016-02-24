@@ -57,6 +57,7 @@ import org.glassfish.grizzly.filterchain.FilterChainContext;
 import org.glassfish.grizzly.filterchain.NextAction;
 
 import java.io.IOException;
+import java.net.InetSocketAddress;
 
 /**
  * Implementation of {@link FilterChain} filter, which replies with the request
@@ -79,6 +80,8 @@ public class ServiceFilter extends BaseFilter {
         // Peer address is used for non-connected UDP Connection :)
         final Object peerAddress = ctx.getAddress();
 
+        InetSocketAddress inetSocketAddress = (InetSocketAddress) peerAddress;
+
         final RpcMessage message = ctx.getMessage();
 
         RequestMessageBody requestMessageBody = new RequestMessageBody();
@@ -86,9 +89,11 @@ public class ServiceFilter extends BaseFilter {
         RpcServiceHandler rpcServiceHandler = ProxyHelper.getProxyInstance(requestMessageBody.getService() + requestMessageBody.getMethod());
 
         ServiceClassInfo.MethodInfo methodInfo = ServiceClassInfoHelper.get(requestMessageBody.getService()).getMethods().get(requestMessageBody.getMethod());
+        String transportKey = null;
         if(methodInfo.isCallback()) {
             //TODO
-            RpcCallbackHandler.addCallbackRpcTransport(requestMessageBody.getService() + requestMessageBody.getMethod(), new GrizzlyTransport(ctx.getConnection()));
+            transportKey = inetSocketAddress.getHostString() + ":" + inetSocketAddress.getPort() + ":" + requestMessageBody.getService() + ":" + requestMessageBody.getMethod();
+            RpcCallbackHandler.addCallbackRpcTransport(transportKey, new GrizzlyTransport(ctx.getConnection()));
         }
 
         ResponseMessageBody messageBody;
@@ -109,7 +114,7 @@ public class ServiceFilter extends BaseFilter {
         message.setBody(body);
         ctx.write(peerAddress, message, null);
 
-        CallbackTest.main(new String[] {}); //TODO
+        CallbackTest.main(new String[] {transportKey}); //TODO
 
         return ctx.getStopAction();
     }

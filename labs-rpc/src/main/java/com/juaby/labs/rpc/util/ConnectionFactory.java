@@ -82,7 +82,9 @@ public class ConnectionFactory {
                     .maxPoolSize(8) //TODO
                     .build();
             connCache.put(endpoint.key(), pool);
-            RpcTransportFactory.cache(endpoint, new GrizzlyTransport(pool));
+            //TODO
+            //RpcTransportFactory.cache(endpoint, new GrizzlyTransport(pool));
+            RpcTransportFactory.cache(endpoint, new GrizzlyTransport(get(endpoint)));
         } catch (IOException e) {
             //TODO
             e.printStackTrace();

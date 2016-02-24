@@ -71,6 +71,15 @@ public class RpcClient {
             // Connect client to the GIOP server
             transport = RpcTransportFactory.getTransport(endpoint, ServiceConfigHelper.getConfig(requestMessageBody.getService()));
 
+            ServiceClassInfo.MethodInfo methodInfo = ServiceClassInfoHelper.get(requestMessageBody.getService()).getMethods().get(requestMessageBody.getMethod());
+            String transportKey = null;
+            if(methodInfo.isCallback()) {
+                //TODO
+                transportKey = transport.getHost() + ":" + transport.getPort() + ":" + requestMessageBody.getService() + ":" + requestMessageBody.getMethod();
+                RpcCallbackHandler.addCallback(transportKey, (RpcCallback) requestMessageBody.getParams()[methodInfo.getCallbackIndex()]);
+                requestMessageBody.getParams()[methodInfo.getCallbackIndex()] = null;
+            }
+
             // Initialize sample GIOP message
             byte[] testMessage = SerializeTool.serialize(requestMessageBody);
             RpcMessage sentMessage = new RpcMessage((byte) 1, (byte) 2,
@@ -85,10 +94,9 @@ public class RpcClient {
 
             rcvMessage = ResultFutureHelper.result(messageId);
 
-            ServiceClassInfo.MethodInfo methodInfo = ServiceClassInfoHelper.get(rcvMessage.getService()).getMethods().get(rcvMessage.getMethod());
             if(methodInfo.isCallback()) {
                 //TODO
-                RpcCallback callback = RpcCallbackHandler.getCallback(rcvMessage.getService() + rcvMessage.getMethod());
+                RpcCallback callback = RpcCallbackHandler.getCallback(transportKey);
                 RpcCallbackHandler.handler(callback, rcvMessage.getBody());
             }
         } catch (InterruptedException e) {

@@ -4,6 +4,7 @@ import com.juaby.labs.rpc.message.ResponseMessageBody;
 import com.juaby.labs.rpc.message.RpcMessage;
 import com.juaby.labs.rpc.proxy.ServiceClassInfo;
 
+import java.net.InetSocketAddress;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ExecutionException;
@@ -22,14 +23,14 @@ public class ResultFutureHelper {
 
     private static final Map<Integer, RpcFutureImpl<ResponseMessageBody>> resultFutureMap = new ConcurrentHashMap<Integer, RpcFutureImpl<ResponseMessageBody>>();
 
-    public static void handleRead(RpcMessage message) {
+    public static void handleRead(RpcMessage message, InetSocketAddress inetSocketAddress) {
         ResponseMessageBody responseMessageBody = new ResponseMessageBody();
         SerializeTool.deserialize(message.getBody(), responseMessageBody);
 
         //TODO
         String service = responseMessageBody.getService();
         String method = responseMessageBody.getMethod();
-        String key = service + method;
+        String key = inetSocketAddress.getHostString() + ":" + inetSocketAddress.getPort() + ":" + service + ":" + method;
         ServiceClassInfo.MethodInfo methodInfo = ServiceClassInfoHelper.get(service).getMethods().get(method);
         if(methodInfo.isCallback()) {
             //TODO

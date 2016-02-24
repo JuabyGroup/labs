@@ -30,6 +30,8 @@ import com.juaby.labs.rpc.util.ServiceClassInfoHelper;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.ChannelInboundHandlerAdapter;
 
+import java.net.InetSocketAddress;
+
 /**
  * Handles both client-side and server-side handler depending on which
  * constructor was called.
@@ -44,9 +46,12 @@ public class Rpc2ServerHandler extends ChannelInboundHandlerAdapter {
         RpcServiceHandler rpcServiceHandler = ProxyHelper.getProxyInstance(requestMessageBody.getService() + requestMessageBody.getMethod());
 
         ServiceClassInfo.MethodInfo methodInfo = ServiceClassInfoHelper.get(requestMessageBody.getService()).getMethods().get(requestMessageBody.getMethod());
+        String transportKey = null;
         if(methodInfo.isCallback()) {
             //TODO
-            RpcCallbackHandler.addCallbackRpcTransport(requestMessageBody.getService() + requestMessageBody.getMethod(), new NettyTransport(ctx.channel()));
+            InetSocketAddress inetSocketAddress = (InetSocketAddress) ctx.channel().remoteAddress();
+            transportKey = inetSocketAddress.getHostString() + ":" + inetSocketAddress.getPort() + ":" + requestMessageBody.getService() + ":" + requestMessageBody.getMethod();
+            RpcCallbackHandler.addCallbackRpcTransport(transportKey, new NettyTransport(ctx.channel()));
         }
 
         ResponseMessageBody messageBody;
@@ -67,7 +72,7 @@ public class Rpc2ServerHandler extends ChannelInboundHandlerAdapter {
         message.setBodyLength(body.length);
         message.setBody(body);
 
-        CallbackTest.main(new String[] {}); //TODO
+        CallbackTest.main(new String[] {transportKey}); //TODO
 
         ctx.writeAndFlush(message, ctx.voidPromise());
     }

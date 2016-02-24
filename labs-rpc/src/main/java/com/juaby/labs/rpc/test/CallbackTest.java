@@ -18,14 +18,14 @@ import java.util.concurrent.TimeUnit;
 public class CallbackTest {
 
     public static void main(String[] args) {
+        String transportKey = args[0];
         ScheduledExecutorService scheduledThreadPool = Executors.newScheduledThreadPool(5);
         scheduledThreadPool.scheduleAtFixedRate(new Runnable() {
             public void run() {
                 System.out.println("delay 1 seconds, and excute every 3 seconds");
                 String method = "(Lcom/juaby/labs/rpc/test/TestBean;Ljava/util/List<Ljava/lang/String;>;Lcom/juaby/labs/rpc/util/RpcCallback;)Lcom/juaby/labs/rpc/test/TestResult;";
                 String service = "com/juaby/labs/rpc/test/MessageService";
-                String key = service + method;
-                RpcTransport transport = RpcCallbackHandler.getCallbackRpcTransport(key);
+                RpcTransport transport = RpcCallbackHandler.getCallbackRpcTransport(transportKey);
                 if (transport.isWritable()) {
                     ResponseMessageBody<TestResult> responseMessageBody = new ResponseMessageBody<TestResult>();
 
