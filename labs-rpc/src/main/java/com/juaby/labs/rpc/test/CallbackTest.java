@@ -1,12 +1,11 @@
 package com.juaby.labs.rpc.test;
 
 import com.juaby.labs.rpc.config.ServiceConfig;
-import com.juaby.labs.rpc.message.RequestMessageBody;
 import com.juaby.labs.rpc.message.ResponseMessageBody;
 import com.juaby.labs.rpc.message.RpcMessage;
+import com.juaby.labs.rpc.transport.RpcTransport;
 import com.juaby.labs.rpc.util.RpcCallbackHandler;
 import com.juaby.labs.rpc.util.SerializeTool;
-import org.glassfish.grizzly.Connection;
 
 import java.util.Date;
 import java.util.concurrent.Executors;
@@ -26,8 +25,8 @@ public class CallbackTest {
                 String method = "(Lcom/juaby/labs/rpc/test/TestBean;Ljava/util/List<Ljava/lang/String;>;Lcom/juaby/labs/rpc/util/RpcCallback;)Lcom/juaby/labs/rpc/test/TestResult;";
                 String service = "com/juaby/labs/rpc/test/MessageService";
                 String key = service + method;
-                Connection connection = RpcCallbackHandler.getCallbackConnection(key);
-                if (connection.canWrite()) {
+                RpcTransport transport = RpcCallbackHandler.getCallbackRpcTransport(key);
+                if (transport.isWritable()) {
                     ResponseMessageBody<TestResult> responseMessageBody = new ResponseMessageBody<TestResult>();
 
                     TestResult result = new TestResult();
@@ -47,7 +46,7 @@ public class CallbackTest {
                     sentMessage.setId(0);
                     sentMessage.setTotalLength(ServiceConfig.HEADER_SIZE + body.length);
 
-                    connection.write(sentMessage);
+                    transport.sendMessage(sentMessage);
                 }
             }
         }, 1, 3, TimeUnit.SECONDS);

@@ -48,7 +48,6 @@ import com.juaby.labs.rpc.proxy.ProxyHelper;
 import com.juaby.labs.rpc.proxy.ServiceClassInfo;
 import com.juaby.labs.rpc.test.CallbackTest;
 import com.juaby.labs.rpc.transport.GrizzlyTransport;
-import com.juaby.labs.rpc.util.RpcCallback;
 import com.juaby.labs.rpc.util.RpcCallbackHandler;
 import com.juaby.labs.rpc.util.SerializeTool;
 import com.juaby.labs.rpc.util.ServiceClassInfoHelper;

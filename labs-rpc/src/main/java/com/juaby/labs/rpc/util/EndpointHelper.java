@@ -1,7 +1,5 @@
 package com.juaby.labs.rpc.util;
 
-import com.juaby.labs.rpc.util.Endpoint;
-
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;

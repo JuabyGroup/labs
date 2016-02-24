@@ -54,4 +54,12 @@ public class ServerConfig {
         this.serviceConfig = serviceConfig;
     }
 
+    public Endpoint getEndpoint() {
+        return endpoint;
+    }
+
+    public void setEndpoint(Endpoint endpoint) {
+        this.endpoint = endpoint;
+    }
+
 }

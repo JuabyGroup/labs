@@ -22,7 +22,6 @@ import com.juaby.labs.rpc.message.ResponseMessageBody;
 import com.juaby.labs.rpc.message.RpcMessage;
 import com.juaby.labs.rpc.proxy.ProxyHelper;
 import com.juaby.labs.rpc.proxy.ServiceClassInfo;
-import com.juaby.labs.rpc.test.Callback2Test;
 import com.juaby.labs.rpc.test.CallbackTest;
 import com.juaby.labs.rpc.transport.NettyTransport;
 import com.juaby.labs.rpc.util.RpcCallbackHandler;
@@ -68,7 +67,7 @@ public class Rpc2ServerHandler extends ChannelInboundHandlerAdapter {
         message.setBodyLength(body.length);
         message.setBody(body);
 
-        Callback2Test.main(new String[] {}); //TODO
+        CallbackTest.main(new String[] {}); //TODO
 
         ctx.writeAndFlush(message, ctx.voidPromise());
     }

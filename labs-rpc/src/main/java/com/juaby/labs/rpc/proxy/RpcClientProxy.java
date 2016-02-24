@@ -32,7 +32,6 @@ public class RpcClientProxy {
             params[methodInfo.getCallbackIndex()] = null;
         }
 
-        //TODO
         return RpcClient.sendMessage(requestMessageBody);
     }
 

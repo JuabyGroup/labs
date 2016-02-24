@@ -1,5 +1,6 @@
 package com.juaby.labs.rpc.transport;
 
+import com.juaby.labs.rpc.message.RpcMessage;
 import com.juaby.labs.rpc.util.Endpoint;
 import org.glassfish.grizzly.Connection;
 import org.glassfish.grizzly.connectionpool.SingleEndpointPool;
@@ -25,7 +26,7 @@ public class GrizzlyTransport implements RpcTransport {
     }
 
     @Override
-    public void sendMessage(Object message) {
+    public void sendMessage(RpcMessage message) {
         try {
             Future<Connection> connectionFuture = pool.take();
             connection = connectionFuture.get();
@@ -42,6 +43,11 @@ public class GrizzlyTransport implements RpcTransport {
     @Override
     public void release(Endpoint endpoint) {
         pool.release(connection);
+    }
+
+    @Override
+    public boolean isWritable() {
+        return connection.canWrite();
     }
 
 }

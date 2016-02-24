@@ -45,7 +45,7 @@ public class RpcCallbackHandler {
         callbackRpcTransportCache.put(key, transport);
     }
 
-    public static RpcTransport getCallbackRpcTransportn(String key) {
+    public static RpcTransport getCallbackRpcTransport(String key) {
         return callbackRpcTransportCache.get(key);
     }
 

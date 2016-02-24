@@ -50,7 +50,6 @@ import com.juaby.labs.rpc.util.SerializeTool;
 import com.juaby.labs.rpc.message.RequestMessageBody;
 import com.juaby.labs.rpc.message.ResponseMessageBody;
 import com.juaby.labs.rpc.util.*;
-import org.glassfish.grizzly.Connection;
 
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeoutException;

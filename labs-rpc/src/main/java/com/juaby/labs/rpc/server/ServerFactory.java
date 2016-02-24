@@ -5,6 +5,7 @@ import com.juaby.labs.rpc.config.ServerConfig;
 import com.juaby.labs.rpc.proxy.ProxyHelper;
 import com.juaby.labs.rpc.proxy.RpcServerProxyGenerator;
 import com.juaby.labs.rpc.proxy.ServiceClassInfo;
+import com.juaby.labs.rpc.util.Endpoint;
 import com.juaby.labs.rpc.util.ServiceClassInfoHelper;
 
 import java.lang.reflect.InvocationTargetException;
@@ -34,21 +35,22 @@ public class ServerFactory {
             ProxyHelper.addProxyInstance(classInfo.getName() + methodSignature, rpcServiceHandler);
         }
         Server server = null;
+        Endpoint endpoint = serverConfig.getEndpoint();
         if (serverConfig.getServerType() == RpcEnum.Grizzly.value()) {
-            server = getGrizzlyServer();
+            server = getGrizzlyServer(endpoint);
         }
         if (serverConfig.getServerType() == RpcEnum.Netty.value()) {
-            server = getNettyServer();
+            server = getNettyServer(endpoint);
         }
         return server;
     }
 
-    public static Server getNettyServer() {
-        return new Rpc2Server();
+    public static Server getNettyServer(Endpoint endpoint) {
+        return new Rpc2Server(endpoint.getHost(), endpoint.getPort());
     }
 
-    public static Server getGrizzlyServer() {
-        return new RpcServer();
+    public static Server getGrizzlyServer(Endpoint endpoint) {
+        return new RpcServer(endpoint.getHost(), endpoint.getPort());
     }
 
 }

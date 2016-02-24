@@ -1,5 +1,6 @@
 package com.juaby.labs.rpc.transport;
 
+import com.juaby.labs.rpc.message.RpcMessage;
 import com.juaby.labs.rpc.util.Endpoint;
 
 /**
@@ -7,8 +8,10 @@ import com.juaby.labs.rpc.util.Endpoint;
  */
 public interface RpcTransport {
 
-    public void sendMessage(Object message);
+    public void sendMessage(RpcMessage message);
 
     public void release(Endpoint endpoint);
+
+    public boolean isWritable();
 
 }
