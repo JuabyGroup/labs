@@ -16,7 +16,7 @@
 package com.juaby.labs.rpc.server;
 
 import com.juaby.labs.rpc.config.ServiceConfig;
-import com.juaby.labs.rpc.util.NamedThreadFactory;
+import com.juaby.labs.rpc.util.RpcThreadFactory;
 import io.netty.bootstrap.ServerBootstrap;
 import io.netty.channel.ChannelInitializer;
 import io.netty.channel.ChannelPipeline;
@@ -66,7 +66,7 @@ public final class Rpc2Server implements Server {
     }
 
     public void start() {
-        NamedThreadFactory threadName = new NamedThreadFactory("RPC-SVR-WORKER", false);
+        RpcThreadFactory threadName = new RpcThreadFactory("RPC-SVR-WORKER", false);
         int threads = Runtime.getRuntime().availableProcessors() * 2 + 1;
         bossGroup = new NioEventLoopGroup(threads, threadName);
 

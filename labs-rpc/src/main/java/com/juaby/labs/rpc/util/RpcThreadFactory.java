@@ -6,7 +6,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 /**
  * Created by juaby on 16-2-17.
  */
-public class NamedThreadFactory implements ThreadFactory {
+public class RpcThreadFactory implements ThreadFactory {
 
     /** 系统全局线程池计数器*/
     private static final AtomicInteger poolCount = new AtomicInteger();
@@ -23,7 +23,7 @@ public class NamedThreadFactory implements ThreadFactory {
      * @param prefix
      *         前缀，后面会自动加上-T-
      */
-    public NamedThreadFactory(String prefix) {
+    public RpcThreadFactory(String prefix) {
         this(prefix, false);
     }
 
@@ -35,7 +35,7 @@ public class NamedThreadFactory implements ThreadFactory {
      * @param daemon
      *         是否守护线程，true的话随主线程退出而退出，false的话则要主动退出
      */
-    public NamedThreadFactory(String prefix, boolean daemon) {
+    public RpcThreadFactory(String prefix, boolean daemon) {
         SecurityManager s = System.getSecurityManager();
         group = (s != null) ? s.getThreadGroup() : Thread.currentThread().getThreadGroup();
         namePrefix = prefix + "-" + poolCount.getAndIncrement() + "-T-";

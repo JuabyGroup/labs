@@ -56,7 +56,7 @@ public class ChannelFactory {
 
     public static void initPool(Endpoint endpoint) {
         Channel channel;
-        NamedThreadFactory threadName = new NamedThreadFactory("RPC-CLI-WORKER", true);
+        RpcThreadFactory threadName = new RpcThreadFactory("RPC-CLI-WORKER", true);
         int threads = Runtime.getRuntime().availableProcessors() * 2 + 1;
         EventLoopGroup group = new NioEventLoopGroup(threads, threadName);
         try {
