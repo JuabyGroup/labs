@@ -12,17 +12,18 @@ import java.util.concurrent.ConcurrentHashMap;
  */
 public class RpcCallbackHandler {
 
-    private final static Map<String, RpcCallback> callbackCache = new ConcurrentHashMap<String, RpcCallback>();
+    private final static Map<String, RpcCallback> clientCallbackProxyCache = new ConcurrentHashMap<String, RpcCallback>();
     private final static Map<String, Channel> callbackChannelCache = new ConcurrentHashMap<String, Channel>();
     private final static Map<String, Connection> callbackConnectionCache = new ConcurrentHashMap<String, Connection>();
     private final static Map<String, RpcTransport> callbackRpcTransportCache = new ConcurrentHashMap<String, RpcTransport>();
+    private final static Map<String, RpcCallback> serverCallbackProxyCache = new ConcurrentHashMap<String, RpcCallback>();
 
-    public static void addCallback(String key, RpcCallback callback) {
-        callbackCache.put(key, callback);
+    public static void addClientCallbackProxy(String key, RpcCallback callback) {
+        clientCallbackProxyCache.put(key, callback);
     }
 
-    public static RpcCallback getCallback(String key) {
-        return callbackCache.get(key);
+    public static RpcCallback getClientCallbackProxy(String key) {
+        return clientCallbackProxyCache.get(key);
     }
 
     public static void addCallbackChannel(String key, Channel channel) {
@@ -47,6 +48,14 @@ public class RpcCallbackHandler {
 
     public static RpcTransport getCallbackRpcTransport(String key) {
         return callbackRpcTransportCache.get(key);
+    }
+
+    public static void addServerCallbackProxy(String key, RpcCallback callback) {
+        serverCallbackProxyCache.put(key, callback);
+    }
+
+    public static RpcCallback getServerCallbackProxy(String key) {
+        return serverCallbackProxyCache.get(key);
     }
 
     public static <RES> void handler(RpcCallback callback, RES res) {

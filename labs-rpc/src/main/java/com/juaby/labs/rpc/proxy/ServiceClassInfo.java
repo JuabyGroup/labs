@@ -230,6 +230,8 @@ public class ServiceClassInfo {
 
         private int callbackIndex;
 
+        private int index;
+
         public MethodInfo() {}
 
         public int getId() {
@@ -344,6 +346,14 @@ public class ServiceClassInfo {
             isCallback = callback;
         }
 
+        public int getIndex() {
+            return index;
+        }
+
+        public void setIndex(int index) {
+            this.index = index;
+        }
+
         @Override
         public String toString() {
             return "MethodInfo{" +
@@ -360,6 +370,7 @@ public class ServiceClassInfo {
                     ", returnTypeDesc='" + returnTypeDesc + '\'' +
                     ", paramsTypes=" + Arrays.toString(paramsTypes) +
                     ", isCallback=" + isCallback +
+                    ", index=" + index +
                     '}';
         }
 

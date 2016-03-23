@@ -45,9 +45,11 @@ import com.juaby.labs.rpc.message.RequestMessageBody;
 import com.juaby.labs.rpc.message.ResponseMessageBody;
 import com.juaby.labs.rpc.message.RpcMessage;
 import com.juaby.labs.rpc.proxy.ProxyHelper;
+import com.juaby.labs.rpc.proxy.RpcCallbackProxyGenerator;
 import com.juaby.labs.rpc.proxy.ServiceClassInfo;
 import com.juaby.labs.rpc.test.CallbackTest;
 import com.juaby.labs.rpc.transport.GrizzlyTransport;
+import com.juaby.labs.rpc.util.RpcCallback;
 import com.juaby.labs.rpc.util.RpcCallbackHandler;
 import com.juaby.labs.rpc.util.SerializeTool;
 import com.juaby.labs.rpc.util.ServiceClassInfoHelper;
@@ -57,6 +59,7 @@ import org.glassfish.grizzly.filterchain.FilterChainContext;
 import org.glassfish.grizzly.filterchain.NextAction;
 
 import java.io.IOException;
+import java.lang.reflect.InvocationTargetException;
 import java.net.InetSocketAddress;
 
 /**
@@ -87,13 +90,36 @@ public class ServiceFilter extends BaseFilter {
         RequestMessageBody requestMessageBody = new RequestMessageBody();
         SerializeTool.deserialize(message.getBody(), requestMessageBody);
         RpcServiceHandler rpcServiceHandler = ProxyHelper.getProxyInstance(requestMessageBody.getService() + requestMessageBody.getMethod());
-
-        ServiceClassInfo.MethodInfo methodInfo = ServiceClassInfoHelper.get(requestMessageBody.getService()).getMethods().get(requestMessageBody.getMethod());
+        ServiceClassInfo serviceClassInfo = ServiceClassInfoHelper.get(requestMessageBody.getService());
+        ServiceClassInfo.MethodInfo methodInfo = serviceClassInfo.getMethods().get(requestMessageBody.getMethod());
         String transportKey = null;
         if(methodInfo.isCallback()) {
             //TODO
             transportKey = inetSocketAddress.getHostString() + ":" + inetSocketAddress.getPort() + ":" + requestMessageBody.getService() + ":" + requestMessageBody.getMethod();
             RpcCallbackHandler.addCallbackRpcTransport(transportKey, new GrizzlyTransport(ctx.getConnection()));
+            RpcCallback callback = RpcCallbackHandler.getServerCallbackProxy(transportKey);
+            if (callback == null) {
+                try {
+                    callback = new RpcCallbackProxyGenerator().newInstance(serviceClassInfo, transportKey);
+                } catch (IllegalAccessException e) {
+                    //TODO
+                    e.printStackTrace();
+                } catch (InstantiationException e) {
+                    //TODO
+                    e.printStackTrace();
+                } catch (ClassNotFoundException e) {
+                    //TODO
+                    e.printStackTrace();
+                } catch (NoSuchMethodException e) {
+                    //TODO
+                    e.printStackTrace();
+                } catch (InvocationTargetException e) {
+                    //TODO
+                    e.printStackTrace();
+                }
+                RpcCallbackHandler.addServerCallbackProxy(transportKey, callback);
+                requestMessageBody.getParams()[methodInfo.getCallbackIndex()] = callback;
+            }
         }
 
         ResponseMessageBody messageBody;
@@ -113,8 +139,6 @@ public class ServiceFilter extends BaseFilter {
         message.setBodyLength(body.length);
         message.setBody(body);
         ctx.write(peerAddress, message, null);
-
-        CallbackTest.main(new String[] {transportKey}); //TODO
 
         return ctx.getStopAction();
     }

@@ -63,20 +63,29 @@ public class RpcClient {
 
     public static <R> R sendMessage(RequestMessageBody requestMessageBody) {
         RpcTransport transport = null;
-        Endpoint endpoint = EndpointHelper.cache(requestMessageBody.getService()).iterator().next();
+        //TODO
+        Endpoint endpoint = null;
+        ServiceConfig serviceConfig = ServiceConfigHelper.getConfig(requestMessageBody.getService());
+        if (serviceConfig != null) {
+            endpoint = serviceConfig.getEndpoint();
+        } else {
+            //TODO laodblance
+            endpoint = EndpointHelper.cache(requestMessageBody.getService()).iterator().next();
+        }
+
         final RpcFutureImpl<ResponseMessageBody> resultFuture = RpcSafeFutureImpl.create();
         Integer messageId = MessageIdGenerator.id();
         ResponseMessageBody<R> rcvMessage = new ResponseMessageBody<R>();
         try {
             // Connect client to the GIOP server
-            transport = RpcTransportFactory.getTransport(endpoint, ServiceConfigHelper.getConfig(requestMessageBody.getService()));
+            transport = RpcTransportFactory.getTransport(endpoint, serviceConfig);
 
             ServiceClassInfo.MethodInfo methodInfo = ServiceClassInfoHelper.get(requestMessageBody.getService()).getMethods().get(requestMessageBody.getMethod());
             String transportKey = null;
             if(methodInfo.isCallback()) {
                 //TODO
                 transportKey = transport.getHost() + ":" + transport.getPort() + ":" + requestMessageBody.getService() + ":" + requestMessageBody.getMethod();
-                RpcCallbackHandler.addCallback(transportKey, (RpcCallback) requestMessageBody.getParams()[methodInfo.getCallbackIndex()]);
+                RpcCallbackHandler.addClientCallbackProxy(transportKey, (RpcCallback) requestMessageBody.getParams()[methodInfo.getCallbackIndex()]);
                 requestMessageBody.getParams()[methodInfo.getCallbackIndex()] = null;
             }
 
@@ -96,7 +105,7 @@ public class RpcClient {
 
             if(methodInfo.isCallback()) {
                 //TODO
-                RpcCallback callback = RpcCallbackHandler.getCallback(transportKey);
+                RpcCallback callback = RpcCallbackHandler.getClientCallbackProxy(transportKey);
                 RpcCallbackHandler.handler(callback, rcvMessage.getBody());
             }
         } catch (InterruptedException e) {

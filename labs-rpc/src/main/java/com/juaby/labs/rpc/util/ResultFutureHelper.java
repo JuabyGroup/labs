@@ -34,8 +34,8 @@ public class ResultFutureHelper {
         ServiceClassInfo.MethodInfo methodInfo = ServiceClassInfoHelper.get(service).getMethods().get(method);
         if(methodInfo.isCallback()) {
             //TODO
-            RpcCallback callback = RpcCallbackHandler.getCallback(key);
-            RpcCallbackHandler.handler(callback, responseMessageBody.getBody());
+            //RpcCallback callback = RpcCallbackHandler.getClientCallbackProxy(key);
+            //RpcCallbackHandler.handler(callback, responseMessageBody.getBody());
         }
 
         if (message != null) {

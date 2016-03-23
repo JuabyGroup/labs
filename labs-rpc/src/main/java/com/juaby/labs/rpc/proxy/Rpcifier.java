@@ -33,6 +33,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 import com.juaby.labs.rpc.util.RpcCallback;
+import com.juaby.labs.rpc.util.ServiceClassInfoHelper;
 import org.objectweb.asm.*;
 import org.objectweb.asm.util.ASMifiable;
 
@@ -233,7 +234,10 @@ public class Rpcifier extends RpcProxyParser {
             methodInfo.setReturnVoid(isReturnVoid);
             methodInfo.setParamsLength(paramsLength);
             methodInfo.setReturnTypeDesc(returnTypeDesc);
+            int index = ServiceClassInfoHelper.getMethodCounter(classInfo.getSimpleName() + ":" + methodInfo.getSignature()).getAndIncrement();
+            methodInfo.setIndex(index);
             classInfo.getMethods().put(methodInfo.getSignature(), methodInfo);
+
         }
         return a;
     }

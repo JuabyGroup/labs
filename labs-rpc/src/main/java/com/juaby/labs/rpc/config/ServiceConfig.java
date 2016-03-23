@@ -4,6 +4,7 @@ import com.juaby.labs.rpc.common.RpcEnum;
 import com.juaby.labs.rpc.exception.RpcException;
 import com.juaby.labs.rpc.proxy.ProxyHelper;
 import com.juaby.labs.rpc.proxy.ServiceClassInfo;
+import com.juaby.labs.rpc.util.Endpoint;
 import com.juaby.labs.rpc.util.ServiceClassInfoHelper;
 
 /**
@@ -27,6 +28,8 @@ public class ServiceConfig<S> {
     private int serverType;
 
     private ServerConfig serverConfig;
+
+    private Endpoint endpoint;
 
     public ServiceConfig(int serviceType) {
         this.serviceType = serviceType;
@@ -108,6 +111,14 @@ public class ServiceConfig<S> {
 
     public void setServerType(int serverType) {
         this.serverType = serverType;
+    }
+
+    public Endpoint getEndpoint() {
+        return endpoint;
+    }
+
+    public void setEndpoint(Endpoint endpoint) {
+        this.endpoint = endpoint;
     }
 
 }

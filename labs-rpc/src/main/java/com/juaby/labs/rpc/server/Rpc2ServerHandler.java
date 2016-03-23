@@ -21,15 +21,18 @@ import com.juaby.labs.rpc.message.RequestMessageBody;
 import com.juaby.labs.rpc.message.ResponseMessageBody;
 import com.juaby.labs.rpc.message.RpcMessage;
 import com.juaby.labs.rpc.proxy.ProxyHelper;
+import com.juaby.labs.rpc.proxy.RpcCallbackProxyGenerator;
 import com.juaby.labs.rpc.proxy.ServiceClassInfo;
 import com.juaby.labs.rpc.test.CallbackTest;
 import com.juaby.labs.rpc.transport.NettyTransport;
+import com.juaby.labs.rpc.util.RpcCallback;
 import com.juaby.labs.rpc.util.RpcCallbackHandler;
 import com.juaby.labs.rpc.util.SerializeTool;
 import com.juaby.labs.rpc.util.ServiceClassInfoHelper;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.ChannelInboundHandlerAdapter;
 
+import java.lang.reflect.InvocationTargetException;
 import java.net.InetSocketAddress;
 
 /**
@@ -44,14 +47,37 @@ public class Rpc2ServerHandler extends ChannelInboundHandlerAdapter {
         RequestMessageBody requestMessageBody = new RequestMessageBody();
         SerializeTool.deserialize(message.getBody(), requestMessageBody);
         RpcServiceHandler rpcServiceHandler = ProxyHelper.getProxyInstance(requestMessageBody.getService() + requestMessageBody.getMethod());
-
-        ServiceClassInfo.MethodInfo methodInfo = ServiceClassInfoHelper.get(requestMessageBody.getService()).getMethods().get(requestMessageBody.getMethod());
+        ServiceClassInfo serviceClassInfo = ServiceClassInfoHelper.get(requestMessageBody.getService());
+        ServiceClassInfo.MethodInfo methodInfo = serviceClassInfo.getMethods().get(requestMessageBody.getMethod());
         String transportKey = null;
         if(methodInfo.isCallback()) {
             //TODO
             InetSocketAddress inetSocketAddress = (InetSocketAddress) ctx.channel().remoteAddress();
             transportKey = inetSocketAddress.getHostString() + ":" + inetSocketAddress.getPort() + ":" + requestMessageBody.getService() + ":" + requestMessageBody.getMethod();
             RpcCallbackHandler.addCallbackRpcTransport(transportKey, new NettyTransport(ctx.channel()));
+            RpcCallback callback = RpcCallbackHandler.getServerCallbackProxy(transportKey);
+            if (callback == null) {
+                try {
+                    callback = new RpcCallbackProxyGenerator().newInstance(serviceClassInfo, transportKey);
+                } catch (IllegalAccessException e) {
+                    //TODO
+                    e.printStackTrace();
+                } catch (InstantiationException e) {
+                    //TODO
+                    e.printStackTrace();
+                } catch (ClassNotFoundException e) {
+                    //TODO
+                    e.printStackTrace();
+                } catch (NoSuchMethodException e) {
+                    //TODO
+                    e.printStackTrace();
+                } catch (InvocationTargetException e) {
+                    //TODO
+                    e.printStackTrace();
+                }
+                RpcCallbackHandler.addServerCallbackProxy(transportKey, callback);
+                requestMessageBody.getParams()[methodInfo.getCallbackIndex()] = callback;
+            }
         }
 
         ResponseMessageBody messageBody;
@@ -71,8 +97,6 @@ public class Rpc2ServerHandler extends ChannelInboundHandlerAdapter {
         message.setTotalLength(ServiceConfig.HEADER_SIZE + body.length);
         message.setBodyLength(body.length);
         message.setBody(body);
-
-        CallbackTest.main(new String[] {transportKey}); //TODO
 
         ctx.writeAndFlush(message, ctx.voidPromise());
     }

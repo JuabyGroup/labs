@@ -7,6 +7,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.atomic.AtomicInteger;
 
 /**
  * Created by Juaby on 2015/8/26.
@@ -14,6 +15,7 @@ import java.util.concurrent.ConcurrentHashMap;
 public class ServiceClassInfoHelper {
 
     private static final Map<String, ServiceClassInfo> serviceClassInfoCache = new ConcurrentHashMap<String, ServiceClassInfo>();
+    private static final Map<String, AtomicInteger> methodCounterCache = new ConcurrentHashMap<String, AtomicInteger>();
 
     public static ServiceClassInfo get(String service) {
         if (service == null) {
@@ -60,6 +62,16 @@ public class ServiceClassInfoHelper {
         }
 
         return mailClassInfo;
+    }
+
+    public static AtomicInteger getMethodCounter(String key) {
+        AtomicInteger counter = methodCounterCache.get(key);
+        if (counter != null) {
+            return counter;
+        }
+        counter = new AtomicInteger();
+        methodCounterCache.put(key, counter);
+        return counter;
     }
 
 }

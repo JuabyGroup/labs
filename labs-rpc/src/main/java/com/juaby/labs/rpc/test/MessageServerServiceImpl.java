@@ -34,6 +34,7 @@ public class MessageServerServiceImpl<O, F> implements MessageService<O, F> {
         result.setName("RESULT_NAME");
         result.setContent("COME ON BABY");
         result.setTime(new Date());
+        callback.callback(result);
         return result;
     }
 
