@@ -28,26 +28,46 @@ public class ElectionServiceImpl implements ElectionService {
 
     @Override
     public void heartbeat(HeartbeatRequest heartbeatRequest) {
-        electionProtocol.handleEvent(heartbeatRequest);
+        // drop the message if hdr.term < raft.current_term, else accept
+        // if hdr.term > raft.current_term -> change to follower
+        int rc = electionProtocol.raft.currentTerm(heartbeatRequest.term);
+        if (rc < 0)
+            return;
+        if (rc > 0) { // a new term was set
+            electionProtocol.changeRole(Role.Follower);
+            electionProtocol.voteFor(null); // so we can vote again in this term
+        }
+
         int term = heartbeatRequest.term();
         Endpoint leader = heartbeatRequest.getLeader();
         electionProtocol.handleHeartbeat(term, leader);
     }
 
     @Override
-    public void vote(VoteRequest voteRequest, RpcCallback<VoteResponse, Boolean> callback) {
+    public VoteResponse vote(VoteRequest voteRequest, RpcCallback<VoteResponse, Boolean> callback) {
+
         if (voteRequest != null) {
-            electionProtocol.handleEvent(voteRequest);
             int term = voteRequest.term();
             int last_log_term = voteRequest.getLast_log_term();
             int last_log_index = voteRequest.getLast_log_index();
             Endpoint candidateId = voteRequest.getCandidateId();
+
+            // drop the message if hdr.term < raft.current_term, else accept
+            // if hdr.term > raft.current_term -> change to follower
+            int rc = electionProtocol.raft.currentTerm(voteRequest.term);
+            if (rc < 0)
+                electionProtocol.sendVoteResponse(candidateId, term, false, callback); // raft.current_term);
+            if (rc > 0) { // a new term was set
+                electionProtocol.changeRole(Role.Follower);
+                electionProtocol.voteFor(null); // so we can vote again in this term
+            }
+
             boolean send_vote_rsp = electionProtocol.handleVoteRequest(candidateId, term, last_log_term, last_log_index);
             if (send_vote_rsp) {
-                electionProtocol.sendVoteResponse(candidateId, term, callback); // raft.current_term);
+                electionProtocol.sendVoteResponse(candidateId, term, true, callback); // raft.current_term);
             }
         }
-        return;
+        return null;
     }
 
 }

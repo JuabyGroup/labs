@@ -1,8 +1,7 @@
 package com.juaby.labs.raft.protocols;
 
 import com.juaby.labs.raft.util.*;
-import com.juaby.labs.rpc.util.Endpoint;
-import com.juaby.labs.rpc.util.SerializeTool;
+import com.juaby.labs.rpc.util.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -10,9 +9,7 @@ import java.io.*;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.util.*;
-import java.util.concurrent.CompletableFuture;
-import java.util.concurrent.Future;
-import java.util.concurrent.TimeUnit;
+import java.util.concurrent.*;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.ObjIntConsumer;
@@ -27,12 +24,12 @@ import java.util.function.ObjIntConsumer;
  */
 
 /** Implementation of the RAFT consensus protocol */
-public class RAFT implements Runnable, Settable, DynamicMembership {
+public class RaftProtocol implements Runnable, Settable, DynamicMembership {
 
     protected final Logger log = LoggerFactory.getLogger(this.getClass());
 
     // When moving to JGroups -> add to jg-protocol-ids.xml
-    protected static final byte[] raft_id_key = Util.raftid("raft-id");
+    protected static final byte[] raft_id_key = Util.raftIdKey("raft-id");
     protected static final short RAFT_ID = 521;
 
     // When moving to JGroups -> add to jg-magic-map.xml
@@ -94,7 +91,7 @@ public class RAFT implements Runnable, Settable, DynamicMembership {
     /** The current role (follower, candidate or leader). Every node starts out as a follower */
     /** impl_lock */
     protected volatile RaftImpl impl = new Follower(this);
-    protected volatile View view;
+
     protected Endpoint local_addr;
     protected TimeScheduler timer;
 
@@ -116,6 +113,9 @@ public class RAFT implements Runnable, Settable, DynamicMembership {
 
     protected int log_size_bytes; // keeps counts of the bytes added to the log
 
+    private int MAX_APPEND = Runtime.getRuntime().availableProcessors();
+    private ExecutorService appendThreadPool = Executors.newFixedThreadPool(MAX_APPEND, new RpcThreadFactory("APPEND"));
+
     public Endpoint address() {
         return local_addr;
     }
@@ -124,7 +124,7 @@ public class RAFT implements Runnable, Settable, DynamicMembership {
         return raft_id;
     }
 
-    public RAFT raftId(String id) {
+    public RaftProtocol raftId(String id) {
         this.raft_id = id;
         return this;
     }
@@ -139,7 +139,7 @@ public class RAFT implements Runnable, Settable, DynamicMembership {
         return log_class;
     }
 
-    public RAFT logClass(String clazz) {
+    public RaftProtocol logClass(String clazz) {
         log_class = clazz;
         return this;
     }
@@ -148,7 +148,7 @@ public class RAFT implements Runnable, Settable, DynamicMembership {
         return log_args;
     }
 
-    public RAFT logArgs(String args) {
+    public RaftProtocol logArgs(String args) {
         log_args = args;
         return this;
     }
@@ -157,7 +157,7 @@ public class RAFT implements Runnable, Settable, DynamicMembership {
         return log_name;
     }
 
-    public RAFT logName(String name) {
+    public RaftProtocol logName(String name) {
         log_name = name;
         return this;
     }
@@ -166,7 +166,7 @@ public class RAFT implements Runnable, Settable, DynamicMembership {
         return snapshot_name;
     }
 
-    public RAFT snapshotName(String name) {
+    public RaftProtocol snapshotName(String name) {
         snapshot_name = name;
         return this;
     }
@@ -175,7 +175,7 @@ public class RAFT implements Runnable, Settable, DynamicMembership {
         return resend_interval;
     }
 
-    public RAFT resendInterval(long val) {
+    public RaftProtocol resendInterval(long val) {
         resend_interval = val;
         return this;
     }
@@ -184,7 +184,7 @@ public class RAFT implements Runnable, Settable, DynamicMembership {
         return max_log_size;
     }
 
-    public RAFT maxLogSize(int val) {
+    public RaftProtocol maxLogSize(int val) {
         max_log_size = val;
         return this;
     }
@@ -198,7 +198,7 @@ public class RAFT implements Runnable, Settable, DynamicMembership {
         return leader;
     }
 
-    public RAFT leader(Endpoint new_leader) {
+    public RaftProtocol leader(Endpoint new_leader) {
         this.leader = new_leader;
         return this;
     }
@@ -211,7 +211,7 @@ public class RAFT implements Runnable, Settable, DynamicMembership {
         return this.log;
     }
 
-    public RAFT stateMachine(StateMachine sm) {
+    public RaftProtocol stateMachine(StateMachine sm) {
         this.state_machine = sm;
         return this;
     }
@@ -236,17 +236,17 @@ public class RAFT implements Runnable, Settable, DynamicMembership {
         return log_impl;
     }
 
-    public RAFT log(Log new_log) {
+    public RaftProtocol log(Log new_log) {
         this.log_impl = new_log;
         return this;
     }
 
-    public RAFT addRoleListener(RoleChange c) {
+    public RaftProtocol addRoleListener(RoleChange c) {
         this.role_change_listeners.add(c);
         return this;
     }
 
-    public RAFT remRoleListener(RoleChange c) {
+    public RaftProtocol remRoleListener(RoleChange c) {
         this.role_change_listeners.remove(c);
         return this;
     }
@@ -265,7 +265,7 @@ public class RAFT implements Runnable, Settable, DynamicMembership {
         }
     }
 
-    public RAFT members(List<String> list) {
+    public RaftProtocol members(List<String> list) {
         synchronized (members) {
             this.members.clear();
             this.members.addAll(new HashSet<>(list));
@@ -412,6 +412,8 @@ public class RAFT implements Runnable, Settable, DynamicMembership {
             if (!members.contains(name)) {
                 members.add(name);
                 majority = members.size() / 2 + 1;
+
+                handleChangeMember(members);
             }
         }
     }
@@ -423,6 +425,8 @@ public class RAFT implements Runnable, Settable, DynamicMembership {
         synchronized (members) {
             if (members.remove(name)) {
                 majority = members.size() / 2 + 1;
+
+                handleChangeMember(members);
             }
         }
     }
@@ -496,7 +500,7 @@ public class RAFT implements Runnable, Settable, DynamicMembership {
 
         // we can only add/remove 1 member at a time (section 4.1 of [1])
         if (dynamic_view_changes) {
-            disableViewBundling();
+            //TODO
         }
         synchronized (members) {
             Set<String> tmp = new HashSet<>(members);
@@ -509,9 +513,24 @@ public class RAFT implements Runnable, Settable, DynamicMembership {
             majority = members.size() / 2 + 1;
         }
 
+        String ip = NetworkUtils.getIp();
+        for (String mbr : members) {
+            String[] mbrArr = mbr.split(":");
+            if (mbrArr[0].equals(ip)) {
+                local_addr = new Endpoint(mbrArr[0], Integer.parseInt(mbrArr[1]));
+                break;
+            }
+        }
+
         // Set an AddressGenerator in channel which generates ExtendedUUIDs and adds the raft_id to the hashmap
-        final JChannel ch = stack.getChannel();
-        ch.addAddressGenerator(() -> ExtendedUUID.randomUUID(ch.getName()).put(raft_id_key, Util.stringToBytes(raft_id)));
+        // put(raft_id_key, Util.stringToBytes(raft_id))); TODO
+
+        // if we're the leader, check if the view contains no duplicate raft-ids
+        /**
+        if (duplicatesInMember()) {
+            log.error("view contains duplicate raft-ids: %s", view);
+        }
+         */
     }
 
     public void start() throws Exception {
@@ -555,47 +574,6 @@ public class RAFT implements Runnable, Settable, DynamicMembership {
     public void stop() {
         //super.stop(); TODO
         impl.destroy();
-    }
-
-    public Object down(Event evt) {
-        switch (evt.getType()) {
-            case Event.SET_LOCAL_ADDRESS:
-                local_addr = (Address) evt.getArg();
-                break;
-            case Event.VIEW_CHANGE:
-                handleView((View) evt.getArg());
-                break;
-        }
-        return down_prot.down(evt);
-    }
-
-    public Object up(Event evt) {
-        switch (evt.getType()) {
-            case Event.MSG:
-                Message msg = (Message) evt.getArg();
-                RaftHeader hdr = (RaftHeader) msg.getHeader(id);
-                if (hdr == null)
-                    break;
-                handleEvent(msg, hdr);
-                return null;
-            case Event.VIEW_CHANGE:
-                handleView((View) evt.getArg());
-                break;
-        }
-        return up_prot.up(evt);
-    }
-
-
-    public void up(MessageBatch batch) {
-        for (Message msg : batch) {
-            RaftHeader hdr = (RaftHeader) msg.getHeader(id);
-            if (hdr != null) {
-                batch.remove(msg);
-                handleEvent(msg, hdr);
-            }
-        }
-        if (!batch.isEmpty())
-            up_prot.up(batch);
     }
 
     /**
@@ -669,7 +647,8 @@ public class RAFT implements Runnable, Settable, DynamicMembership {
             LogEntry entry = log_impl.get(prev_index);
             prev_term = entry != null ? entry.term : 0;
 
-            log_impl.append(curr_index, true, new LogEntry(curr_term, buf, offset, length, cmd != null));
+            LogEntry appendEntry = new LogEntry(curr_term, buf, offset, length, cmd != null);
+            log_impl.append(curr_index, true, appendEntry);
 
             if (cmd != null) {
                 executeInternalCommand(cmd, null, 0, 0);
@@ -679,44 +658,39 @@ public class RAFT implements Runnable, Settable, DynamicMembership {
             reqtab.create(curr_index, raft_id, retval);
 
             // 3. Multicast an AppendEntries message (exclude self)
-            Message msg = new Message(null, buf, offset, length)
-                    .putHeader(id, new AppendEntriesRequest(curr_term, this.local_addr, prev_index, prev_term, curr_term, commit_idx, cmd != null))
-                    .setTransientFlag(Message.TransientFlag.DONT_LOOPBACK); // don't receive my own request
-            down_prot.down(new Event(Event.MSG, msg));
+            List<Endpoint> mbrs = new ArrayList<Endpoint>();
+            for (String mbr : members()) {
+                String[] mbrArr = mbr.split(":");
+                mbrs.add(new Endpoint(mbrArr[0], Integer.parseInt(mbrArr[1])));
+            }
+            mbrs.remove(local_addr);
+            AppendEntriesRequest request = new AppendEntriesRequest(curr_term, this.local_addr, prev_index, prev_term, curr_term, commit_idx, cmd != null);
+            request.setEntries(new LogEntry[] {appendEntry});
+            AtomicInteger current_appends = new AtomicInteger();
+            for (Endpoint endpoint : mbrs) {
+                appendThreadPool.submit(new Runnable() {
+                    @Override
+                    public void run() {
+                        Cache.getRaftService(endpoint).appendEntries(request, new RpcCallback<AppendEntriesResponse, Boolean>() {
+                            @Override
+                            public Boolean callback(AppendEntriesResponse response) {
+                                // TODO
+                                if (current_appends.incrementAndGet() >= majority) {
+
+                                }
+                                impl.handleAppendEntriesResponse(response.getSrc(), response.term(), response.getResult());
+                                return true;
+                            }
+                        });
+                    }
+                });
+            }
         }
 
         snapshotIfNeeded(length);
 
         // 4. Return CompletableFuture
         return retval;
-    }
-
-    protected void handleEvent(Message msg, RaftHeader hdr) {
-        // if hdr.term < current_term -> drop message
-        // if hdr.term > current_term -> set current_term and become Follower, accept message
-        // if hdr.term == current_term -> accept message
-        if (currentTerm(hdr.term) < 0)
-            return;
-
-        if (hdr instanceof AppendEntriesRequest) {
-            AppendEntriesRequest req = (AppendEntriesRequest) hdr;
-            AppendResult result = impl.handleAppendEntriesRequest(msg.getRawBuffer(), msg.getOffset(), msg.getLength(), msg.src(),
-                    req.prev_log_index, req.prev_log_term, req.entry_term,
-                    req.leader_commit, req.internal);
-            if (result != null) {
-                result.commitIndex(commit_index);
-                Message rsp = new Message(leader).putHeader(id, new AppendEntriesResponse(current_term, result));
-                down_prot.down(new Event(Event.MSG, rsp));
-            }
-        } else if (hdr instanceof AppendEntriesResponse) {
-            AppendEntriesResponse rsp = (AppendEntriesResponse) hdr;
-            impl.handleAppendEntriesResponse(msg.src(), rsp.term(), rsp.result);
-        } else if (hdr instanceof InstallSnapshotRequest) {
-            InstallSnapshotRequest req = (InstallSnapshotRequest) hdr;
-            impl.handleInstallSnapshotRequest(msg, req.term(), req.leader, req.last_included_index, req.last_included_term);
-        } else {
-            log.warn("%s: invalid header %s", local_addr, hdr.getClass().getCanonicalName());
-        }
     }
 
     /**
@@ -769,8 +743,12 @@ public class RAFT implements Runnable, Settable, DynamicMembership {
         }
 
         if (this.commit_index > commit_idx) { // send an empty AppendEntries message as commit message
-            Message msg = new Message(member).putHeader(id, new AppendEntriesRequest(current_term, this.local_addr, 0, 0, 0, this.commit_index, false));
-            down_prot.down(new Event(Event.MSG, msg));
+            AppendEntriesRequest appendEntriesRequest = new AppendEntriesRequest(current_term, this.local_addr, 0, 0, 0, this.commit_index, false);
+            appendEntriesRequest.setEntries(new LogEntry[] {});
+            AppendEntriesResponse response = Cache.getRaftService(member).appendEntries(appendEntriesRequest);
+            AppendResult result = response.getResult();
+            impl.handleAppendEntriesResponse(response.getSrc(), response.term(), result);
+            // TODO
             return;
         }
 
@@ -789,9 +767,13 @@ public class RAFT implements Runnable, Settable, DynamicMembership {
         }
         LogEntry prev = log_impl.get(index - 1);
         int prev_term = prev != null ? prev.term : 0;
-        Message msg = new Message(target).setBuffer(entry.command, entry.offset, entry.length)
-                .putHeader(id, new AppendEntriesRequest(current_term, this.local_addr, index - 1, prev_term, entry.term, commit_index, entry.internal));
-        down_prot.down(new Event(Event.MSG, msg));
+
+        AppendEntriesRequest appendEntriesRequest = new AppendEntriesRequest(current_term, this.local_addr, index - 1, prev_term, entry.term, commit_index, entry.internal);
+        appendEntriesRequest.setEntries(new LogEntry[] {entry});
+        AppendEntriesResponse response = Cache.getRaftService(target).appendEntries(appendEntriesRequest);
+        AppendResult result = response.getResult();
+        impl.handleAppendEntriesResponse(response.getSrc(), response.term(), result);
+        //TODO
     }
 
     protected void doSnapshot() throws Exception {
@@ -829,10 +811,13 @@ public class RAFT implements Runnable, Settable, DynamicMembership {
             // todo: use streaming approach (STATE$StateOutputStream, BlockingInputStream from JGroups)
             byte[] data = Files.readAllBytes(Paths.get(snapshot_name));
             log.debug("%s: sending snapshot (%s) to %s", local_addr, Util.printBytes(data.length), dest);
-            Message msg = new Message(dest, data)
-                    .putHeader(id, new InstallSnapshotRequest(currentTerm(), leader(), last_index, last_term));
-            down_prot.down(new Event(Event.MSG, msg));
 
+            InstallSnapshotRequest request = new InstallSnapshotRequest(currentTerm(), leader(), last_index, last_term);
+            request.setData(data);
+            AppendEntriesResponse response = Cache.getRaftService(dest).installSnapshot(request);
+            AppendResult result = response.getResult();
+            impl.handleAppendEntriesResponse(response.getSrc(), response.term(), result);
+            // TODO
         } finally {
             snapshotting = false;
             if (commit_table != null) {
@@ -871,7 +856,7 @@ public class RAFT implements Runnable, Settable, DynamicMembership {
      * Tries to advance commit_index up to leader_commit, applying all uncommitted log entries to the state machine
      * @param leader_commit The commit index of the leader
      */
-    protected synchronized RAFT commitLogTo(int leader_commit) {
+    protected synchronized RaftProtocol commitLogTo(int leader_commit) {
         try {
             for (int i = commit_index + 1; i <= Math.min(last_appended, leader_commit); i++) {
                 applyCommit(i);
@@ -883,7 +868,7 @@ public class RAFT implements Runnable, Settable, DynamicMembership {
         return this;
     }
 
-    protected RAFT append(int term, int index, byte[] data, int offset, int length, boolean internal) {
+    protected RaftProtocol append(int term, int index, byte[] data, int offset, int length, boolean internal) {
         LogEntry entry = new LogEntry(term, data, offset, length, internal);
         log_impl.append(index, true, entry);
         last_appended = log_impl.lastAppended();
@@ -951,18 +936,15 @@ public class RAFT implements Runnable, Settable, DynamicMembership {
         log_impl.commitIndex(index);
     }
 
-    protected void handleView(View view) {
-        boolean check_view = this.view != null && this.view.size() < view.size();
-        this.view = view;
+    protected void handleChangeMember(List<String> members) {
         if (commit_table != null) {
-            List<Endpoint> mbrs = new ArrayList<>(view.getMembers());
+            List<Endpoint> mbrs = new ArrayList<>();
+            for (String mbr : members) {
+                String[] mbrArr = mbr.split(":");
+                mbrs.add(new Endpoint(mbrArr[0], Integer.parseInt(mbrArr[1])));
+            }
             mbrs.remove(local_addr);
             commit_table.adjust(mbrs, last_appended + 1);
-        }
-
-        // if we're the leader, check if the view contains no duplicate raft-ids
-        if (check_view && duplicatesInView(view)) {
-            log.error("view contains duplicate raft-ids: %s", view);
         }
     }
 
@@ -1042,22 +1024,14 @@ public class RAFT implements Runnable, Settable, DynamicMembership {
 
     /**
      * Checks if a given view contains duplicate raft-ids. Uses key raft-id in ExtendedUUID to compare
-     * @param view
+     * @param
      * @return
      */
-    protected boolean duplicatesInView(View view) {
+    protected boolean duplicatesInMember() {
         Set<String> mbrs = new HashSet<>();
-        for (Address addr : view) {
-            if (!(addr instanceof ExtendedUUID))
-                log.warn("address %s is not an ExtendedUUID but a %s", addr, addr.getClass().getSimpleName());
-            else {
-                ExtendedUUID uuid = (ExtendedUUID) addr;
-                byte[] val = uuid.get(raft_id_key);
-                String m = val != null ? Util.bytesToString(val) : null;
-                if (m == null)
-                    log.error("address %s doesn't have a raft-id", addr);
-                else if (!mbrs.add(m))
-                    return true;
+        for (String addr : members()) {
+            if (!mbrs.add(addr)) {
+                return true;
             }
         }
         return false;
@@ -1070,6 +1044,10 @@ public class RAFT implements Runnable, Settable, DynamicMembership {
 
     public interface RoleChange {
         void roleChanged(Role role);
+    }
+
+    public RaftImpl getRaftImpl() {
+        return impl;
     }
 
 }

@@ -1,8 +1,6 @@
 package com.juaby.labs.raft.protocols;
 
 import com.juaby.labs.rpc.util.Endpoint;
-import org.jgroups.Event;
-import org.jgroups.Message;
 
 /**
  * Base class for the different roles a RAFT node can have (follower, candidate, leader)
@@ -12,17 +10,17 @@ import org.jgroups.Message;
  */
 public abstract class RaftImpl {
 
-    protected RAFT raft; // a ref to the enclosing RAFT protocol
+    protected RaftProtocol raft; // a ref to the enclosing RAFT protocol
 
-    public RaftImpl(RAFT raft) {
+    public RaftImpl(RaftProtocol raft) {
         this.raft = raft;
     }
 
-    public RAFT raft() {
+    public RaftProtocol raft() {
         return raft;
     }
 
-    public RaftImpl raft(RAFT r) {
+    public RaftImpl raft(RaftProtocol r) {
         this.raft = r;
         return this;
     }
@@ -61,8 +59,7 @@ public abstract class RaftImpl {
         raft.leader(leader);
 
         if (data == null || length == 0) { // we got an empty AppendEntries message containing only leader_commit
-            handleCommitRequest(leader, leader_commit);
-            return null;
+            return handleCommitRequest(leader, leader_commit);
         }
 
         LogEntry prev = raft.log_impl.get(prev_log_index);
@@ -92,9 +89,8 @@ public abstract class RaftImpl {
     protected void handleAppendEntriesResponse(Endpoint sender, int term, AppendResult result) {
     }
 
-    protected void handleInstallSnapshotRequest(InstallSnapshotRequest msg, int term, Endpoint leader,
-                                                int last_included_index, int last_included_term) {
-
+    protected AppendEntriesResponse handleInstallSnapshotRequest(InstallSnapshotRequest installSnapshotRequest) {
+        return null;
     }
 
     /**
@@ -114,11 +110,9 @@ public abstract class RaftImpl {
         return retval;
     }
 
-    protected void handleCommitRequest(Endpoint sender, int leader_commit) {
+    protected AppendResult handleCommitRequest(Endpoint sender, int leader_commit) {
         raft.commitLogTo(leader_commit);
-        AppendResult result = new AppendResult(true, raft.lastAppended()).commitIndex(raft.commitIndex());
-        Message msg = new Message(sender).putHeader(raft.getId(), new AppendEntriesResponse(raft.currentTerm(), result));
-        raft.getDownProtocol().down(new Event(Event.MSG, msg));
+        return new AppendResult(true, raft.lastAppended()).commitIndex(raft.commitIndex());
     }
 
 }

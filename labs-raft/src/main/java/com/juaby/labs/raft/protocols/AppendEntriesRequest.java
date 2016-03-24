@@ -19,6 +19,8 @@ public class AppendEntriesRequest extends RaftHeader {
 
     protected int entry_term;     // term of the given entry, e.g. when relaying a log to a late joiner
 
+    protected LogEntry[] entries;
+
     protected int leader_commit;  // the commit_index of the leader
 
     protected boolean internal;
@@ -67,6 +69,14 @@ public class AppendEntriesRequest extends RaftHeader {
 
     public void setEntry_term(int entry_term) {
         this.entry_term = entry_term;
+    }
+
+    public LogEntry[] getEntries() {
+        return entries;
+    }
+
+    public void setEntries(LogEntry[] entries) {
+        this.entries = entries;
     }
 
     public int getLeader_commit() {

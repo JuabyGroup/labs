@@ -8,7 +8,7 @@ package com.juaby.labs.raft.protocols;
  */
 public class Candidate extends RaftImpl {
 
-    public Candidate(RAFT raft) {
+    public Candidate(RaftProtocol raft) {
         super(raft);
     }
 

@@ -1,5 +1,7 @@
 package com.juaby.labs.raft.protocols;
 
+import com.juaby.labs.rpc.util.Endpoint;
+
 /**
  * The result of an AppendEntries request
  *

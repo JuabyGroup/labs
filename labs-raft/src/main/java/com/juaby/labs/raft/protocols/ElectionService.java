@@ -7,7 +7,7 @@ import com.juaby.labs.rpc.util.RpcCallback;
  */
 public interface ElectionService {
 
-    public void vote(VoteRequest voteRequest, RpcCallback<VoteResponse, Boolean> callback);
+    public VoteResponse vote(VoteRequest voteRequest, RpcCallback<VoteResponse, Boolean> callback);
 
     public void heartbeat(HeartbeatRequest heartbeatRequest);
 

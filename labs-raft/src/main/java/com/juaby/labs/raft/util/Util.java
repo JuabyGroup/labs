@@ -1,6 +1,7 @@
 package com.juaby.labs.raft.util;
 
 import java.io.UnsupportedEncodingException;
+import java.text.NumberFormat;
 import java.util.*;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -9,6 +10,15 @@ import java.util.regex.Pattern;
  * Created by juaby on 16-3-22.
  */
 public class Util {
+
+    private static final NumberFormat format;
+
+    static {
+        format = NumberFormat.getNumberInstance();
+        format.setGroupingUsed(false);
+        // format.setMinimumFractionDigits(2);
+        format.setMaximumFractionDigits(2);
+    }
 
     public static List<String> parseStringList(String l, String separator) {
         List<String> tmp = new LinkedList<String>();
@@ -59,7 +69,7 @@ public class Util {
         throw exception;
     }
 
-    public static byte[] raftid(String raftId) {
+    public static byte[] raftIdKey(String raftId) {
         if (raftId == null || raftId.length() == 0) {
             return null;
         }
@@ -81,6 +91,30 @@ public class Util {
             props.put(matcher.group(1),matcher.group(2));
         }
         return props;
+    }
+
+    /**
+     * MByte nowadays doesn't mean 1024 * 1024 bytes, but 1 million bytes, see http://en.wikipedia.org/wiki/Megabyte
+     *
+     * @param bytes
+     * @return
+     */
+    public static String printBytes(long bytes) {
+        double tmp;
+
+        if (bytes < 1000)
+            return bytes + "b";
+        if (bytes < 1000000) {
+            tmp = bytes / 1000.0;
+            return format.format(tmp) + "KB";
+        }
+        if (bytes < 1000000000) {
+            tmp = bytes / 1000000.0;
+            return format.format(tmp) + "MB";
+        } else {
+            tmp = bytes / 1000000000.0;
+            return format.format(tmp) + "GB";
+        }
     }
 
 }

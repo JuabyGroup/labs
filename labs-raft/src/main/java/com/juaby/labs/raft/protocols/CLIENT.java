@@ -70,9 +70,9 @@ public class CLIENT implements Runnable {
 
     public void init() throws Exception {
         //super.init();
-        if((settable=RAFT.findProtocol(Settable.class, this, true)) == null)
+        if((settable= RaftProtocol.findProtocol(Settable.class, this, true)) == null)
             throw new IllegalStateException("did not find a protocol implementing Settable (e.g. REDIRECT or RAFT)");
-        if((dyn_membership=RAFT.findProtocol(DynamicMembership.class, this, true)) == null)
+        if((dyn_membership= RaftProtocol.findProtocol(DynamicMembership.class, this, true)) == null)
             throw new IllegalStateException("did not find a protocol implementing DynamicMembership (e.g. REDIRECT or RAFT)");
     }
 
@@ -91,7 +91,6 @@ public class CLIENT implements Runnable {
         thread_pool.shutdown();
     }
 
-    @Override
     public void destroy() {
         super.destroy();
         Util.close(sock);
@@ -114,7 +113,6 @@ public class CLIENT implements Runnable {
             }
         }
     }
-
 
     protected class RequestHandler implements Runnable {
         protected final Socket client_sock;

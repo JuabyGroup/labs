@@ -39,7 +39,7 @@ public class InternalCommand {
         this.name = name;
     }
 
-    public Object execute(RAFT raft) throws Exception {
+    public Object execute(RaftProtocol raft) throws Exception {
         switch (type) {
             case addServer:
                 raft._addServer(name);

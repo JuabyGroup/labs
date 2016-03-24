@@ -80,7 +80,7 @@ public class ElectionProtocol {
      */
     protected volatile boolean heartbeat_received = true;
 
-    protected RAFT raft; // direct ref instead of events
+    protected RaftProtocol raft; // direct ref instead of events
     protected Endpoint local_addr;
     protected TimeScheduler timer = new DefaultTimeScheduler();
     protected Future<?> election_task;
@@ -167,41 +167,6 @@ public class ElectionProtocol {
         raft = null; // findProtocol(RAFT.class); TODO! TODO! TODO!
     }
 
-    //TODO
-    /**
-    public Object down(Event evt) {
-        switch (evt.getType()) {
-            case Event.CONNECT:
-            case Event.CONNECT_USE_FLUSH:
-            case Event.CONNECT_WITH_STATE_TRANSFER:
-            case Event.CONNECT_WITH_STATE_TRANSFER_USE_FLUSH:
-                Object retval = down_prot.down(evt); // connect first
-                startElectionTimer();
-                return retval;
-            case Event.DISCONNECT:
-                changeRole(Role.Follower);
-                stopElectionTimer();
-                break;
-            case Event.SET_LOCAL_ADDRESS:
-                local_addr = (Address) evt.getArg();
-                break;
-        }
-        return down_prot.down(evt);
-    }
-     */
-
-    protected void handleEvent(RaftHeader hdr) {
-        // drop the message if hdr.term < raft.current_term, else accept
-        // if hdr.term > raft.current_term -> change to follower
-        int rc = raft.currentTerm(hdr.term);
-        if (rc < 0)
-            return;
-        if (rc > 0) { // a new term was set
-            changeRole(Role.Follower);
-            voteFor(null); // so we can vote again in this term
-        }
-    }
-
     protected synchronized void handleHeartbeat(int term, Endpoint leader) {
         if (Objects.equals(local_addr, leader))
             return;
@@ -213,11 +178,13 @@ public class ElectionProtocol {
     }
 
     protected boolean handleVoteRequest(Endpoint sender, int term, int last_log_term, int last_log_index) {
-        if (Objects.equals(local_addr, sender))
+        if (Objects.equals(local_addr, sender)) {
             return false;
-        if (log.isTraceEnabled())
+        }
+        if (log.isTraceEnabled()) {
             log.trace("%s: received VoteRequest from %s: term=%d, my term=%d, last_log_term=%d, last_log_index=%d",
                     local_addr, sender, term, raft.currentTerm(), last_log_term, last_log_index);
+        }
         boolean send_vote_rsp = false;
         synchronized (this) {
             if (voteFor(sender)) {
@@ -333,8 +300,8 @@ public class ElectionProtocol {
         }
     }
 
-    protected void sendVoteResponse(Endpoint dest, int term, RpcCallback<VoteResponse, Boolean> callback) {
-        VoteResponse voteResponse = new VoteResponse(term, true);
+    protected void sendVoteResponse(Endpoint dest, int term, boolean voteFor, RpcCallback<VoteResponse, Boolean> callback) {
+        VoteResponse voteResponse = new VoteResponse(term, voteFor);
         log.trace("%s: sending %s", local_addr, voteResponse);
         if (callback != null) {
             callback.callback(voteResponse);

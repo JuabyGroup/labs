@@ -1,13 +1,9 @@
 package com.juaby.labs.raft.demos;
 
-import org.jgroups.JChannel;
+import com.juaby.labs.raft.blocks.ReplicatedStateMachine;
+import com.juaby.labs.raft.protocols.ElectionProtocol;
+import com.juaby.labs.raft.protocols.RaftProtocol;
 import org.jgroups.ReceiverAdapter;
-import org.jgroups.View;
-import org.jgroups.jmx.JmxConfigurator;
-import org.jgroups.protocols.raft.ELECTION;
-import org.jgroups.protocols.raft.RAFT;
-import org.jgroups.protocols.raft.Role;
-import org.jgroups.raft.blocks.ReplicatedStateMachine;
 import org.jgroups.util.Util;
 
 /**
@@ -15,7 +11,8 @@ import org.jgroups.util.Util;
  * @author Bela Ban
  * @since  0.1
  */
-public class ReplicatedStateMachineDemo extends ReceiverAdapter implements RAFT.RoleChange {
+public class ReplicatedStateMachineDemo extends ReceiverAdapter implements RaftProtocol.RoleChange {
+
     protected JChannel                              ch;
     protected ReplicatedStateMachine<String,Object> rsm;
 
@@ -50,9 +47,10 @@ public class ReplicatedStateMachineDemo extends ReceiverAdapter implements RAFT.
     }
 
     protected static void disableElections(JChannel ch) {
-        ELECTION election=(ELECTION)ch.getProtocolStack().findProtocol(ELECTION.class);
-        if(election != null)
+        ElectionProtocol election=(ElectionProtocol)ch.getProtocolStack().findProtocol(ELECTION.class);
+        if(election != null) {
             election.noElections(true);
+        }
     }
 
     protected void loop() {
@@ -131,7 +129,7 @@ public class ReplicatedStateMachineDemo extends ReceiverAdapter implements RAFT.
     }
 
     protected int firstApplied() {
-        RAFT raft=(RAFT)rsm.channel().getProtocolStack().findProtocol(RAFT.class);
+        RaftProtocol raft=(RaftProtocol)rsm.channel().getProtocolStack().findProtocol(RaftProtocol.class);
         return raft.log().firstAppended();
     }
 
