@@ -117,4 +117,15 @@ public class Util {
         }
     }
 
+    public static byte[] stringToBytes(String str) {
+        if (str == null) {
+            return null;
+        }
+        byte[] retval = new byte[str.length()];
+        for (int i = 0; i < retval.length; i++) {
+            retval[i] = (byte) str.charAt(i);
+        }
+        return retval;
+    }
+
 }

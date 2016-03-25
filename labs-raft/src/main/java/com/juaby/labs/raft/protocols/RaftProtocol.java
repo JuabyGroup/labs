@@ -666,7 +666,6 @@ public class RaftProtocol implements Runnable, Settable, DynamicMembership {
             mbrs.remove(local_addr);
             AppendEntriesRequest request = new AppendEntriesRequest(curr_term, this.local_addr, prev_index, prev_term, curr_term, commit_idx, cmd != null);
             request.setEntries(new LogEntry[] {appendEntry});
-            AtomicInteger current_appends = new AtomicInteger();
             for (Endpoint endpoint : mbrs) {
                 appendThreadPool.submit(new Runnable() {
                     @Override
@@ -674,10 +673,6 @@ public class RaftProtocol implements Runnable, Settable, DynamicMembership {
                         Cache.getRaftService(endpoint).appendEntries(request, new RpcCallback<AppendEntriesResponse, Boolean>() {
                             @Override
                             public Boolean callback(AppendEntriesResponse response) {
-                                // TODO
-                                if (current_appends.incrementAndGet() >= majority) {
-
-                                }
                                 impl.handleAppendEntriesResponse(response.getSrc(), response.term(), response.getResult());
                                 return true;
                             }
@@ -910,9 +905,6 @@ public class RaftProtocol implements Runnable, Settable, DynamicMembership {
         if (log_entry.internal) {
             InternalCommand cmd;
             try {
-                /*cmd=(InternalCommand)Util.streamableFromByteBuffer(InternalCommand.class, log_entry.command,
-                                                                   log_entry.offset, log_entry.length);*/
-                //log_entry.offset TODO
                 cmd = new InternalCommand();
                 SerializeTool.deserialize(log_entry.command, cmd);
                 if (cmd.type() == InternalCommand.Type.addServer || cmd.type() == InternalCommand.Type.removeServer) {

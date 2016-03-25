@@ -31,8 +31,6 @@ public class RaftServiceImpl implements RaftService {
                     request.prev_log_index, request.prev_log_term, request.entry_term,
                     request.leader_commit, request.internal);
 
-
-
             if (result != null) {
                 if (entry.getCommand() == null || entry.getLength() == 0) { // we got an empty AppendEntries message containing only leader_commit
                     raftProtocol.commitLogTo(request.leader_commit);

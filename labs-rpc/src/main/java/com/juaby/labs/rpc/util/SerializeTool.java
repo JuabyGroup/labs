@@ -5,6 +5,10 @@ import io.protostuff.ProtostuffIOUtil;
 import io.protostuff.Schema;
 import io.protostuff.runtime.RuntimeSchema;
 
+import java.io.DataOutput;
+import java.io.IOException;
+import java.io.OutputStream;
+
 /**
  * Title: <br>
  * Description: <br>
@@ -22,6 +26,15 @@ public class SerializeTool {
         Schema<T> schema = RuntimeSchema.getSchema((Class<T>)object.getClass());
         LinkedBuffer buffer = LinkedBuffer.allocate(4096); //TODO
         return ProtostuffIOUtil.toByteArray(object, schema, buffer);
+    }
+
+    public static <T> int serialize(T object, OutputStream out) throws IOException {
+        if (object == null) {
+            return 0;
+        }
+        Schema<T> schema = RuntimeSchema.getSchema((Class<T>)object.getClass());
+        LinkedBuffer buffer = LinkedBuffer.allocate(4096); //TODO
+        return ProtostuffIOUtil.writeTo(out, object, schema, buffer);
     }
 
     public static <T> T deserialize(byte[] objectBytes, T object) {

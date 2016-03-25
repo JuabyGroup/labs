@@ -1,7 +1,7 @@
 package com.juaby.labs.raft.client;
 
-import org.jgroups.protocols.raft.CLIENT;
-import org.jgroups.util.Util;
+import com.juaby.labs.raft.protocols.CLIENT;
+import com.juaby.labs.raft.util.Util;
 
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
@@ -9,7 +9,7 @@ import java.net.InetAddress;
 import java.net.Socket;
 
 /**
- * Client which accesses the {@link org.jgroups.protocols.raft.CLIENT} protocol through a socket. Currently used to
+ * Client which accesses the {@link com.juaby.labs.raft.protocols.CLIENT} protocol through a socket. Currently used to
  * submit addServer and remove Server commands
  * @author Bela Ban
  * @since  0.2
@@ -23,7 +23,7 @@ public class Client {
 
             CLIENT.RequestType type=add_server != null? CLIENT.RequestType.add_server : CLIENT.RequestType.remove_server;
             out.writeByte((byte)type.ordinal());
-            byte[] buf=Util.stringToBytes(add_server != null? add_server : remove_server);
+            byte[] buf= Util.stringToBytes(add_server != null? add_server : remove_server);
             out.writeInt(buf.length);
             out.write(buf, 0, buf.length);
 

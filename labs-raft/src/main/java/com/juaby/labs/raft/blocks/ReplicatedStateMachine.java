@@ -1,9 +1,7 @@
 package com.juaby.labs.raft.blocks;
 
 import com.juaby.labs.raft.RaftHandle;
-import com.juaby.labs.raft.protocols.InternalCommand;
-import com.juaby.labs.raft.protocols.RaftProtocol;
-import com.juaby.labs.raft.protocols.StateMachine;
+import com.juaby.labs.raft.protocols.*;
 import com.juaby.labs.raft.util.ByteArrayDataInputStream;
 import com.juaby.labs.raft.util.ByteArrayDataOutputStream;
 import com.juaby.labs.rpc.util.SerializeTool;
@@ -24,7 +22,6 @@ import java.util.concurrent.TimeUnit;
  */
 public class ReplicatedStateMachine<K, V> implements StateMachine {
 
-    protected JChannel ch;
     protected RaftHandle raft;
     protected long repl_timeout = 20000; // timeout (ms) to wait for a majority to ack a write
     protected final List<Notification> listeners = new ArrayList<>();
@@ -32,13 +29,8 @@ public class ReplicatedStateMachine<K, V> implements StateMachine {
     // Hashmap for the contents. Doesn't need to be reentrant, as updates will be applied sequentially
     protected final Map<K, V> map = new HashMap<>();
 
-    protected static final byte PUT = 1;
-    protected static final byte REMOVE = 2;
-
-
-    public ReplicatedStateMachine(JChannel ch) {
-        this.ch = ch;
-        this.raft = new RaftHandle(this.ch, this);
+    public ReplicatedStateMachine() {
+        this.raft = new RaftHandle(this);
     }
 
     public ReplicatedStateMachine timeout(long timeout) {
@@ -70,10 +62,6 @@ public class ReplicatedStateMachine<K, V> implements StateMachine {
         return raft.commitIndex();
     }
 
-    public JChannel channel() {
-        return ch;
-    }
-
     public void snapshot() throws Exception {
         if (raft != null) raft.snapshot();
     }
@@ -101,11 +89,6 @@ public class ReplicatedStateMachine<K, V> implements StateMachine {
             }
             if (entry.internal()) {
                 try {
-                    /**
-                     InternalCommand cmd=(InternalCommand)Util.streamableFromByteBuffer(InternalCommand.class,
-                     entry.command(), entry.offset(), entry.length());
-                     */
-                    // entry.offset() TODO
                     InternalCommand cmd = new InternalCommand();
                     SerializeTool.deserialize(entry.command(), cmd);
                     sb.append("[internal] ").append(cmd).append("\n");
@@ -117,15 +100,16 @@ public class ReplicatedStateMachine<K, V> implements StateMachine {
             }
             ByteArrayDataInputStream in = new ByteArrayDataInputStream(entry.command(), entry.offset(), entry.length());
             try {
-                byte type = in.readByte();
+                Command<K, V> command = new Command<K, V>();
+                SerializeTool.deserialize(entry.command(), command);
+                CommandType type = command.getType();
+                K key = command.getKey();
+                V val = command.getValue();
                 switch (type) {
                     case PUT:
-                        K key = (K) Util.objectFromStream(in);
-                        V val = (V) Util.objectFromStream(in);
                         sb.append("put(").append(key).append(", ").append(val).append(")");
                         break;
                     case REMOVE:
-                        key = (K) Util.objectFromStream(in);
                         sb.append("remove(").append(key).append(")");
                         break;
                     default:
@@ -143,7 +127,6 @@ public class ReplicatedStateMachine<K, V> implements StateMachine {
         return map.equals(((ReplicatedStateMachine) obj).map);
     }
 
-
     /**
      * Adds a key value pair to the state machine. The data is not added directly, but sent to the RAFT leader and only
      * added to the hashmap after the change has been committed (by majority decision). The actual change will be
@@ -154,7 +137,7 @@ public class ReplicatedStateMachine<K, V> implements StateMachine {
      * @return Null, or the previous value associated with key (if present)
      */
     public V put(K key, V val) throws Exception {
-        return invoke(PUT, key, val, false);
+        return invoke(CommandType.PUT, key, val, false);
     }
 
     /**
@@ -176,7 +159,7 @@ public class ReplicatedStateMachine<K, V> implements StateMachine {
      * @param key The key to be removed
      */
     public V remove(K key) throws Exception {
-        return invoke(REMOVE, key, null, true);
+        return invoke(CommandType.REMOVE, key, null, true);
     }
 
     /**
@@ -190,20 +173,20 @@ public class ReplicatedStateMachine<K, V> implements StateMachine {
 
     @Override
     public byte[] apply(byte[] data, int offset, int length) throws Exception {
-        ByteArrayDataInputStream in = new ByteArrayDataInputStream(data, offset, length);
-        byte command = in.readByte();
-        switch (command) {
+        Command<K, V> command = new Command<K, V>();
+        SerializeTool.deserialize(data, command);
+        CommandType type = command.getType();
+        K key = command.getKey();
+        V val = command.getValue();
+        switch (type) {
             case PUT:
-                K key = (K) Util.objectFromStream(in);
-                V val = (V) Util.objectFromStream(in);
                 V old_val = map.put(key, val);
                 notifyPut(key, val, old_val);
-                return old_val == null ? null : Util.objectToByteBuffer(old_val);
+                return old_val == null ? null : SerializeTool.serialize(old_val);
             case REMOVE:
-                key = (K) Util.objectFromStream(in);
                 old_val = map.remove(key);
                 notifyRemove(key, old_val);
-                return old_val == null ? null : Util.objectToByteBuffer(old_val);
+                return old_val == null ? null : SerializeTool.serialize(old_val);
             default:
                 throw new IllegalArgumentException("command " + command + " is unknown");
         }
@@ -211,10 +194,15 @@ public class ReplicatedStateMachine<K, V> implements StateMachine {
 
     @Override
     public void readContentFrom(DataInput in) throws Exception {
-        int size = Bits.readInt(in);
+        int size = in.readInt();
         for (int i = 0; i < size; i++) {
-            K key = (K) Util.objectFromStream(in);
-            V val = (V) Util.objectFromStream(in);
+            int keyValueLength = in.readInt();
+            byte[] keyValueBuf = new byte[keyValueLength];
+            in.readFully(keyValueBuf);
+            KeyValueWapper<K, V> keyValueWapper = new KeyValueWapper<K, V>();
+            SerializeTool.deserialize(keyValueBuf, keyValueWapper);
+            K key = keyValueWapper.getKey();
+            V val = keyValueWapper.getValue();
             map.put(key, val);
         }
     }
@@ -222,34 +210,33 @@ public class ReplicatedStateMachine<K, V> implements StateMachine {
     @Override
     public void writeContentTo(DataOutput out) throws Exception {
         int size = map.size();
-        Bits.writeInt(size, out);
+        out.writeInt(size); //TODO
         for (Map.Entry<K, V> entry : map.entrySet()) {
-            Util.objectToStream(entry.getKey(), out);
-            Util.objectToStream(entry.getValue(), out);
+            KeyValueWapper<K, V> keyValueWapper = new KeyValueWapper<K, V>(entry.getKey(), entry.getValue());
+            byte[] keyValueBuf = SerializeTool.serialize(keyValueWapper);
+            out.writeInt(keyValueBuf.length);
+            out.write(keyValueBuf);
         }
     }
 
     ///////////////////////////////////// End of StateMachine callbacks ///////////////////////////////////
 
-
     public String toString() {
         return map.toString();
     }
 
-    protected V invoke(byte command, K key, V val, boolean ignore_return_value) throws Exception {
+    protected V invoke(CommandType commandType, K key, V val, boolean ignore_return_value) throws Exception {
+        Command<K, V> command = new Command<K, V>(commandType, key, val);
         ByteArrayDataOutputStream out = new ByteArrayDataOutputStream(256);
+        byte[] cmdBytes;
         try {
-            out.writeByte(command);
-            Util.objectToStream(key, out);
-            if (val != null)
-                Util.objectToStream(val, out);
+            cmdBytes = SerializeTool.serialize(command);
         } catch (Exception ex) {
             throw new Exception("serialization failure (key=" + key + ", val=" + val + ")", ex);
         }
 
-        byte[] buf = out.buffer();
-        byte[] rsp = raft.set(buf, 0, out.position(), repl_timeout, TimeUnit.MILLISECONDS);
-        return ignore_return_value ? null : (V) Util.objectFromByteBuffer(rsp);
+        byte[] rsp = raft.set(cmdBytes, 0, cmdBytes.length, repl_timeout, TimeUnit.MILLISECONDS);
+        return ignore_return_value ? null : SerializeTool.deserialize(rsp, val);
     }
 
     protected void notifyPut(K key, V val, V old_val) {
