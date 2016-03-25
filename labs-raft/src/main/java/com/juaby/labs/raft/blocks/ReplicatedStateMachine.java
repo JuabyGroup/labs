@@ -2,8 +2,6 @@ package com.juaby.labs.raft.blocks;
 
 import com.juaby.labs.raft.RaftHandle;
 import com.juaby.labs.raft.protocols.*;
-import com.juaby.labs.raft.util.ByteArrayDataInputStream;
-import com.juaby.labs.raft.util.ByteArrayDataOutputStream;
 import com.juaby.labs.rpc.util.SerializeTool;
 
 import java.io.DataInput;
@@ -98,15 +96,14 @@ public class ReplicatedStateMachine<K, V> implements StateMachine {
                 System.out.println(sb);
                 return;
             }
-            ByteArrayDataInputStream in = new ByteArrayDataInputStream(entry.command(), entry.offset(), entry.length());
             try {
-                Command<K, V> command = new Command<K, V>();
+                Command<KVCommandType, KeyValueWapper<K, V>> command = new Command<KVCommandType, KeyValueWapper<K, V>>();
                 SerializeTool.deserialize(entry.command(), command);
-                CommandType type = command.getType();
-                K key = command.getKey();
-                V val = command.getValue();
+                KVCommandType type = command.getType();
+                K key = command.getData().getKey();
                 switch (type) {
                     case PUT:
+                        V val = command.getData().getValue();
                         sb.append("put(").append(key).append(", ").append(val).append(")");
                         break;
                     case REMOVE:
@@ -137,7 +134,7 @@ public class ReplicatedStateMachine<K, V> implements StateMachine {
      * @return Null, or the previous value associated with key (if present)
      */
     public V put(K key, V val) throws Exception {
-        return invoke(CommandType.PUT, key, val, false);
+        return invoke(KVCommandType.PUT, key, val, false);
     }
 
     /**
@@ -159,7 +156,7 @@ public class ReplicatedStateMachine<K, V> implements StateMachine {
      * @param key The key to be removed
      */
     public V remove(K key) throws Exception {
-        return invoke(CommandType.REMOVE, key, null, true);
+        return invoke(KVCommandType.REMOVE, key, null, true);
     }
 
     /**
@@ -173,11 +170,12 @@ public class ReplicatedStateMachine<K, V> implements StateMachine {
 
     @Override
     public byte[] apply(byte[] data, int offset, int length) throws Exception {
-        Command<K, V> command = new Command<K, V>();
+        KeyValueWapper<K, V> kvKeyValueWapper = new KeyValueWapper<K, V>();
+        Command<KVCommandType, KeyValueWapper<K, V>> command = new Command<KVCommandType, KeyValueWapper<K, V>>();
         SerializeTool.deserialize(data, command);
-        CommandType type = command.getType();
-        K key = command.getKey();
-        V val = command.getValue();
+        KVCommandType type = command.getType();
+        K key = command.getData().getKey();
+        V val = command.getData().getValue();
         switch (type) {
             case PUT:
                 V old_val = map.put(key, val);
@@ -225,9 +223,9 @@ public class ReplicatedStateMachine<K, V> implements StateMachine {
         return map.toString();
     }
 
-    protected V invoke(CommandType commandType, K key, V val, boolean ignore_return_value) throws Exception {
-        Command<K, V> command = new Command<K, V>(commandType, key, val);
-        ByteArrayDataOutputStream out = new ByteArrayDataOutputStream(256);
+    protected V invoke(KVCommandType commandType, K key, V val, boolean ignore_return_value) throws Exception {
+        KeyValueWapper<K, V> kvKeyValueWapper = new KeyValueWapper<K, V>(key, val);
+        Command<KVCommandType, KeyValueWapper<K, V>> command = new Command<KVCommandType, KeyValueWapper<K, V>>(commandType, kvKeyValueWapper);
         byte[] cmdBytes;
         try {
             cmdBytes = SerializeTool.serialize(command);
@@ -236,7 +234,7 @@ public class ReplicatedStateMachine<K, V> implements StateMachine {
         }
 
         byte[] rsp = raft.set(cmdBytes, 0, cmdBytes.length, repl_timeout, TimeUnit.MILLISECONDS);
-        return ignore_return_value ? null : SerializeTool.deserialize(rsp, val);
+        return ignore_return_value ? null : (val != null ? SerializeTool.deserialize(rsp, val) : null);
     }
 
     protected void notifyPut(K key, V val, V old_val) {

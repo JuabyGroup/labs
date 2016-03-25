@@ -5,45 +5,34 @@ import java.io.Serializable;
 /**
  * Created by juaby on 16-3-25.
  */
-public class Command<K, V> implements Serializable {
+public class Command<CT, CD> implements Serializable {
 
-    private CommandType type;
+    private CT type;
 
-    private K key;
-
-    private V value;
+    private CD data;
 
     public Command() {
     }
 
-    public Command(CommandType type, K key, V value) {
+    public Command(CT type, CD data) {
         this.type = type;
-        this.key = key;
-        this.value = value;
+        this.data = data;
     }
 
-    public CommandType getType() {
+    public CT getType() {
         return type;
     }
 
-    public void setType(CommandType type) {
+    public void setType(CT type) {
         this.type = type;
     }
 
-    public K getKey() {
-        return key;
+    public CD getData() {
+        return data;
     }
 
-    public void setKey(K key) {
-        this.key = key;
-    }
-
-    public V getValue() {
-        return value;
-    }
-
-    public void setValue(V value) {
-        this.value = value;
+    public void setData(CD data) {
+        this.data = data;
     }
 
 }

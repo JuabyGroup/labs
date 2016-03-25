@@ -38,7 +38,6 @@ public class CounterService implements StateMachine, RaftProtocol.RoleChange {
 
     protected enum Command {create, delete, get, set, compareAndSet, incrementAndGet, decrementAndGet, addAndGet}
 
-
     public CounterService() {
         this.raft = new RaftHandle(this);
         raft.addRoleListener(this);
@@ -110,7 +109,6 @@ public class CounterService implements StateMachine, RaftProtocol.RoleChange {
         }
         return new CounterImpl(name, this);
     }
-
 
     /**
      * Deletes a counter instance (on the coordinator)
@@ -199,7 +197,6 @@ public class CounterService implements StateMachine, RaftProtocol.RoleChange {
         }
         return Util.objectToByteBuffer(null);
     }
-
 
     @Override
     public void writeContentTo(DataOutput out) throws Exception {
