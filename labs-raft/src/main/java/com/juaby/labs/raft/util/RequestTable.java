@@ -21,7 +21,6 @@ public class RequestTable<T> {
 
     protected final Map<Integer, Entry<T>> requests = new HashMap<>(); // maps an index to a set of (response) senders
 
-
     public void create(int index, T vote, CompletableFuture<byte[]> future) {
         Entry<T> entry = new Entry<>(future, vote);
         synchronized (this) {
@@ -65,20 +64,23 @@ public class RequestTable<T> {
                 value = new byte[length];
                 System.arraycopy(response, offset, value, 0, length);
             }
-            if (entry.client_future != null)
+            if (entry.client_future != null) {
                 entry.client_future.complete(value);
+            }
             requests.remove(index);
         }
     }
 
     public String toString() {
         StringBuilder sb = new StringBuilder();
-        for (Map.Entry<Integer, Entry<T>> entry : requests.entrySet())
+        for (Map.Entry<Integer, Entry<T>> entry : requests.entrySet()) {
             sb.append(entry.getKey()).append(": ").append(entry.getValue()).append("\n");
+        }
         return sb.toString();
     }
 
     protected static class Entry<T> {
+
         // the future has been returned to the caller, and needs to be notified when we've reached a majority
         protected final CompletableFuture<byte[]> client_future;
         protected final Set<T> votes = new HashSet<>();
@@ -98,6 +100,7 @@ public class RequestTable<T> {
         public String toString() {
             return "committed=" + committed + ", votes=" + votes;
         }
+
     }
 
 }

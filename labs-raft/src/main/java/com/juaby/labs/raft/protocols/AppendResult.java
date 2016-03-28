@@ -1,7 +1,5 @@
 package com.juaby.labs.raft.protocols;
 
-import com.juaby.labs.rpc.util.Endpoint;
-
 /**
  * The result of an AppendEntries request
  *
@@ -33,6 +31,10 @@ public class AppendResult {
     protected int non_matching_term; // todo: needed ?
 
     public AppendResult() {
+    }
+
+    public AppendResult(boolean success) {
+        this.success = success;
     }
 
     public AppendResult(boolean success, int index) {

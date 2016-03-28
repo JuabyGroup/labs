@@ -19,7 +19,7 @@ public class RaftServiceImpl implements RaftService {
         // if hdr.term > current_term -> set current_term and become Follower, accept message
         // if hdr.term == current_term -> accept message
         if (raftProtocol.currentTerm(request.term) < 0) {
-            return new AppendEntriesResponse(raftProtocol.currentTerm(), null);
+            return new AppendEntriesResponse(raftProtocol.currentTerm(), new AppendResult(false));
         }
         LogEntry[] entries = request.getEntries();
         LogEntry entry = null;
@@ -42,7 +42,7 @@ public class RaftServiceImpl implements RaftService {
                 return response;
             }
         }
-        return new AppendEntriesResponse(raftProtocol.currentTerm(), null);
+        return new AppendEntriesResponse(raftProtocol.currentTerm(), new AppendResult(false));
     }
 
     @Override
@@ -51,7 +51,7 @@ public class RaftServiceImpl implements RaftService {
         // if hdr.term > current_term -> set current_term and become Follower, accept message
         // if hdr.term == current_term -> accept message
         if (raftProtocol.currentTerm(request.term) < 0) {
-            return new AppendEntriesResponse(raftProtocol.currentTerm(), null);
+            return new AppendEntriesResponse(raftProtocol.currentTerm(), new AppendResult(false));
         }
         callback.callback(appendEntries(request));
         return null;

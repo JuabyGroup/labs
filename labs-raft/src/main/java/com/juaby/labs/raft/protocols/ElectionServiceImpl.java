@@ -45,7 +45,6 @@ public class ElectionServiceImpl implements ElectionService {
 
     @Override
     public VoteResponse vote(VoteRequest voteRequest, RpcCallback<VoteResponse, Boolean> callback) {
-
         if (voteRequest != null) {
             int term = voteRequest.term();
             int last_log_term = voteRequest.getLast_log_term();

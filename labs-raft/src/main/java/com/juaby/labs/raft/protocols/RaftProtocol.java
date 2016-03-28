@@ -851,16 +851,17 @@ public class RaftProtocol implements Runnable, Settable, DynamicMembership {
      * Tries to advance commit_index up to leader_commit, applying all uncommitted log entries to the state machine
      * @param leader_commit The commit index of the leader
      */
-    protected synchronized RaftProtocol commitLogTo(int leader_commit) {
+    protected synchronized boolean commitLogTo(int leader_commit) {
         try {
             for (int i = commit_index + 1; i <= Math.min(last_appended, leader_commit); i++) {
                 applyCommit(i);
                 commit_index = Math.max(commit_index, i);
             }
+            return true;
         } catch (Throwable t) {
             log.error(local_addr + ": failed advancing commit_index (%d) to %d: %s", commit_index, leader_commit, t);
+            return false;
         }
-        return this;
     }
 
     protected RaftProtocol append(int term, int index, byte[] data, int offset, int length, boolean internal) {
@@ -961,8 +962,6 @@ public class RaftProtocol implements Runnable, Settable, DynamicMembership {
     protected void executeInternalCommand(InternalCommand cmd, byte[] buf, int offset, int length) {
         if (cmd == null) {
             try {
-                //cmd=(InternalCommand)Util.streamableFromByteBuffer(InternalCommand.class, buf, offset, length);
-                //offset TODO
                 cmd = new InternalCommand();
                 SerializeTool.deserialize(buf, cmd);
             } catch (Exception ex) {

@@ -37,8 +37,9 @@ public class CommitTable {
 
     public CommitTable update(Endpoint member, int match_index, int next_index, int commit_index, boolean single_resend) {
         Entry entry = map.get(member);
-        if (entry == null)
+        if (entry == null) {
             return this;
+        }
         entry.match_index = Math.max(match_index, entry.match_index);
         entry.next_index = Math.max(1, next_index);
         entry.commit_index = Math.max(entry.commit_index, commit_index);
@@ -57,16 +58,18 @@ public class CommitTable {
     public void forEach(BiConsumer<Endpoint, Entry> function) {
         for (Map.Entry<Endpoint, Entry> entry : map.entrySet()) {
             Entry val = entry.getValue();
-            if (!val.snapshot_in_progress)
+            if (!val.snapshot_in_progress) {
                 function.accept(entry.getKey(), val);
+            }
         }
     }
 
     @Override
     public String toString() {
         StringBuilder sb = new StringBuilder();
-        for (Map.Entry<Endpoint, Entry> entry : map.entrySet())
+        for (Map.Entry<Endpoint, Entry> entry : map.entrySet()) {
             sb.append(entry.getKey()).append(": ").append(entry.getValue()).append("\n");
+        }
         return sb.toString();
     }
 
@@ -128,8 +131,9 @@ public class CommitTable {
         }
 
         public boolean snapshotInProgress(boolean flag) {
-            if (snapshot_in_progress == flag)
+            if (snapshot_in_progress == flag) {
                 return false;
+            }
             snapshot_in_progress = flag;
             return true;
         }
@@ -138,12 +142,15 @@ public class CommitTable {
         public String toString() {
             StringBuilder sb = new StringBuilder().append("match-index=").append(match_index);
             sb.append(", next-index=").append(next_index).append(", commit-index=").append(commit_index);
-            if (snapshot_in_progress)
+            if (snapshot_in_progress) {
                 sb.append(" [snapshotting]");
-            if (send_single_msg)
+            }
+            if (send_single_msg) {
                 sb.append(" [send-single-msg]");
+            }
             return sb.toString();
         }
+
     }
 
 }

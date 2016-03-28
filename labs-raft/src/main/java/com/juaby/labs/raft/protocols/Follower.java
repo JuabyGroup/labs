@@ -58,7 +58,7 @@ public class Follower extends RaftImpl {
             return response;
         } catch (Exception ex) {
             raft.getLog().error("%s: failed applying snapshot from %s: %s", raft.local_addr, leader, ex);
-            return new AppendEntriesResponse(raft.currentTerm(), null);
+            return new AppendEntriesResponse(raft.currentTerm(), new AppendResult(false));
         }
     }
 

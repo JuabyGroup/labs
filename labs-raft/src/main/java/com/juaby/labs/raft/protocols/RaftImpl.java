@@ -111,8 +111,8 @@ public abstract class RaftImpl {
     }
 
     protected AppendResult handleCommitRequest(Endpoint sender, int leader_commit) {
-        raft.commitLogTo(leader_commit);
-        return new AppendResult(true, raft.lastAppended()).commitIndex(raft.commitIndex());
+        boolean result = raft.commitLogTo(leader_commit);
+        return new AppendResult(result, raft.lastAppended()).commitIndex(raft.commitIndex());
     }
 
 }
