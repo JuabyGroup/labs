@@ -2,7 +2,6 @@ package com.juaby.labs.raft.blocks;
 
 import com.juaby.labs.raft.RaftHandle;
 import com.juaby.labs.raft.protocols.*;
-import com.juaby.labs.raft.util.ByteArrayDataOutputStream;
 import com.juaby.labs.rpc.util.SerializeTool;
 
 import java.io.DataInput;
@@ -279,8 +278,7 @@ public class CounterServiceStateMachine implements StateMachine, RaftProtocol.Ro
     }
 
     protected Object invoke(CounterCommandType type, String name, boolean ignore_return_value, long... values) throws Exception {
-        ByteArrayDataOutputStream out = new ByteArrayDataOutputStream(256);
-        byte[] cmd = null;
+        byte[] cmd;
         try {
             Command<CounterCommandType, KeyValueWapper<String, Long[]>> command = null;
             Long[] valueArr = new Long[values.length];

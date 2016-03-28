@@ -27,6 +27,10 @@ public class KVReplicatedStateMachine<K, V> implements StateMachine {
     // Hashmap for the contents. Doesn't need to be reentrant, as updates will be applied sequentially
     protected final Map<K, V> map = new HashMap<>();
 
+    protected enum KVCommandType {
+        PUT, REMOVE
+    }
+
     public KVReplicatedStateMachine() {
         this.raft = new RaftHandle(this);
     }

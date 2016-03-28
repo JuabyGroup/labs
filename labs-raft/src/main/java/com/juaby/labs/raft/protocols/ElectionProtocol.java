@@ -168,8 +168,9 @@ public class ElectionProtocol {
     }
 
     protected synchronized void handleHeartbeat(int term, Endpoint leader) {
-        if (Objects.equals(local_addr, leader))
+        if (Objects.equals(local_addr, leader)) {
             return;
+        }
         heartbeatReceived(true);
         if (role != Role.Follower || raft.updateTermAndLeader(term, leader)) {
             changeRole(Role.Follower);
