@@ -18,7 +18,7 @@ import java.util.concurrent.TimeUnit;
  * @author Bela Ban
  * @since 0.1
  */
-public class ReplicatedStateMachine<K, V> implements StateMachine {
+public class KVReplicatedStateMachine<K, V> implements StateMachine {
 
     protected RaftHandle raft;
     protected long repl_timeout = 20000; // timeout (ms) to wait for a majority to ack a write
@@ -27,11 +27,11 @@ public class ReplicatedStateMachine<K, V> implements StateMachine {
     // Hashmap for the contents. Doesn't need to be reentrant, as updates will be applied sequentially
     protected final Map<K, V> map = new HashMap<>();
 
-    public ReplicatedStateMachine() {
+    public KVReplicatedStateMachine() {
         this.raft = new RaftHandle(this);
     }
 
-    public ReplicatedStateMachine timeout(long timeout) {
+    public KVReplicatedStateMachine timeout(long timeout) {
         this.repl_timeout = timeout;
         return this;
     }
@@ -72,7 +72,7 @@ public class ReplicatedStateMachine<K, V> implements StateMachine {
         return raft.raftId();
     }
 
-    public ReplicatedStateMachine<K, V> raftId(String id) {
+    public KVReplicatedStateMachine<K, V> raftId(String id) {
         raft.raftId(id);
         return this;
     }
@@ -121,7 +121,7 @@ public class ReplicatedStateMachine<K, V> implements StateMachine {
 
     @Override
     public boolean equals(Object obj) {
-        return map.equals(((ReplicatedStateMachine) obj).map);
+        return map.equals(((KVReplicatedStateMachine) obj).map);
     }
 
     /**

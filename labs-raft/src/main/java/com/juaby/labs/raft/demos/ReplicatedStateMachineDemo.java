@@ -1,6 +1,6 @@
 package com.juaby.labs.raft.demos;
 
-import com.juaby.labs.raft.blocks.ReplicatedStateMachine;
+import com.juaby.labs.raft.blocks.KVReplicatedStateMachine;
 import com.juaby.labs.raft.protocols.ElectionProtocol;
 import com.juaby.labs.raft.protocols.RaftProtocol;
 import com.juaby.labs.raft.protocols.Role;
@@ -8,23 +8,23 @@ import com.juaby.labs.raft.util.Cache;
 import com.juaby.labs.raft.util.Util;
 
 /**
- * Demos {@link ReplicatedStateMachine}
+ * Demos {@link KVReplicatedStateMachine}
  *
  * @author Bela Ban
  * @since 0.1
  */
 public class ReplicatedStateMachineDemo implements RaftProtocol.RoleChange {
 
-    protected ReplicatedStateMachine<String, Object> rsm;
+    protected KVReplicatedStateMachine<String, Object> rsm;
 
     protected void start(String props, String name, boolean follower, long timeout) throws Exception {
-        rsm = new ReplicatedStateMachine<>().raftId(name).timeout(timeout);
+        rsm = new KVReplicatedStateMachine<>().raftId(name).timeout(timeout);
         if (follower) {
             disableElections();
         }
         try {
             rsm.addRoleChangeListener(this);
-            rsm.addNotificationListener(new ReplicatedStateMachine.Notification<String, Object>() {
+            rsm.addNotificationListener(new KVReplicatedStateMachine.Notification<String, Object>() {
                 @Override
                 public void put(String key, Object val, Object old_val) {
                     System.out.printf("-- put(%s, %s) -> %s\n", key, val, old_val);

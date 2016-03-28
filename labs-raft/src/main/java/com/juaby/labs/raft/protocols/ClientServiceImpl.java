@@ -1,6 +1,6 @@
 package com.juaby.labs.raft.protocols;
 
-import com.juaby.labs.raft.blocks.ReplicatedStateMachine;
+import com.juaby.labs.raft.blocks.KVReplicatedStateMachine;
 import com.juaby.labs.rpc.util.Endpoint;
 
 /**
@@ -8,9 +8,9 @@ import com.juaby.labs.rpc.util.Endpoint;
  */
 public class ClientServiceImpl<K, V> implements ClientService<K, V> {
 
-    private ReplicatedStateMachine<K, V> stateMachine;
+    private KVReplicatedStateMachine<K, V> stateMachine;
 
-    public ClientServiceImpl(ReplicatedStateMachine stateMachine) {
+    public ClientServiceImpl(KVReplicatedStateMachine stateMachine) {
         this.stateMachine = stateMachine;
     }
 
