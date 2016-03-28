@@ -1,4 +1,4 @@
-package com.juaby.labs.raft.protocols;
+package com.juaby.labs.raft.statemachine;
 
 /**
  * Created by juaby on 16-3-25.

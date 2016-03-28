@@ -1,4 +1,4 @@
-package com.juaby.labs.raft.blocks;
+package com.juaby.labs.raft.statemachine;
 
 /**
  * @author Bela Ban

@@ -1,7 +1,7 @@
 package com.juaby.labs.raft.demos;
 
-import com.juaby.labs.raft.blocks.Counter;
-import com.juaby.labs.raft.blocks.CounterServiceStateMachine;
+import com.juaby.labs.raft.statemachine.Counter;
+import com.juaby.labs.raft.statemachine.CounterServiceStateMachine;
 import com.juaby.labs.raft.protocols.ElectionProtocol;
 import com.juaby.labs.raft.protocols.RaftProtocol;
 import com.juaby.labs.raft.util.Cache;

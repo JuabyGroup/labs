@@ -1,6 +1,6 @@
 package com.juaby.labs.raft.protocols;
 
-import com.juaby.labs.raft.blocks.KVReplicatedStateMachine;
+import com.juaby.labs.raft.statemachine.KVReplicatedStateMachine;
 import com.juaby.labs.rpc.util.Endpoint;
 
 /**
