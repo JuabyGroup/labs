@@ -156,15 +156,12 @@ public class ElectionProtocol {
                     "election_max_interval (" + election_max_interval + ")");
         }
         timer = new DefaultTimeScheduler();
-        String ip = NetworkUtils.getIp();
-        for (String mbr : raft.members()) {
-            String[] mbrArr = mbr.split(":");
-            if (mbrArr[0].equals(ip)) {
-                local_addr = new Endpoint(mbrArr[0], Integer.parseInt(mbrArr[1]));
-                break;
-            }
-        }
-        raft = null; // findProtocol(RAFT.class); TODO! TODO! TODO!
+        raft = Cache.getRaftProtocol();
+        startElectionTimer();
+    }
+
+    public void setLocalAddr(Endpoint local_addr) {
+        this.local_addr = local_addr;
     }
 
     protected synchronized void handleHeartbeat(int term, Endpoint leader) {
@@ -310,8 +307,9 @@ public class ElectionProtocol {
     }
 
     protected void changeRole(Role new_role) {
-        if (role == new_role)
+        if (role == new_role) {
             return;
+        }
         if (role != Role.Leader && new_role == Role.Leader) {
             raft.leader(local_addr);
             // send a first heartbeat immediately after the election so other candidates step down

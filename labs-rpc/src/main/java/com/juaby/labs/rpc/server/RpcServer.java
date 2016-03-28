@@ -99,12 +99,13 @@ public class RpcServer implements Server {
             // Bind server socket and start transport
             transport.bind(host, port);
             transport.start();
-
+            /**
             System.out.println("Press 'q and ENTER' to exit, or just ENTER to see statistics...");
 
             do {
                 printStats(lifeCycleFilter);
             } while (System.in.read() != 'q');
+             */
         } catch (IOException e) {
             e.printStackTrace();
         } finally {

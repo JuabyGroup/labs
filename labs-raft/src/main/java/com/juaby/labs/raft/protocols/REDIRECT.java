@@ -95,14 +95,7 @@ public class REDIRECT /** implements Settable, DynamicMembership */ {
         //super.init();
         raft = Cache.getRaftProtocol();
 
-        String ip = NetworkUtils.getIp();
-        for (String mbr : raft.members()) {
-            String[] mbrArr = mbr.split(":");
-            if (mbrArr[0].equals(ip)) {
-                local_addr = new Endpoint(mbrArr[0], Integer.parseInt(mbrArr[1]));
-                break;
-            }
-        }
+        local_addr = null; //TODO
     }
 
     protected void handleEvent(Message msg, RedirectHeader hdr) {

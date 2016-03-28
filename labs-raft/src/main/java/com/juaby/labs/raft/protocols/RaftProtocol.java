@@ -52,7 +52,7 @@ public class RaftProtocol implements Runnable, Settable, DynamicMembership {
     protected boolean dynamic_view_changes = true;
 
     /** The fully qualified name of the class implementing Log */
-    protected String log_class = "org.jgroups.protocols.raft.LevelDBLog";
+    protected String log_class = "com.juaby.labs.raft.protocols.LevelDBLog";
 
     /** Arguments to the log impl, e.g. k1=v1,k2=v2. These will be passed to init() */
     protected String log_args;
@@ -511,15 +511,6 @@ public class RaftProtocol implements Runnable, Settable, DynamicMembership {
             }
 
             majority = members.size() / 2 + 1;
-        }
-
-        String ip = NetworkUtils.getIp();
-        for (String mbr : members) {
-            String[] mbrArr = mbr.split(":");
-            if (mbrArr[0].equals(ip)) {
-                local_addr = new Endpoint(mbrArr[0], Integer.parseInt(mbrArr[1]));
-                break;
-            }
         }
 
         // Set an AddressGenerator in channel which generates ExtendedUUIDs and adds the raft_id to the hashmap
@@ -1039,6 +1030,10 @@ public class RaftProtocol implements Runnable, Settable, DynamicMembership {
 
     public RaftImpl getRaftImpl() {
         return impl;
+    }
+
+    public void setLocalAddr(Endpoint local_addr) {
+        this.local_addr = local_addr;
     }
 
 }
