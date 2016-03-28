@@ -1,5 +1,8 @@
 package com.juaby.labs.raft.util;
 
+import java.io.BufferedReader;
+import java.io.IOException;
+import java.io.InputStreamReader;
 import java.io.UnsupportedEncodingException;
 import java.text.NumberFormat;
 import java.util.*;
@@ -126,6 +129,37 @@ public class Util {
             retval[i] = (byte) str.charAt(i);
         }
         return retval;
+    }
+
+    public static String readStringFromStdin(String message) throws Exception {
+        System.out.print(message);
+        System.out.flush();
+        System.in.skip(System.in.available());
+        BufferedReader reader=new BufferedReader(new InputStreamReader(System.in));
+        return reader.readLine().trim();
+    }
+
+    public static int keyPress(String msg) {
+        System.out.println(msg);
+
+        try {
+            int ret=System.in.read();
+            System.in.skip(System.in.available());
+            return ret;
+        }
+        catch(IOException e) {
+            return 0;
+        }
+    }
+
+    public static long readLongFromStdin(String message) throws Exception {
+        String tmp=readStringFromStdin(message);
+        return Long.parseLong(tmp);
+    }
+
+    public static int readIntFromStdin(String message) throws Exception {
+        String tmp=readStringFromStdin(message);
+        return Integer.parseInt(tmp);
     }
 
 }

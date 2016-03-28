@@ -1,12 +1,5 @@
 package com.juaby.labs.raft.protocols;
 
-import org.jgroups.Global;
-import org.jgroups.annotations.MBean;
-import org.jgroups.annotations.Property;
-import org.jgroups.conf.ClassConfigurator;
-import org.jgroups.stack.Protocol;
-import org.jgroups.util.Util;
-
 import java.io.DataInputStream;
 import java.io.DataOutput;
 import java.io.DataOutputStream;
@@ -26,14 +19,17 @@ import java.util.function.BiConsumer;
  * <pre>
  *     | RequestType (byte) | length (int) | byte[] buffer |
  * </pre>
+ *
  * @author Bela Ban
- * @since  0.2
+ * @since 0.2
  */
-/** Listens on a socket for client requests, forwards them to the leader and send responses */
-public class CLIENT implements Runnable {
 
-    protected static final short  CLIENT_ID = 523;
-    protected static final byte[] BUF={};
+/** Listens on a socket for client requests, forwards them to the leader and send responses */
+
+public class CLIENT /*implements Runnable*/ {
+
+    protected static final short CLIENT_ID = 523;
+    protected static final byte[] BUF = {};
 
     public enum RequestType {
         set_req,
@@ -44,44 +40,45 @@ public class CLIENT implements Runnable {
     }
 
     /** Port to listen for client requests",writable=false,exposeAsManagedAttribute=true */
-    protected int               port=1965;
+    protected int port = 1965;
 
     /** bind_addr,
-      description="The bind address which should be used by the server socket. The following special values
-      are also recognized: GLOBAL, SITE_LOCAL, LINK_LOCAL, NON_LOOPBACK, match-interface, match-host, match-address,
-      systemProperty={Global.BIND_ADDR},writable=false
+     description="The bind address which should be used by the server socket. The following special values
+     are also recognized: GLOBAL, SITE_LOCAL, LINK_LOCAL, NON_LOOPBACK, match-interface, match-host, match-address,
+     systemProperty={Global.BIND_ADDR},writable=false
      */
-    protected InetAddress       bind_addr;
+    protected InetAddress bind_addr;
 
     /** The min threads in the thread pool */
-    protected int               min_threads=2;
+    protected int min_threads = 2;
 
     /** Max number of threads in the thread pool */
-    protected int               max_threads=100;
+    protected int max_threads = 100;
 
     /** Number of ms a thread can be idle before being removed from the thread pool */
-    protected long              idle_time=5000;
+    protected long idle_time = 5000;
 
-    protected Settable          settable;
+    protected Settable settable;
     protected DynamicMembership dyn_membership;
-    protected ServerSocket      sock;
-    protected ExecutorService   thread_pool; // to handle requests
-    protected Thread            acceptor;
+    protected ServerSocket sock;
+    protected ExecutorService thread_pool; // to handle requests
+    protected Thread acceptor;
 
+    /**
     public void init() throws Exception {
         //super.init();
-        if((settable= RaftProtocol.findProtocol(Settable.class, this, true)) == null)
+        if ((settable = RaftProtocol.findProtocol(Settable.class, this, true)) == null)
             throw new IllegalStateException("did not find a protocol implementing Settable (e.g. REDIRECT or RAFT)");
-        if((dyn_membership= RaftProtocol.findProtocol(DynamicMembership.class, this, true)) == null)
+        if ((dyn_membership = RaftProtocol.findProtocol(DynamicMembership.class, this, true)) == null)
             throw new IllegalStateException("did not find a protocol implementing DynamicMembership (e.g. REDIRECT or RAFT)");
     }
 
     public void start() throws Exception {
         super.start();
-        sock=Util.createServerSocket(getSocketFactory(), "CLIENR.srv_sock", bind_addr, port);
-        thread_pool=new ThreadPoolExecutor(min_threads, max_threads, idle_time, TimeUnit.MILLISECONDS,
-                                           new SynchronousQueue<>(), getThreadFactory(), new ThreadPoolExecutor.DiscardPolicy());
-        acceptor=new Thread(this, "CLIENT.Acceptor");
+        sock = Util.createServerSocket(getSocketFactory(), "CLIENR.srv_sock", bind_addr, port);
+        thread_pool = new ThreadPoolExecutor(min_threads, max_threads, idle_time, TimeUnit.MILLISECONDS,
+                new SynchronousQueue<>(), getThreadFactory(), new ThreadPoolExecutor.DiscardPolicy());
+        acceptor = new Thread(this, "CLIENT.Acceptor");
         acceptor.start();
     }
 
@@ -94,21 +91,19 @@ public class CLIENT implements Runnable {
     public void destroy() {
         super.destroy();
         Util.close(sock);
-        if(thread_pool != null)
+        if (thread_pool != null)
             thread_pool.shutdown();
     }
 
     public void run() {
-        while(true) {
+        while (true) {
             try {
-                Socket client_sock=sock.accept();
+                Socket client_sock = sock.accept();
                 thread_pool.execute(new RequestHandler(client_sock));
-            }
-            catch(IOException e) {
-                if(sock.isClosed())
+            } catch (IOException e) {
+                if (sock.isClosed())
                     return;
-            }
-            catch(Throwable ex) {
+            } catch (Throwable ex) {
                 log.error("error accepting new connection", ex);
             }
         }
@@ -118,24 +113,25 @@ public class CLIENT implements Runnable {
         protected final Socket client_sock;
 
         public RequestHandler(Socket client_sock) {
-            this.client_sock=client_sock;
+            this.client_sock = client_sock;
         }
 
         public void run() {
-            DataInputStream in=null; DataOutputStream out=null;
-            CompletionHandler completion_handler=null;
+            DataInputStream in = null;
+            DataOutputStream out = null;
+            CompletionHandler completion_handler = null;
             try {
-                in=new DataInputStream(client_sock.getInputStream());
-                out=new DataOutputStream(client_sock.getOutputStream());
-                completion_handler=new CompletionHandler(client_sock, in, out);
-                RequestType type= RequestType.values()[in.readByte()];
-                int length=in.readInt();
-                byte[] buffer=new byte[length];
+                in = new DataInputStream(client_sock.getInputStream());
+                out = new DataOutputStream(client_sock.getOutputStream());
+                completion_handler = new CompletionHandler(client_sock, in, out);
+                RequestType type = RequestType.values()[in.readByte()];
+                int length = in.readInt();
+                byte[] buffer = new byte[length];
                 in.readFully(buffer);
-                switch(type) {
+                switch (type) {
                     case set_req:
                         settable.setAsync(buffer, 0, buffer.length)
-                          .whenComplete(new CompletionHandler(client_sock, in, out));
+                                .whenComplete(new CompletionHandler(client_sock, in, out));
                         break;
                     case add_server:
                         dyn_membership.addServer(Util.bytesToString(buffer)).whenComplete(completion_handler);
@@ -147,53 +143,50 @@ public class CLIENT implements Runnable {
                         // not handled on the server side
                         break;
                 }
-            }
-            catch(Throwable ex) {
+            } catch (Throwable ex) {
                 log.error("failed handling request", ex);
-                if(completion_handler != null)
+                if (completion_handler != null)
                     completion_handler.accept(null, ex); // sends back an error response
-                Util.close(in,out,client_sock);
+                Util.close(in, out, client_sock);
             }
         }
 
         protected void send(DataOutput out, RequestType type, byte[] buffer, int offset, int length) throws Exception {
-            out.writeByte((byte)type.ordinal());
-            int len=buffer == null? 0 : length;
+            out.writeByte((byte) type.ordinal());
+            int len = buffer == null ? 0 : length;
             out.writeInt(len);
-            if(len > 0)
+            if (len > 0)
                 out.write(buffer, offset, length);
         }
 
-
-        protected class CompletionHandler implements BiConsumer<byte[],Throwable> {
-            protected final Socket           s;
-            protected final DataInputStream  input;
+        protected class CompletionHandler implements BiConsumer<byte[], Throwable> {
+            protected final Socket s;
+            protected final DataInputStream input;
             protected final DataOutputStream output;
 
             public CompletionHandler(Socket client_sock, DataInputStream input, DataOutputStream output) {
-                this.s=client_sock;
-                this.input=input;
-                this.output=output;
+                this.s = client_sock;
+                this.input = input;
+                this.output = output;
             }
 
             public void accept(byte[] buf, Throwable ex) {
                 try {
-                    if(ex != null) {
-                        byte[] rsp_buffer=Util.objectToByteBuffer(ex);
+                    if (ex != null) {
+                        byte[] rsp_buffer = Util.objectToByteBuffer(ex);
                         send(output, RequestType.rsp, rsp_buffer, 0, rsp_buffer.length);
                         return;
                     }
-                    if(buf == null)
-                        buf=BUF;
+                    if (buf == null)
+                        buf = BUF;
                     send(output, RequestType.rsp, buf, 0, buf.length);
-                }
-                catch(Throwable t) {
+                } catch (Throwable t) {
                     log.error("failed in sending response to client", t);
-                }
-                finally {
-                    Util.close(output,input,s);
+                } finally {
+                    Util.close(output, input, s);
                 }
             }
         }
     }
+    */
 }

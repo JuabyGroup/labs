@@ -7,9 +7,9 @@ package com.juaby.labs.raft.blocks;
 public class CounterImpl implements Counter {
 
     protected final String name;
-    protected final CounterService counter_service; // to delegate all commands to
+    protected final CounterServiceStateMachine counter_service; // to delegate all commands to
 
-    public CounterImpl(String name, CounterService counter_service) {
+    public CounterImpl(String name, CounterServiceStateMachine counter_service) {
         this.name = name;
         this.counter_service = counter_service;
     }

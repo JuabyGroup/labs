@@ -1,18 +1,12 @@
 package com.juaby.labs.raft.blocks;
 
 import com.juaby.labs.raft.RaftHandle;
-import com.juaby.labs.raft.protocols.InternalCommand;
-import com.juaby.labs.raft.protocols.RaftProtocol;
-import com.juaby.labs.raft.protocols.Role;
-import com.juaby.labs.raft.protocols.StateMachine;
-import com.juaby.labs.raft.util.ByteArrayDataInputStream;
+import com.juaby.labs.raft.protocols.*;
 import com.juaby.labs.raft.util.ByteArrayDataOutputStream;
 import com.juaby.labs.rpc.util.SerializeTool;
-import oracle.jrockit.jfr.events.Bits;
 
 import java.io.DataInput;
 import java.io.DataOutput;
-import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
@@ -23,9 +17,10 @@ import java.util.concurrent.TimeUnit;
  * @author Bela Ban
  * @since 0.2
  */
-public class CounterService implements StateMachine, RaftProtocol.RoleChange {
+public class CounterServiceStateMachine implements StateMachine, RaftProtocol.RoleChange {
 
     protected RaftHandle raft;
+
     protected long repl_timeout = 20000; // timeout (ms) to wait for a majority to ack a write
 
     /**
@@ -36,9 +31,9 @@ public class CounterService implements StateMachine, RaftProtocol.RoleChange {
     // keys: counter names, values: counter values
     protected final Map<String, Long> counters = new HashMap<>();
 
-    protected enum Command {create, delete, get, set, compareAndSet, incrementAndGet, decrementAndGet, addAndGet}
+    protected enum CounterCommandType {create, delete, get, set, compareAndSet, incrementAndGet, decrementAndGet, addAndGet}
 
-    public CounterService() {
+    public CounterServiceStateMachine() {
         this.raft = new RaftHandle(this);
         raft.addRoleListener(this);
     }
@@ -51,7 +46,7 @@ public class CounterService implements StateMachine, RaftProtocol.RoleChange {
         return repl_timeout;
     }
 
-    public CounterService replTimeout(long timeout) {
+    public CounterServiceStateMachine replTimeout(long timeout) {
         this.repl_timeout = timeout;
         return this;
     }
@@ -60,7 +55,7 @@ public class CounterService implements StateMachine, RaftProtocol.RoleChange {
         return allow_dirty_reads;
     }
 
-    public CounterService allowDirtyReads(boolean flag) {
+    public CounterServiceStateMachine allowDirtyReads(boolean flag) {
         allow_dirty_reads = flag;
         return this;
     }
@@ -85,7 +80,7 @@ public class CounterService implements StateMachine, RaftProtocol.RoleChange {
         return raft.raftId();
     }
 
-    public CounterService raftId(String id) {
+    public CounterServiceStateMachine raftId(String id) {
         raft.raftId(id);
         return this;
     }
@@ -99,13 +94,14 @@ public class CounterService implements StateMachine, RaftProtocol.RoleChange {
      * @return The counter implementation
      */
     public Counter getOrCreateCounter(String name, long initial_value) throws Exception {
-        Object existing_value = allow_dirty_reads ? _get(name) : invoke(Command.get, name, false);
-        if (existing_value != null)
+        Object existing_value = allow_dirty_reads ? _get(name) : invoke(CounterCommandType.get, name, false);
+        if (existing_value != null) {
             counters.put(name, (Long) existing_value);
-        else {
-            Object retval = invoke(Command.create, name, false, initial_value);
-            if (retval instanceof Long)
+        } else {
+            Object retval = invoke(CounterCommandType.create, name, false, initial_value);
+            if (retval instanceof Long) {
                 counters.put(name, (Long) retval);
+            }
         }
         return new CounterImpl(name, this);
     }
@@ -116,7 +112,7 @@ public class CounterService implements StateMachine, RaftProtocol.RoleChange {
      * @param name The name of the counter. No-op if the counter doesn't exist
      */
     public void deleteCounter(String name) throws Exception {
-        invoke(Command.delete, name, true);
+        invoke(CounterCommandType.delete, name, true);
     }
 
     public String printCounters() {
@@ -128,74 +124,75 @@ public class CounterService implements StateMachine, RaftProtocol.RoleChange {
     }
 
     public long get(String name) throws Exception {
-        Object retval = allow_dirty_reads ? _get(name) : invoke(Command.get, name, false);
+        Object retval = allow_dirty_reads ? _get(name) : invoke(CounterCommandType.get, name, false);
         return (long) retval;
     }
 
     public void set(String name, long new_value) throws Exception {
-        invoke(Command.set, name, true, new_value);
+        invoke(CounterCommandType.set, name, true, new_value);
     }
 
     public boolean compareAndSet(String name, long expect, long update) throws Exception {
-        Object retval = invoke(Command.compareAndSet, name, false, expect, update);
+        Object retval = invoke(CounterCommandType.compareAndSet, name, false, expect, update);
         return (boolean) retval;
     }
 
     public long incrementAndGet(String name) throws Exception {
-        Object retval = invoke(Command.incrementAndGet, name, false);
+        Object retval = invoke(CounterCommandType.incrementAndGet, name, false);
         return (long) retval;
     }
 
     public long decrementAndGet(String name) throws Exception {
-        Object retval = invoke(Command.decrementAndGet, name, false);
+        Object retval = invoke(CounterCommandType.decrementAndGet, name, false);
         return (long) retval;
     }
 
     public long addAndGet(String name, long delta) throws Exception {
-        Object retval = invoke(Command.addAndGet, name, false, delta);
+        Object retval = invoke(CounterCommandType.addAndGet, name, false, delta);
         return (long) retval;
     }
 
     @Override
     public byte[] apply(byte[] data, int offset, int length) throws Exception {
-        ByteArrayDataInputStream in = new ByteArrayDataInputStream(data, offset, length);
-        Command command = Command.values()[in.readByte()];
-        String name = Bits.readAsciiString(in).toString();
+        Command<CounterCommandType, KeyValueWapper<String, Long[]>> command = new Command<CounterCommandType, KeyValueWapper<String, Long[]>>();
+        SerializeTool.deserialize(data, command);
+        CounterCommandType type = command.getType();
+        String name = command.getData().getKey();
         long v1, v2, retval;
-        switch (command) {
+        switch (type) {
             case create:
-                v1 = Bits.readLong(in);
+                v1 = command.getData().getValue()[0];
                 retval = _create(name, v1);
-                return Util.objectToByteBuffer(retval);
+                return SerializeTool.serialize(Long.valueOf(retval));
             case delete:
                 _delete(name);
                 break;
             case get:
                 retval = _get(name);
-                return Util.objectToByteBuffer(retval);
+                return SerializeTool.serialize(Long.valueOf(retval));
             case set:
-                v1 = Bits.readLong(in);
+                v1 = command.getData().getValue()[0];
                 _set(name, v1);
                 break;
             case compareAndSet:
-                v1 = Bits.readLong(in);
-                v2 = Bits.readLong(in);
+                v1 = command.getData().getValue()[0];
+                v2 = command.getData().getValue()[1];
                 boolean success = _cas(name, v1, v2);
-                return Util.objectToByteBuffer(success);
+                return SerializeTool.serialize(Boolean.valueOf(success));
             case incrementAndGet:
                 retval = _add(name, +1L);
-                return Util.objectToByteBuffer(retval);
+                return SerializeTool.serialize(Long.valueOf(retval));
             case decrementAndGet:
                 retval = _add(name, -1L);
-                return Util.objectToByteBuffer(retval);
+                return SerializeTool.serialize(Long.valueOf(retval));
             case addAndGet:
-                v1 = Bits.readLong(in);
+                v1 = command.getData().getValue()[0];
                 retval = _add(name, v1);
-                return Util.objectToByteBuffer(retval);
+                return SerializeTool.serialize(Long.valueOf(retval));
             default:
                 throw new IllegalArgumentException("command " + command + " is unknown");
         }
-        return Util.objectToByteBuffer(null);
+        return null;
     }
 
     @Override
@@ -204,10 +201,10 @@ public class CounterService implements StateMachine, RaftProtocol.RoleChange {
             int size = counters.size();
             out.writeInt(size);
             for (Map.Entry<String, Long> entry : counters.entrySet()) {
-                AsciiString name = new AsciiString(entry.getKey());
-                Long value = entry.getValue();
-                Bits.writeAsciiString(name, out);
-                Bits.writeLong(value, out);
+                KeyValueWapper<String, Long> keyValueWapper = new KeyValueWapper<String, Long>(entry.getKey(), entry.getValue());
+                byte[] keyValueBuf = SerializeTool.serialize(keyValueWapper);
+                out.writeInt(keyValueBuf.length);
+                out.write(keyValueBuf);
             }
         }
     }
@@ -216,9 +213,14 @@ public class CounterService implements StateMachine, RaftProtocol.RoleChange {
     public void readContentFrom(DataInput in) throws Exception {
         int size = in.readInt();
         for (int i = 0; i < size; i++) {
-            AsciiString name = Bits.readAsciiString(in);
-            Long value = Bits.readLong(in);
-            counters.put(name.toString(), value);
+            int keyValueLength = in.readInt();
+            byte[] keyValueBuf = new byte[keyValueLength];
+            in.readFully(keyValueBuf);
+            KeyValueWapper<String, Long> keyValueWapper = new KeyValueWapper<String, Long>();
+            SerializeTool.deserialize(keyValueBuf, keyValueWapper);
+            String name = keyValueWapper.getKey();
+            Long value = keyValueWapper.getValue();
+            counters.put(name, value);
         }
     }
 
@@ -241,27 +243,28 @@ public class CounterService implements StateMachine, RaftProtocol.RoleChange {
                 System.out.println(sb);
                 return;
             }
-            ByteArrayDataInputStream in = new ByteArrayDataInputStream(entry.command(), entry.offset(), entry.length());
             try {
-                Command cmd = Command.values()[in.readByte()];
-                String name = Bits.readAsciiString(in).toString();
-                switch (cmd) {
+                Command<CounterCommandType, KeyValueWapper<String, Long[]>> command = new Command<CounterCommandType, KeyValueWapper<String, Long[]>>();
+                SerializeTool.deserialize(entry.getCommand(), command);
+                CounterCommandType type = command.getType();
+                String name = command.getData().getKey();
+                switch (type) {
                     case create:
                     case set:
                     case addAndGet:
-                        sb.append(print(cmd, name, 1, in));
+                        sb.append(print(type, name, command));
                         break;
                     case delete:
                     case get:
                     case incrementAndGet:
                     case decrementAndGet:
-                        sb.append(print(cmd, name, 0, in));
+                        sb.append(print(type, name, command));
                         break;
                     case compareAndSet:
-                        sb.append(print(cmd, name, 2, in));
+                        sb.append(print(type, name, command));
                         break;
                     default:
-                        throw new IllegalArgumentException("command " + cmd + " is unknown");
+                        throw new IllegalArgumentException("command " + type + " is unknown");
                 }
             } catch (Throwable t) {
                 sb.append(t);
@@ -275,31 +278,39 @@ public class CounterService implements StateMachine, RaftProtocol.RoleChange {
         System.out.println("-- changed role to " + role);
     }
 
-    protected Object invoke(Command command, String name, boolean ignore_return_value, long... values) throws Exception {
+    protected Object invoke(CounterCommandType type, String name, boolean ignore_return_value, long... values) throws Exception {
         ByteArrayDataOutputStream out = new ByteArrayDataOutputStream(256);
+        byte[] cmd = null;
         try {
-            out.writeByte(command.ordinal());
-            Bits.writeAsciiString(new AsciiString(name), out);
-            for (long val : values)
-                Bits.writeLong(val, out);
+            Command<CounterCommandType, KeyValueWapper<String, Long[]>> command = null;
+            Long[] valueArr = new Long[values.length];
+            for (int i = 0; i < values.length; i++) {
+                valueArr[i] = values[i];
+            }
+            command = new Command<CounterCommandType, KeyValueWapper<String, Long[]>>(type, new KeyValueWapper<String, Long[]>(name, valueArr));
+            cmd = SerializeTool.serialize(command);
         } catch (Exception ex) {
-            throw new Exception("serialization failure (cmd=" + command + ", name=" + name + ")");
+            throw new Exception("serialization failure (cmd=" + type + ", name=" + name + ")");
         }
 
-        byte[] buf = out.buffer();
-        byte[] rsp = raft.set(buf, 0, out.position(), repl_timeout, TimeUnit.MILLISECONDS);
-        return ignore_return_value ? null : Util.objectFromByteBuffer(rsp);
+        byte[] rsp = raft.set(cmd, 0, cmd.length, repl_timeout, TimeUnit.MILLISECONDS);
+        if (CounterCommandType.set == type) {
+            return null;
+        }
+        if (CounterCommandType.compareAndSet == type) {
+            Boolean result = true;
+            return ignore_return_value ? null : SerializeTool.deserialize(rsp, result);
+        }
+        Long rval = 0L;
+        return ignore_return_value ? null : (rsp != null ? SerializeTool.deserialize(rsp, rval) : null);
     }
 
-    protected static String print(Command command, String name, int num_args, DataInput in) {
-        StringBuilder sb = new StringBuilder(command.toString()).append("(").append(name);
-        for (int i = 0; i < num_args; i++) {
-            try {
-                long val = Bits.readLong(in);
-                sb.append(", ").append(val);
-            } catch (IOException e) {
-                break;
-            }
+    protected static String print(CounterCommandType type, String name, Command<CounterCommandType, KeyValueWapper<String, Long[]>> command) {
+        StringBuilder sb = new StringBuilder(type.toString()).append("(").append(name);
+        Long[] values = command.getData().getValue();
+        for (int i = 0; i < values.length; i++) {
+            long val = values[i];
+            sb.append(", ").append(val);
         }
         sb.append(")");
         return sb.toString();
