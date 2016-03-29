@@ -13,8 +13,8 @@ public interface ClientService<K, V> {
 
     public V remove(K key);
 
-    public boolean addServer(Endpoint endpoint);
+    //public boolean addServer(Endpoint endpoint);
 
-    public boolean removeServer(Endpoint endpoint);
+    //public boolean removeServer(Endpoint endpoint);
 
 }

@@ -30,16 +30,15 @@ public class ResultFutureHelper {
         //TODO
         String service = responseMessageBody.getService();
         String method = responseMessageBody.getMethod();
-        String key = inetSocketAddress.getHostString() + ":" + inetSocketAddress.getPort() + ":" + service + ":" + method;
+        String transportKey = inetSocketAddress.getHostString() + ":" + inetSocketAddress.getPort() + ":" + service + ":" + method;
         ServiceClassInfo.MethodInfo methodInfo = ServiceClassInfoHelper.get(service).getMethods().get(method);
         if(methodInfo.isCallback()) {
             //TODO
-            //RpcCallback callback = RpcCallbackHandler.getClientCallbackProxy(key);
-            //RpcCallbackHandler.handler(callback, responseMessageBody.getBody());
+            RpcCallback callback = RpcCallbackHandler.getClientCallbackProxy(transportKey);
+            RpcCallbackHandler.handler(callback, responseMessageBody.getBody());
         }
-
-        if (message != null) {
-            Integer messageId = message.getId();
+        Integer messageId = message.getId();
+        if (message != null && messageId != null && messageId.intValue() != -1) {
             RpcFutureImpl<ResponseMessageBody> resultFuture = map().get(messageId);
             if (resultFuture != null) {
                 resultFuture.result(responseMessageBody);

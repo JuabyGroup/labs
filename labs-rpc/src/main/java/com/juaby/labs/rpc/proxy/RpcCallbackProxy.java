@@ -35,7 +35,7 @@ public class RpcCallbackProxy<REQ, RES> {
             RpcMessage sentMessage = new RpcMessage((byte) 1, (byte) 2,
                     (byte) 0x0F, (byte) 0, body);
 
-            sentMessage.setId(0);
+            sentMessage.setId(-1);
             sentMessage.setTotalLength(ServiceConfig.HEADER_SIZE + body.length);
 
             transport.sendMessage(sentMessage);

@@ -102,12 +102,6 @@ public class RpcClient {
             transport.sendMessage(sentMessage);
 
             rcvMessage = ResultFutureHelper.result(messageId);
-
-            if(methodInfo.isCallback()) {
-                //TODO
-                RpcCallback callback = RpcCallbackHandler.getClientCallbackProxy(transportKey);
-                RpcCallbackHandler.handler(callback, rcvMessage.getBody());
-            }
         } catch (InterruptedException e) {
             //TODO
         } catch (ExecutionException e) {

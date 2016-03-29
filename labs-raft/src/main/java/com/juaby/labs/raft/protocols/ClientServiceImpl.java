@@ -39,12 +39,12 @@ public class ClientServiceImpl<K, V> implements ClientService<K, V> {
         return null;
     }
 
-    @Override
+    //@Override
     public boolean addServer(Endpoint endpoint) {
         return false;
     }
 
-    @Override
+    //@Override
     public boolean removeServer(Endpoint endpoint) {
         return false;
     }

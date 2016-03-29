@@ -76,8 +76,8 @@ public class Rpc2ServerHandler extends ChannelInboundHandlerAdapter {
                     e.printStackTrace();
                 }
                 RpcCallbackHandler.addServerCallbackProxy(transportKey, callback);
-                requestMessageBody.getParams()[methodInfo.getCallbackIndex()] = callback;
             }
+            requestMessageBody.getParams()[methodInfo.getCallbackIndex()] = callback;
         }
 
         ResponseMessageBody messageBody;

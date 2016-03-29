@@ -36,6 +36,7 @@ public class ChannelFactory {
     static final int SIZE = Integer.parseInt(System.getProperty("size", "256"));
 
     private static final Map<String, Channel> channelCache = new ConcurrentHashMap<String, Channel>();
+    private static final Map<String, Bootstrap> bootstrapCache = new ConcurrentHashMap<String, Bootstrap>();
 
     public static Channel get(Endpoint endpoint) {
         Channel channel = channelCache.get(endpoint.key());
@@ -56,6 +57,19 @@ public class ChannelFactory {
 
     public static void initPool(Endpoint endpoint) {
         Channel channel;
+        if (bootstrapCache.containsKey(endpoint.key())) {
+            // Start the connection attempt.
+            ChannelFuture channelFuture = bootstrapCache.get(endpoint.key()).connect(endpoint.getHost(), endpoint.getPort());
+            channelFuture.awaitUninterruptibly(5000, TimeUnit.MILLISECONDS); //TODO
+            if (channelFuture.isSuccess()) {
+                channel = channelFuture.channel();
+                channelCache.put(endpoint.key(), channel);
+                RpcTransportFactory.cache(endpoint, new NettyTransport(channel));
+            } else {
+                Throwable cause = channelFuture.cause();
+            }
+        }
+
         RpcThreadFactory threadName = new RpcThreadFactory("RPC-CLI-WORKER", true);
         int threads = Runtime.getRuntime().availableProcessors() * 2 + 1;
         EventLoopGroup group = new NioEventLoopGroup(threads, threadName);
@@ -93,6 +107,7 @@ public class ChannelFactory {
                         }
                     });
 
+            bootstrapCache.put(endpoint.key(), b);
             // Start the connection attempt.
             ChannelFuture channelFuture = b.connect(endpoint.getHost(), endpoint.getPort());
             channelFuture.awaitUninterruptibly(5000, TimeUnit.MILLISECONDS); //TODO

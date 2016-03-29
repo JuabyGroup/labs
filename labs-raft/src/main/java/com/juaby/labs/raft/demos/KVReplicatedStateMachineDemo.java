@@ -13,7 +13,7 @@ import com.juaby.labs.raft.util.Util;
  * @author Bela Ban
  * @since 0.1
  */
-public class ReplicatedStateMachineDemo implements RaftProtocol.RoleChange {
+public class KVReplicatedStateMachineDemo implements RaftProtocol.RoleChange {
 
     protected KVReplicatedStateMachine<String, Object> rsm;
 
@@ -164,7 +164,7 @@ public class ReplicatedStateMachineDemo implements RaftProtocol.RoleChange {
             System.out.println("ReplicatedStateMachine [-props <config>] [-name <name>] [-follower] [-timeout timeout]");
             return;
         }
-        new ReplicatedStateMachineDemo().start(props, name, follower, timeout);
+        new KVReplicatedStateMachineDemo().start(props, name, follower, timeout);
     }
 
 }

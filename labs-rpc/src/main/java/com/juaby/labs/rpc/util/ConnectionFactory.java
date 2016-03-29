@@ -59,6 +59,10 @@ public class ConnectionFactory {
     }
 
     public static void initPool(Endpoint endpoint) {
+        if (connCache.containsKey(endpoint.key())) {
+            RpcTransportFactory.cache(endpoint, new GrizzlyTransport(get(endpoint)));
+            return;
+        }
         // Create a FilterChain using FilterChainBuilder
         FilterChainBuilder filterChainBuilder = FilterChainBuilder.stateless();
         // Add TransportFilter, which is responsible
@@ -79,7 +83,7 @@ public class ConnectionFactory {
                     .builder(SocketAddress.class)
                     .connectorHandler(transport)
                     .endpointAddress(new InetSocketAddress(endpoint.getHost(), endpoint.getPort()))
-                    .maxPoolSize(8) //TODO
+                    .maxPoolSize(1) //TODO
                     .build();
             connCache.put(endpoint.key(), pool);
             //TODO
