@@ -35,7 +35,6 @@ public class Cache {
         }
         ServiceConfig<ElectionService> serviceConfig = new ServiceConfig<ElectionService>(2, ElectionService.class);
         serviceConfig.setServerType(RpcEnum.Grizzly.value());
-        endpoint.setPort(endpoint.getPort() + 1);
         EndpointHelper.add(serviceConfig.getName(), endpoint);
         serviceConfig.setEndpoint(endpoint);
         electionService = ServiceFactory.getService(serviceConfig);

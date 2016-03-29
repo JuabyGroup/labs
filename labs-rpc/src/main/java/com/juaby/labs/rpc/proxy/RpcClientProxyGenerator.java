@@ -43,7 +43,7 @@ public class RpcClientProxyGenerator extends ClassLoader implements Opcodes {
         String clientProxyClassName = classInfo.getName() + "$ClientProxy";
         String classSignature = "";//"<O:Ljava/lang/Object;F:Ljava/lang/Object;>Lcom/juaby/labs/rpc/proxy/RpcClientProxy;Lcom/juaby/labs/rpc/MessageService<TO;TF;>;";
 
-        if (classInfo.getSignature().startsWith("<")) {
+        if (classInfo.getSignature() != null && classInfo.getSignature().startsWith("<")) {
             String beforeSignature = classInfo.getSignature().substring(0, classInfo.getSignature().indexOf(">") + 1);
             String tmpSignature = beforeSignature.substring(1, beforeSignature.indexOf(">"));
             String middleSignature = "Lcom/juaby/labs/rpc/proxy/RpcClientProxy;L" + classInfo.getName();

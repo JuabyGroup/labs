@@ -4,6 +4,8 @@ import com.juaby.labs.rpc.common.RpcEnum;
 import com.juaby.labs.rpc.util.Endpoint;
 
 import java.lang.management.ManagementFactory;
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * Created by chaos on 16-2-21.
@@ -16,7 +18,7 @@ public class ServerConfig {
 
     private Endpoint endpoint;
 
-    private ServiceConfig serviceConfig;
+    private List<ServiceConfig> serviceConfigs = new ArrayList<ServiceConfig>();
 
     public ServerConfig(int serverType) {
         this.serverType = serverType;
@@ -30,12 +32,12 @@ public class ServerConfig {
     public ServerConfig(int serverType, Endpoint endpoint, ServiceConfig serviceConfig) {
         this.serverType = serverType;
         this.endpoint = endpoint;
-        this.serviceConfig = serviceConfig;
+        this.serviceConfigs.add(serviceConfig);
     }
 
     public ServerConfig(int serverType, ServiceConfig serviceConfig) {
         this.serverType = serverType;
-        this.serviceConfig = serviceConfig;
+        this.serviceConfigs.add(serviceConfig);
     }
 
     public int getServerType() {
@@ -46,12 +48,12 @@ public class ServerConfig {
         this.serverType = serverType;
     }
 
-    public ServiceConfig getServiceConfig() {
-        return serviceConfig;
+    public List<ServiceConfig> getServiceConfigs() {
+        return serviceConfigs;
     }
 
-    public void setServiceConfig(ServiceConfig serviceConfig) {
-        this.serviceConfig = serviceConfig;
+    public void addServiceConfig(ServiceConfig serviceConfig) {
+        this.serviceConfigs.add(serviceConfig);
     }
 
     public Endpoint getEndpoint() {

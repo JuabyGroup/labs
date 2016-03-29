@@ -201,7 +201,12 @@ public class Rpcifier extends RpcProxyParser {
         methodInfo.setAccess(access);
         methodInfo.setName(name);
         methodInfo.setDesc(desc);
-        methodInfo.setSignature(signature);
+        if (signature == null || signature.length() == 0) {
+            methodInfo.setSignature(desc);
+        } else {
+            methodInfo.setSignature(signature);
+        }
+
         if (exceptions != null && exceptions.length > 0) {
             methodInfo.setExceptions(exceptions);
         } else {
@@ -237,7 +242,6 @@ public class Rpcifier extends RpcProxyParser {
             int index = ServiceClassInfoHelper.getMethodCounter(classInfo.getSimpleName() + ":" + methodInfo.getSignature()).getAndIncrement();
             methodInfo.setIndex(index);
             classInfo.getMethods().put(methodInfo.getSignature(), methodInfo);
-
         }
         return a;
     }

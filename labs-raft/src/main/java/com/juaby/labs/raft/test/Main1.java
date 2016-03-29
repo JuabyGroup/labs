@@ -1,13 +1,6 @@
 package com.juaby.labs.raft.test;
 
 import com.juaby.labs.raft.config.RaftConfig;
-import com.juaby.labs.raft.protocols.*;
-import com.juaby.labs.raft.util.Cache;
-import com.juaby.labs.rpc.config.ServerConfig;
-import com.juaby.labs.rpc.config.ServiceConfig;
-import com.juaby.labs.rpc.server.Server;
-import com.juaby.labs.rpc.server.ServerFactory;
-import com.juaby.labs.rpc.util.Endpoint;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -35,33 +28,7 @@ public class Main1 {
         }
         String bindHost = "10.12.165.43";
         int bindPort = 7081;
-        RaftProtocol raftProtocol = Cache.getRaftProtocol();
-        raftProtocol.raftId(bindHost + ":" + bindPort);
-        raftProtocol.members(members);
-        raftProtocol.setLocalAddr(new Endpoint(bindHost, bindPort));
-
-        ServiceConfig<RaftService> serviceConfig = new ServiceConfig<RaftService>(1, RaftService.class);
-        serviceConfig.setServiceInstance(new RaftServiceImpl(raftProtocol));
-        ServerConfig serverConfig = new ServerConfig(1, bindHost, bindPort);
-        serviceConfig.setServerConfig(serverConfig);
-        Server server = ServerFactory.getServer(serverConfig);
-        //server.startup();
-
-        raftProtocol.init();
-        raftProtocol.start();
-
-        ElectionProtocol electionProtocol = Cache.getElectionProtocol();
-        electionProtocol.setLocalAddr(new Endpoint(bindHost, bindPort));
-        electionProtocol.init();
-
-        ServiceConfig<ElectionService> serviceConfig2 = new ServiceConfig<ElectionService>(1, ElectionService.class);
-        serviceConfig2.setServiceInstance(new ElectionServiceImpl(electionProtocol));
-        ServerConfig serverConfig2 = new ServerConfig(1, bindHost, bindPort);
-        serviceConfig2.setServerConfig(serverConfig2);
-        Server server2 = ServerFactory.getServer(serverConfig2);
-        server2.startup();
-
-        Thread.currentThread().join();
+        MainCommon.start(bindHost, bindPort, members);
     }
 
 }

@@ -57,7 +57,7 @@ public class ServiceConfig<S> {
     public ServiceConfig(int serviceType, Class<S> serviceClass, ServerConfig serverConfig) {
         this(serviceType, serviceClass);
         this.serverConfig = serverConfig;
-        serverConfig.setServiceConfig(this);
+        serverConfig.addServiceConfig(this);
         ServiceConfigHelper.addConfig(this);
     }
 
@@ -101,7 +101,7 @@ public class ServiceConfig<S> {
 
     public void setServerConfig(ServerConfig serverConfig) {
         this.serverConfig = serverConfig;
-        serverConfig.setServiceConfig(this);
+        serverConfig.addServiceConfig(this);
         ServiceConfigHelper.addConfig(this);
     }
 
