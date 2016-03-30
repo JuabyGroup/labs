@@ -1,4 +1,4 @@
-package com.juaby.labs.raft.protocols;
+package com.juaby.labs.raft.store;
 
 import com.juaby.labs.rpc.util.Endpoint;
 import com.juaby.labs.rpc.util.SerializeTool;
@@ -9,7 +9,7 @@ import java.util.Map;
 import java.util.function.ObjIntConsumer;
 
 /**
- * Implementation of {@link com.juaby.labs.raft.protocols.Log} with MapDB (http://www.mapdb.org)
+ * Implementation of {@link Log} with MapDB (http://www.mapdb.org)
  *
  * @author Bela Ban
  * @since 0.1

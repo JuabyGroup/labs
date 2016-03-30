@@ -38,19 +38,19 @@ public class InstallSnapshotRequest extends RaftHeader {
         this.leader = leader;
     }
 
-    public int getLast_included_index() {
+    public int lastIncludedIndex() {
         return last_included_index;
     }
 
-    public void setLast_included_index(int last_included_index) {
+    public void lastIncludedIndex(int last_included_index) {
         this.last_included_index = last_included_index;
     }
 
-    public int getLast_included_term() {
+    public int lastIncludedTerm() {
         return last_included_term;
     }
 
-    public void setLast_included_term(int last_included_term) {
+    public void lastIncludedTerm(int last_included_term) {
         this.last_included_term = last_included_term;
     }
 
@@ -70,11 +70,11 @@ public class InstallSnapshotRequest extends RaftHeader {
         this.offset = offset;
     }
 
-    public boolean isDone() {
+    public boolean done() {
         return done;
     }
 
-    public void setDone(boolean done) {
+    public void done(boolean done) {
         this.done = done;
     }
 

@@ -1,8 +1,10 @@
 package com.juaby.labs.raft.protocols;
 
+import com.juaby.labs.raft.store.Log;
+import com.juaby.labs.raft.store.LogEntry;
 import com.juaby.labs.raft.util.ByteArrayDataInputStream;
-import com.juaby.labs.raft.util.Util;
 import com.juaby.labs.rpc.util.Endpoint;
+import com.juaby.labs.raft.util.Util;
 
 /**
  * Implements the behavior of a RAFT follower
@@ -20,8 +22,8 @@ public class Follower extends RaftImpl {
     protected AppendEntriesResponse handleInstallSnapshotRequest(InstallSnapshotRequest request) {
         int term = request.term();
         Endpoint leader = request.getLeader();
-        int last_included_index = request.getLast_included_index();
-        int last_included_term = request.getLast_included_term();
+        int last_included_index = request.lastIncludedIndex();
+        int last_included_term = request.lastIncludedTerm();
         byte[] data = request.getData();
 
         // 1. read the state (in the message's buffer) and apply it to the state machine (clear the SM before?)
@@ -32,7 +34,7 @@ public class Follower extends RaftImpl {
 
         StateMachine sm;
         if ((sm = raft.state_machine) == null) {
-            raft.getLog().error("%s: no state machine set, cannot install snapshot", raft.local_addr);
+            raft.getLog().error("{}: no state machine set, cannot install snapshot", raft.local_addr);
             return new AppendEntriesResponse(raft.currentTerm(), null);
         }
         try {
@@ -49,7 +51,7 @@ public class Follower extends RaftImpl {
             raft.commit_index = last_included_index;
             log.truncate(last_included_index);
 
-            raft.getLog().debug("%s: applied snapshot (%s) from %s; last_appended=%d, commit_index=%d",
+            raft.getLog().debug("{}: applied snapshot ({}) from {}; last_appended={}, commit_index={}",
                     raft.local_addr, Util.printBytes(data.length), leader, raft.lastAppended(), raft.commitIndex());
 
             AppendResult result = new AppendResult(true, last_included_index).commitIndex(raft.commitIndex());
@@ -57,7 +59,7 @@ public class Follower extends RaftImpl {
             response.setSrc(raft.local_addr);
             return response;
         } catch (Exception ex) {
-            raft.getLog().error("%s: failed applying snapshot from %s: %s", raft.local_addr, leader, ex);
+            raft.getLog().error("{}: failed applying snapshot from {}: {}", raft.local_addr, leader, ex);
             return new AppendEntriesResponse(raft.currentTerm(), new AppendResult(false));
         }
     }

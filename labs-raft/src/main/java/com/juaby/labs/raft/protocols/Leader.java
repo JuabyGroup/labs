@@ -1,7 +1,7 @@
 package com.juaby.labs.raft.protocols;
 
-import com.juaby.labs.raft.util.RequestTable;
 import com.juaby.labs.rpc.util.Endpoint;
+import com.juaby.labs.raft.util.RequestTable;
 
 /**
  * Implements the behavior of a RAFT leader
@@ -36,14 +36,14 @@ public class Leader extends RaftImpl {
             throw new IllegalStateException("request table cannot be null in leader");
         }
         String sender_raft_id = raft.raftId();
-        raft.getLog().trace("%s: received AppendEntries response from %s for term %d: %s", raft.local_addr, sender, term, result);
+        raft.getLog().trace("{}: received AppendEntries response from {} for term {}: {}", raft.local_addr, sender, term, result);
         if (result.success) {
-            raft.commit_table.update(sender, result.getIndex(), result.getIndex() + 1, result.commit_index, false);
+            raft.commit_table.update(sender, result.index(), result.index() + 1, result.commit_index, false);
             if (reqtab.add(result.index, sender_raft_id, raft.majority())) {
                 raft.handleCommit(result.index);
             }
         } else {
-            raft.commit_table.update(sender, 0, result.getIndex(), result.commit_index, true);
+            raft.commit_table.update(sender, 0, result.index(), result.commit_index, true);
         }
     }
 

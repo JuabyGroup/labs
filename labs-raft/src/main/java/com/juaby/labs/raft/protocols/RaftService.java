@@ -10,7 +10,7 @@ public interface RaftService {
     public AppendEntriesResponse appendEntries(AppendEntriesRequest appendEntriesRequest);
 
     public AppendEntriesResponse appendEntries(AppendEntriesRequest appendEntriesRequest,
-                                               RpcCallback<AppendEntriesResponse, Boolean> callback);
+                                                           RpcCallback<AppendEntriesResponse, Boolean> callback);
 
     public AppendEntriesResponse installSnapshot(InstallSnapshotRequest installSnapshotRequest);
 

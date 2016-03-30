@@ -1,4 +1,4 @@
-package com.juaby.labs.raft.statemachine;
+package com.juaby.labs.raft.sm;
 
 import com.juaby.labs.raft.RaftHandle;
 import com.juaby.labs.raft.protocols.*;

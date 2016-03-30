@@ -1,4 +1,4 @@
-package com.juaby.labs.raft.statemachine;
+package com.juaby.labs.raft.sm;
 
 /**
  * @author Bela Ban

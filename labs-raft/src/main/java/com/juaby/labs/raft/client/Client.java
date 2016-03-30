@@ -1,15 +1,9 @@
 package com.juaby.labs.raft.client;
 
 import com.juaby.labs.raft.protocols.CLIENT;
-import com.juaby.labs.raft.util.Util;
-
-import java.io.DataInputStream;
-import java.io.DataOutputStream;
-import java.net.InetAddress;
-import java.net.Socket;
 
 /**
- * Client which accesses the {@link com.juaby.labs.raft.protocols.CLIENT} protocol through a socket. Currently used to
+ * Client which accesses the {@link CLIENT} protocol through a socket. Currently used to
  * submit addServer and remove Server commands
  *
  * @author Bela Ban

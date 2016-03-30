@@ -1,6 +1,6 @@
 package com.juaby.labs.raft.demos;
 
-import com.juaby.labs.raft.statemachine.KVReplicatedStateMachine;
+import com.juaby.labs.raft.sm.KVReplicatedStateMachine;
 import com.juaby.labs.raft.protocols.ElectionProtocol;
 import com.juaby.labs.raft.protocols.RaftProtocol;
 import com.juaby.labs.raft.protocols.Role;

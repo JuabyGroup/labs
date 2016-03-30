@@ -1,7 +1,10 @@
-package com.juaby.labs.raft.statemachine;
+package com.juaby.labs.raft.sm;
 
 import com.juaby.labs.raft.RaftHandle;
-import com.juaby.labs.raft.protocols.*;
+import com.juaby.labs.raft.protocols.Command;
+import com.juaby.labs.raft.protocols.InternalCommand;
+import com.juaby.labs.raft.protocols.RaftProtocol;
+import com.juaby.labs.raft.protocols.StateMachine;
 import com.juaby.labs.rpc.util.SerializeTool;
 
 import java.io.DataInput;

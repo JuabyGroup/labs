@@ -1,6 +1,8 @@
 package com.juaby.labs.raft;
 
 import com.juaby.labs.raft.protocols.*;
+import com.juaby.labs.raft.store.Log;
+import com.juaby.labs.raft.store.LogEntry;
 import com.juaby.labs.raft.util.Cache;
 import com.juaby.labs.rpc.util.Endpoint;
 

@@ -19,10 +19,10 @@ public class ServerFactory {
     public static Server getServer(ServerConfig serverConfig) {
         for (ServiceConfig serviceConfig : serverConfig.getServiceConfigs()) {
             ServiceClassInfo classInfo = ServiceClassInfoHelper.get(serviceConfig.getName());
-            for (String methodSignature : classInfo.getMethods().keySet()) {
+            for (String key : classInfo.getMethods().keySet()) {
                 RpcServiceHandler rpcServiceHandler = null;
                 try {
-                    rpcServiceHandler = new RpcServerProxyGenerator().newInstance(classInfo, classInfo.getMethods().get(methodSignature));
+                    rpcServiceHandler = new RpcServerProxyGenerator().newInstance(classInfo, classInfo.getMethods().get(key));
                 } catch (IllegalAccessException e) {
                     e.printStackTrace();
                 } catch (InstantiationException e) {
@@ -34,7 +34,7 @@ public class ServerFactory {
                 } catch (InvocationTargetException e) {
                     e.printStackTrace();
                 }
-                ProxyHelper.addProxyInstance(classInfo.getName() + methodSignature, rpcServiceHandler);
+                ProxyHelper.addProxyInstance(classInfo.getName() + key, rpcServiceHandler);
             }
         }
 

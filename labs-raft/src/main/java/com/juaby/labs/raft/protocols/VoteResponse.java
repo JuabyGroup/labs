@@ -16,11 +16,11 @@ public class VoteResponse extends RaftHeader {
         this.result = result;
     }
 
-    public boolean isResult() {
+    public boolean result() {
         return result;
     }
 
-    public void setResult(boolean result) {
+    public void result(boolean result) {
         this.result = result;
     }
 

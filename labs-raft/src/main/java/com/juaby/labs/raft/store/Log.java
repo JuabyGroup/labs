@@ -1,4 +1,4 @@
-package com.juaby.labs.raft.protocols;
+package com.juaby.labs.raft.store;
 
 import com.juaby.labs.rpc.util.Endpoint;
 

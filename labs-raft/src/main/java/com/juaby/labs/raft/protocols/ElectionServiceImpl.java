@@ -2,8 +2,8 @@ package com.juaby.labs.raft.protocols;
 
 import com.juaby.labs.rpc.util.Endpoint;
 import com.juaby.labs.rpc.util.RpcCallback;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
 /**
  * Performs leader election. Starts an election timer on connect and starts an election when the timer goes off and
@@ -18,7 +18,7 @@ import org.slf4j.LoggerFactory;
  */
 public class ElectionServiceImpl implements ElectionService {
 
-    protected final Logger log = LoggerFactory.getLogger(this.getClass());
+    protected final Logger logger = LogManager.getLogger(this.getClass());
 
     private ElectionProtocol electionProtocol;
 
@@ -31,8 +31,9 @@ public class ElectionServiceImpl implements ElectionService {
         // drop the message if hdr.term < raft.current_term, else accept
         // if hdr.term > raft.current_term -> change to follower
         int rc = electionProtocol.raft.currentTerm(heartbeatRequest.term);
-        if (rc < 0)
+        if (rc < 0) {
             return;
+        }
         if (rc > 0) { // a new term was set
             electionProtocol.changeRole(Role.Follower);
             electionProtocol.voteFor(null); // so we can vote again in this term
@@ -47,8 +48,8 @@ public class ElectionServiceImpl implements ElectionService {
     public VoteResponse vote(VoteRequest voteRequest, RpcCallback<VoteResponse, Boolean> callback) {
         if (voteRequest != null) {
             int term = voteRequest.term();
-            int last_log_term = voteRequest.getLast_log_term();
-            int last_log_index = voteRequest.getLast_log_index();
+            int last_log_term = voteRequest.lastLogTerm();
+            int last_log_index = voteRequest.lastLogIndex();
             Endpoint candidateId = voteRequest.getCandidateId();
 
             // drop the message if hdr.term < raft.current_term, else accept

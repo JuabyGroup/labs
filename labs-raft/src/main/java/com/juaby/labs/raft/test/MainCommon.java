@@ -1,7 +1,9 @@
 package com.juaby.labs.raft.test;
 
+import com.juaby.labs.raft.client.ClientService;
+import com.juaby.labs.raft.client.ClientServiceImpl;
 import com.juaby.labs.raft.protocols.*;
-import com.juaby.labs.raft.statemachine.KVReplicatedStateMachine;
+import com.juaby.labs.raft.sm.KVReplicatedStateMachine;
 import com.juaby.labs.raft.util.Cache;
 import com.juaby.labs.rpc.config.ServerConfig;
 import com.juaby.labs.rpc.config.ServiceConfig;

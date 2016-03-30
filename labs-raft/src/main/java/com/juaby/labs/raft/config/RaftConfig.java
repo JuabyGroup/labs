@@ -4,6 +4,8 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
+ * Raft Config
+ *
  * Created by juaby on 16-3-28.
  */
 public class RaftConfig {
@@ -18,7 +20,7 @@ public class RaftConfig {
 
     private boolean dynamicMemberChanges = true;
 
-    private String logClass = "org.jgroups.protocols.raft.LevelDBLog";;
+    private String logClass = "com.jd.mbr.raft.protocols.LevelDBLog";
 
     private String logName;
 
@@ -26,7 +28,7 @@ public class RaftConfig {
 
     private String snapshotName;
 
-    private int maxLogSize = 1_000_000;
+    private int maxLogSize = 100_0000;
 
     private int resendIinterval = 1000;
 

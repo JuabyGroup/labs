@@ -1,14 +1,14 @@
 package com.juaby.labs.raft.protocols;
 
+import com.juaby.labs.raft.store.LogEntry;
 import com.juaby.labs.raft.util.Cache;
 import com.juaby.labs.raft.util.DefaultTimeScheduler;
-import com.juaby.labs.raft.util.TimeScheduler;
 import com.juaby.labs.rpc.util.Endpoint;
-import com.juaby.labs.rpc.util.NetworkUtils;
+import com.juaby.labs.raft.util.TimeScheduler;
 import com.juaby.labs.rpc.util.RpcCallback;
 import com.juaby.labs.rpc.util.RpcThreadFactory;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -31,7 +31,7 @@ import java.util.concurrent.TimeUnit;
  */
 public class ElectionProtocol {
 
-    protected final Logger log = LoggerFactory.getLogger(this.getClass());
+    protected final Logger logger = LogManager.getLogger(this.getClass());
 
     // when moving to JGroups -> add to jg-protocol-ids.xml
     protected static final short ELECTION_ID = 520;
@@ -82,7 +82,7 @@ public class ElectionProtocol {
 
     protected RaftProtocol raft; // direct ref instead of events
     protected Endpoint local_addr;
-    protected TimeScheduler timer = new DefaultTimeScheduler();
+    protected TimeScheduler timer;
     protected Future<?> election_task;
     protected Future<?> heartbeat_task;
     protected Role role = Role.Follower;
@@ -179,8 +179,8 @@ public class ElectionProtocol {
         if (Objects.equals(local_addr, sender)) {
             return false;
         }
-        if (log.isTraceEnabled()) {
-            log.trace("%s: received VoteRequest from %s: term=%d, my term=%d, last_log_term=%d, last_log_index=%d",
+        if (logger.isTraceEnabled()) {
+            logger.trace("{}: received VoteRequest from {}: term={}, my term={}, last_log_term={}, last_log_index={}",
                     local_addr, sender, term, raft.currentTerm(), last_log_term, last_log_index);
         }
         boolean send_vote_rsp = false;
@@ -189,10 +189,10 @@ public class ElectionProtocol {
                 if (sameOrNewer(last_log_term, last_log_index))
                     send_vote_rsp = true;
                 else {
-                    log.trace("%s: dropped VoteRequest from %s as my log is more up-to-date", local_addr, sender);
+                    logger.trace("{}: dropped VoteRequest from {} as my log is more up-to-date", local_addr, sender);
                 }
             } else
-                log.trace("%s: already voted for %s in term %d; skipping vote", local_addr, sender, term);
+                logger.trace("{}: already voted for {} in term {}; skipping vote", local_addr, sender, term);
         }
         return send_vote_rsp;
     }
@@ -201,7 +201,7 @@ public class ElectionProtocol {
         if (role == Role.Candidate && term == raft.current_term) {
             if (++current_votes >= raft.majority) {
                 // we've got the majority: become leader
-                log.trace("%s: collected %d votes (majority=%d) in term %d -> becoming leader",
+                logger.trace("{}: collected {} votes (majority={}) in term {} -> becoming leader",
                         local_addr, current_votes, raft.majority, term);
                 changeRole(Role.Leader);
             }
@@ -209,7 +209,7 @@ public class ElectionProtocol {
     }
 
     protected synchronized void handleElectionTimeout() {
-        log.trace("%s: election timeout", local_addr);
+        logger.trace("{}: election timeout", local_addr);
         switch (role) {
             case Follower:
                 changeRole(Role.Candidate);
@@ -231,7 +231,7 @@ public class ElectionProtocol {
     protected boolean sameOrNewer(int last_log_term, int last_log_index) {
         int my_last_log_index;
         LogEntry entry = raft.log().get(my_last_log_index = raft.log().lastAppended());
-        int my_last_log_term = entry != null ? entry.term : 0;
+        int my_last_log_term = entry != null ? entry.term() : 0;
         int comp = Integer.compare(my_last_log_term, last_log_term);
         return comp <= 0 && (comp < 0 || Integer.compare(my_last_log_index, last_log_index) <= 0);
     }
@@ -253,10 +253,12 @@ public class ElectionProtocol {
         final HeartbeatRequest heartbeatRequest = new HeartbeatRequest(term, leader);
         for (final Endpoint endpoint : mbrs) {
             heartbeatThreadPool.submit(new Runnable() {
+
                 @Override
                 public void run() {
                     Cache.getElectionService(endpoint).heartbeat(heartbeatRequest);
                 }
+
             });
         }
     }
@@ -267,7 +269,7 @@ public class ElectionProtocol {
         int last_log_term = entry != null ? entry.term() : 0;
         final VoteRequest voteRequest = new VoteRequest(term, last_log_term, last_log_index);
         voteRequest.setCandidateId(local_addr);
-        log.trace("%s: sending %s", local_addr, voteRequest);
+        logger.trace("{}: sending {}", local_addr, voteRequest);
         List<Endpoint> mbrs = new ArrayList<Endpoint>();
         //TODO
         for (String mbr : raft.members()) {
@@ -280,10 +282,11 @@ public class ElectionProtocol {
                 @Override
                 public void run() {
                     Cache.getElectionService(endpoint).vote(voteRequest, new RpcCallback<VoteResponse, Boolean>() {
+
                         @Override
                         public Boolean callback(VoteResponse voteResponse) {
                             try {
-                                if (voteResponse != null && voteResponse.isResult()) {
+                                if (voteResponse != null && voteResponse.result()) {
                                     handleVoteResponse(voteResponse.term());
                                 }
                                 return true;
@@ -292,6 +295,7 @@ public class ElectionProtocol {
                                 return false;
                             }
                         }
+
                     });
                 }
             });
@@ -300,7 +304,7 @@ public class ElectionProtocol {
 
     protected void sendVoteResponse(Endpoint dest, int term, boolean voteFor, RpcCallback<VoteResponse, Boolean> callback) {
         VoteResponse voteResponse = new VoteResponse(term, voteFor);
-        log.trace("%s: sending %s", local_addr, voteResponse);
+        logger.trace("{}: sending {}", local_addr, voteResponse);
         if (callback != null) {
             callback.callback(voteResponse);
         }

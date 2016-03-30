@@ -1,6 +1,6 @@
 package com.juaby.labs.raft.test;
 
-import com.juaby.labs.raft.protocols.ClientService;
+import com.juaby.labs.raft.client.ClientService;
 import com.juaby.labs.rpc.common.RpcEnum;
 import com.juaby.labs.rpc.config.ServiceConfig;
 import com.juaby.labs.rpc.proxy.ServiceFactory;

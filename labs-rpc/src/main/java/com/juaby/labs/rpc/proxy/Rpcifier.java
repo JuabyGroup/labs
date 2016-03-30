@@ -197,33 +197,35 @@ public class Rpcifier extends RpcProxyParser {
     @Override
     public Rpcifier visitMethod(final int access, final String name,
                                 final String desc, final String signature, final String[] exceptions) {
+        Rpcifier a = createASMifier("mv", 0);
+        if (name.contains("<clinit>")) {
+            return a;
+        }
         ServiceClassInfo.MethodInfo methodInfo = new ServiceClassInfo.MethodInfo();
         methodInfo.setAccess(access);
         methodInfo.setName(name);
         methodInfo.setDesc(desc);
-        if (signature == null || signature.length() == 0) {
-            methodInfo.setSignature(desc);
-        } else {
-            methodInfo.setSignature(signature);
-        }
+        methodInfo.setSignature(signature);
 
         if (exceptions != null && exceptions.length > 0) {
             methodInfo.setExceptions(exceptions);
         } else {
         }
-        Rpcifier a = createASMifier("mv", 0);
-        if (methodInfo.getSignature() != null) {
+
+        if (methodInfo.getDesc() != null) {
             boolean isReturnVoid = false;
             String returnTypeDesc = methodInfo.getDesc().substring(methodInfo.getDesc().lastIndexOf(")") + 1);
-            if (returnTypeDesc != null && returnTypeDesc.length() == 1) {
+            if (returnTypeDesc != null && returnTypeDesc.length() == 1 && "V".equals(returnTypeDesc)) {
                 isReturnVoid = true;
             } else {
-                returnTypeDesc = returnTypeDesc.substring(1, returnTypeDesc.lastIndexOf(";"));
+                int endIndex = returnTypeDesc.lastIndexOf(";");
+                int startIndex = (returnTypeDesc.length() == 1) ? 0 : 1;
+                returnTypeDesc = (endIndex != -1) ? returnTypeDesc.substring(startIndex, endIndex) : returnTypeDesc.substring(startIndex);
             }
 
             final String paramsType = methodInfo.getDesc().substring(methodInfo.getDesc().indexOf("(") + 1, methodInfo.getDesc().lastIndexOf(")"));
             int paramsLength = 0;
-            if (paramsType != null && paramsType.length() > 2) {
+            if (paramsType != null && paramsType.length() > 0) {
                 String [] paramsTypes = paramsType.split(";");
                 methodInfo.setParamsTypes(paramsTypes);
                 paramsLength = paramsTypes.length;
@@ -239,9 +241,9 @@ public class Rpcifier extends RpcProxyParser {
             methodInfo.setReturnVoid(isReturnVoid);
             methodInfo.setParamsLength(paramsLength);
             methodInfo.setReturnTypeDesc(returnTypeDesc);
-            int index = ServiceClassInfoHelper.getMethodCounter(classInfo.getSimpleName() + ":" + methodInfo.getSignature()).getAndIncrement();
+            int index = ServiceClassInfoHelper.getMethodCounter(classInfo.getName() + ":" + methodInfo.getName() + ":" + methodInfo.getSignature()).getAndIncrement();
             methodInfo.setIndex(index);
-            classInfo.getMethods().put(methodInfo.getSignature(), methodInfo);
+            classInfo.getMethods().put(methodInfo.getName() + "=" + methodInfo.getDesc(), methodInfo);
         }
         return a;
     }

@@ -1,4 +1,4 @@
-package com.juaby.labs.raft.protocols;
+package com.juaby.labs.raft.client;
 
 import com.juaby.labs.rpc.util.Endpoint;
 
@@ -13,8 +13,10 @@ public interface ClientService<K, V> {
 
     public V remove(K key);
 
-    //public boolean addServer(Endpoint endpoint);
+    public boolean addServer(Endpoint endpoint);
 
-    //public boolean removeServer(Endpoint endpoint);
+    public boolean removeServer(Endpoint endpoint);
+
+    public void leader();
 
 }

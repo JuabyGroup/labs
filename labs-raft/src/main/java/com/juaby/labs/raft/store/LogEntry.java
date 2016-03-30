@@ -1,4 +1,4 @@
-package com.juaby.labs.raft.protocols;
+package com.juaby.labs.raft.store;
 
 /**
  * An element in a log. Captures the term and command to be applied to the state machine

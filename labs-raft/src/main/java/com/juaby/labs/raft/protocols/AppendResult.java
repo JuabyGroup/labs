@@ -69,39 +69,15 @@ public class AppendResult {
         return this;
     }
 
-    public boolean isSuccess() {
-        return success;
-    }
-
-    public int getIndex() {
-        return index;
-    }
-
-    public int getMatchingTerm() {
-        return non_matching_term;
-    }
-
-    public void setSuccess(boolean success) {
+    public void success(boolean success) {
         this.success = success;
     }
 
-    public void setIndex(int index) {
+    public void index(int index) {
         this.index = index;
     }
 
-    public int getCommit_index() {
-        return commit_index;
-    }
-
-    public void setCommit_index(int commit_index) {
-        this.commit_index = commit_index;
-    }
-
-    public int getNon_matching_term() {
-        return non_matching_term;
-    }
-
-    public void setNon_matching_term(int non_matching_term) {
+    public void nonMatchingTerm(int non_matching_term) {
         this.non_matching_term = non_matching_term;
     }
 

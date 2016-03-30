@@ -3,6 +3,8 @@ package com.juaby.labs.raft.protocols;
 import java.io.Serializable;
 
 /**
+ * Command fro Log
+ *
  * Created by juaby on 16-3-25.
  */
 public class Command<CT, CD> implements Serializable {

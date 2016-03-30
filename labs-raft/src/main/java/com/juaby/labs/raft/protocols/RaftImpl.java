@@ -1,5 +1,7 @@
 package com.juaby.labs.raft.protocols;
 
+import com.juaby.labs.raft.store.Log;
+import com.juaby.labs.raft.store.LogEntry;
 import com.juaby.labs.rpc.util.Endpoint;
 
 /**
@@ -70,9 +72,9 @@ public abstract class RaftImpl {
         }
 
         // if the term at prev_log_index != prev_term -> return false and the start index of the conflicting term
-        if (prev_log_index == 0 || prev.term == prev_log_term) {
+        if (prev_log_index == 0 || prev.term() == prev_log_term) {
             LogEntry existing = raft.log_impl.get(curr_index);
-            if (existing != null && existing.term != entry_term) {
+            if (existing != null && existing.term() != entry_term) {
                 // delete this and all subsequent entries and overwrite with received entry
                 raft.deleteAllLogEntriesStartingFrom(curr_index);
             }
@@ -82,7 +84,7 @@ public abstract class RaftImpl {
             }
             return new AppendResult(true, curr_index).commitIndex(raft.commitIndex());
         }
-        return new AppendResult(false, getFirstIndexOfConflictingTerm(prev_log_index, prev.term), prev.term);
+        return new AppendResult(false, getFirstIndexOfConflictingTerm(prev_log_index, prev.term()), prev.term());
     }
 
 
@@ -102,7 +104,7 @@ public abstract class RaftImpl {
         int retval = Math.min(start_index, last);
         for (int i = retval; i >= first; i--) {
             LogEntry entry = log.get(i);
-            if (entry == null || entry.term != conflicting_term) {
+            if (entry == null || entry.term() != conflicting_term) {
                 break;
             }
             retval = i;

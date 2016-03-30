@@ -1,5 +1,6 @@
 package com.juaby.labs.raft.protocols;
 
+import com.juaby.labs.raft.store.LogEntry;
 import com.juaby.labs.rpc.util.Endpoint;
 
 /**
@@ -47,27 +48,27 @@ public class AppendEntriesRequest extends RaftHeader {
         this.leader = leader;
     }
 
-    public int getPrev_log_index() {
+    public int prevLogIndex() {
         return prev_log_index;
     }
 
-    public void setPrev_log_index(int prev_log_index) {
+    public void prevLogIndex(int prev_log_index) {
         this.prev_log_index = prev_log_index;
     }
 
-    public int getPrev_log_term() {
+    public int prevLogTerm() {
         return prev_log_term;
     }
 
-    public void setPrev_log_term(int prev_log_term) {
+    public void prevLogTerm(int prev_log_term) {
         this.prev_log_term = prev_log_term;
     }
 
-    public int getEntry_term() {
+    public int entryTerm() {
         return entry_term;
     }
 
-    public void setEntry_term(int entry_term) {
+    public void entryTerm(int entry_term) {
         this.entry_term = entry_term;
     }
 
@@ -79,19 +80,19 @@ public class AppendEntriesRequest extends RaftHeader {
         this.entries = entries;
     }
 
-    public int getLeader_commit() {
+    public int leaderCommit() {
         return leader_commit;
     }
 
-    public void setLeader_commit(int leader_commit) {
+    public void leaderCommit(int leader_commit) {
         this.leader_commit = leader_commit;
     }
 
-    public boolean isInternal() {
+    public boolean internal() {
         return internal;
     }
 
-    public void setInternal(boolean internal) {
+    public void internal(boolean internal) {
         this.internal = internal;
     }
 

@@ -1,6 +1,6 @@
-package com.juaby.labs.raft.protocols;
+package com.juaby.labs.raft.client;
 
-import com.juaby.labs.raft.statemachine.KVReplicatedStateMachine;
+import com.juaby.labs.raft.sm.KVReplicatedStateMachine;
 import com.juaby.labs.rpc.util.Endpoint;
 
 /**
@@ -39,14 +39,19 @@ public class ClientServiceImpl<K, V> implements ClientService<K, V> {
         return null;
     }
 
-    //@Override
+    @Override
     public boolean addServer(Endpoint endpoint) {
         return false;
     }
 
-    //@Override
+    @Override
     public boolean removeServer(Endpoint endpoint) {
         return false;
+    }
+
+    @Override
+    public void leader() {
+        return;
     }
 
 }

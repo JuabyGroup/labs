@@ -1,9 +1,14 @@
 package com.juaby.labs.raft.protocols;
 
+import com.juaby.labs.raft.store.Log;
+import com.juaby.labs.raft.store.LogEntry;
 import com.juaby.labs.raft.util.*;
-import com.juaby.labs.rpc.util.*;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import com.juaby.labs.rpc.util.Endpoint;
+import com.juaby.labs.rpc.util.RpcCallback;
+import com.juaby.labs.rpc.util.RpcThreadFactory;
+import com.juaby.labs.rpc.util.SerializeTool;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
 import java.io.*;
 import java.nio.file.Files;
@@ -26,7 +31,7 @@ import java.util.function.ObjIntConsumer;
 /** Implementation of the RAFT consensus protocol */
 public class RaftProtocol implements Runnable, Settable, DynamicMembership {
 
-    protected final Logger log = LoggerFactory.getLogger(this.getClass());
+    protected final Logger logger = LogManager.getLogger(this.getClass());
 
     // When moving to JGroups -> add to jg-protocol-ids.xml
     protected static final byte[] raft_id_key = Util.raftIdKey("raft-id");
@@ -52,7 +57,7 @@ public class RaftProtocol implements Runnable, Settable, DynamicMembership {
     protected boolean dynamic_view_changes = true;
 
     /** The fully qualified name of the class implementing Log */
-    protected String log_class = "com.juaby.labs.raft.protocols.LevelDBLog";
+    protected String log_class = "com.juaby.labs.raft.store.LevelDBLog";
 
     /** Arguments to the log impl, e.g. k1=v1,k2=v2. These will be passed to init() */
     protected String log_args;
@@ -208,7 +213,7 @@ public class RaftProtocol implements Runnable, Settable, DynamicMembership {
     }
 
     public Logger getLog() {
-        return this.log;
+        return this.logger;
     }
 
     public RaftProtocol stateMachine(StateMachine sm) {
@@ -290,7 +295,7 @@ public class RaftProtocol implements Runnable, Settable, DynamicMembership {
             return -1;
         }
         if (new_term > current_term) {
-            log.trace("%s: changed term from %d -> %d", local_addr, current_term, new_term);
+            logger.trace("{}: changed term from {} -> {}", local_addr, current_term, new_term);
             current_term = new_term;
             log_impl.currentTerm(new_term);
             changeRole(Role.Follower);
@@ -438,7 +443,7 @@ public class RaftProtocol implements Runnable, Settable, DynamicMembership {
     public synchronized void snapshot() throws Exception {
         // todo: make sure all requests are blocked while dumping the snapshot
         if (snapshotting) {
-            log.error("%s: cannot create snapshot; snapshot is being created by another thread");
+            logger.error("{}: cannot create snapshot; snapshot is being created by another thread"); //TODO
             return;
         }
         try {
@@ -462,7 +467,7 @@ public class RaftProtocol implements Runnable, Settable, DynamicMembership {
                 try (InputStream input = new FileInputStream(snapshot_name)) {
                     state_machine.readContentFrom(new DataInputStream(input));
                     snapshot_offset = 1;
-                    log.debug("%s: initialized state machine from snapshot %s", local_addr, snapshot_name);
+                    logger.debug("{}: initialized state machine from snapshot {}", local_addr, snapshot_name);
                 } catch (FileNotFoundException fne) {
                     // log.debug("snapshot %s not found, initializing state machine from persistent log", snapshot_name);
                 }
@@ -471,21 +476,21 @@ public class RaftProtocol implements Runnable, Settable, DynamicMembership {
                 for (int i = from; i <= to; i++) {
                     LogEntry log_entry = log_impl.get(i);
                     if (log_entry == null) {
-                        log.error("%s: log entry for index %d not found in log", local_addr, i);
+                        logger.error("{}: log entry for index {} not found in log", local_addr, i);
                         break;
                     }
-                    if (log_entry.command != null) {
-                        if (log_entry.internal) {
-                            executeInternalCommand(null, log_entry.command, log_entry.offset, log_entry.length);
+                    if (log_entry.command() != null) {
+                        if (log_entry.internal()) {
+                            executeInternalCommand(null, log_entry.command(), log_entry.offset(), log_entry.length());
                         } else {
-                            state_machine.apply(log_entry.command, log_entry.offset, log_entry.length);
+                            state_machine.apply(log_entry.command(), log_entry.offset(), log_entry.length());
                             count++;
                         }
                     }
                 }
                 state_machine_loaded = true;
                 if (count > 0) {
-                    log.debug("%s: applied %d entries from the log (%d - %d) to the state machine", local_addr, count, from, to);
+                    logger.debug("{}: applied {} entries from the log ({} - {}) to the state machine", local_addr, count, from, to);
                 }
             }
         }
@@ -505,7 +510,7 @@ public class RaftProtocol implements Runnable, Settable, DynamicMembership {
         synchronized (members) {
             Set<String> tmp = new HashSet<>(members);
             if (tmp.size() != members.size()) {
-                log.error("members (%s) contains duplicates; removing them and setting members to %s", members, tmp);
+                logger.error("members ({}) contains duplicates; removing them and setting members to {}", members, tmp);
                 members.clear();
                 members.addAll(tmp);
             }
@@ -553,7 +558,7 @@ public class RaftProtocol implements Runnable, Settable, DynamicMembership {
         last_appended = log_impl.lastAppended();
         commit_index = log_impl.commitIndex();
         current_term = log_impl.currentTerm();
-        log.trace("set last_appended=%d, commit_index=%d, current_term=%d", last_appended, commit_index, current_term);
+        logger.trace("set last_appended={}, commit_index={}, current_term={}", last_appended, commit_index, current_term);
         initStateMachineFromLog(false);
         log_size_bytes = logSizeInBytes();
 
@@ -636,7 +641,7 @@ public class RaftProtocol implements Runnable, Settable, DynamicMembership {
             curr_term = current_term;
             commit_idx = commit_index;
             LogEntry entry = log_impl.get(prev_index);
-            prev_term = entry != null ? entry.term : 0;
+            prev_term = entry != null ? entry.term() : 0;
 
             LogEntry appendEntry = new LogEntry(curr_term, buf, offset, length, cmd != null);
             log_impl.append(curr_index, true, appendEntry);
@@ -662,11 +667,13 @@ public class RaftProtocol implements Runnable, Settable, DynamicMembership {
                     @Override
                     public void run() {
                         Cache.getRaftService(endpoint).appendEntries(request, new RpcCallback<AppendEntriesResponse, Boolean>() {
+
                             @Override
                             public Boolean callback(AppendEntriesResponse response) {
                                 impl.handleAppendEntriesResponse(response.getSrc(), response.term(), response.getResult());
                                 return true;
                             }
+
                         });
                     }
                 });
@@ -701,7 +708,7 @@ public class RaftProtocol implements Runnable, Settable, DynamicMembership {
                 try {
                     sendSnapshotTo(member); // will reset snapshot_in_progress // todo: run in separate thread
                 } catch (Exception e) {
-                    log.error("%s: failed sending snapshot to %s: next_index=%d, first_applied=%d",
+                    logger.error("{}: failed sending snapshot to {}: next_index={}, first_applied={}",
                             local_addr, member, next_index, log().firstAppended());
                 }
             }
@@ -711,8 +718,8 @@ public class RaftProtocol implements Runnable, Settable, DynamicMembership {
         if (this.last_appended >= next_index) {
             int to = entry.sendSingleMessage() ? next_index : last_appended;
             for (int i = Math.max(next_index, 1); i <= to; i++) {  // i=match_index+1 ?
-                if (log.isTraceEnabled()) {
-                    log.trace("%s: resending %d to %s\n", local_addr, i, member);
+                if (logger.isTraceEnabled()) {
+                    logger.trace("{}: resending {} to {}\n", local_addr, i, member);
                 }
                 resend(member, i);
             }
@@ -722,7 +729,7 @@ public class RaftProtocol implements Runnable, Settable, DynamicMembership {
         if (this.last_appended > match_index) {
             int index = this.last_appended;
             if (index > 0) {
-                log.trace("%s: resending %d to %s\n", local_addr, index, member);
+                logger.trace("{}: resending {} to {}\n", local_addr, index, member);
                 resend(member, index);
             }
             return;
@@ -748,13 +755,13 @@ public class RaftProtocol implements Runnable, Settable, DynamicMembership {
     protected void resend(Endpoint target, int index) {
         LogEntry entry = log_impl.get(index);
         if (entry == null) {
-            log.error("%s: resending of %d failed; entry not found", local_addr, index);
+            logger.error("{}: resending of {} failed; entry not found", local_addr, index);
             return;
         }
         LogEntry prev = log_impl.get(index - 1);
-        int prev_term = prev != null ? prev.term : 0;
+        int prev_term = prev != null ? prev.term() : 0;
 
-        AppendEntriesRequest appendEntriesRequest = new AppendEntriesRequest(current_term, this.local_addr, index - 1, prev_term, entry.term, commit_index, entry.internal);
+        AppendEntriesRequest appendEntriesRequest = new AppendEntriesRequest(current_term, this.local_addr, index - 1, prev_term, entry.term(), commit_index, entry.internal());
         appendEntriesRequest.setEntries(new LogEntry[] {entry});
         AppendEntriesResponse response = Cache.getRaftService(target).appendEntries(appendEntriesRequest);
         AppendResult result = response.getResult();
@@ -791,12 +798,12 @@ public class RaftProtocol implements Runnable, Settable, DynamicMembership {
             snapshotting = true;
 
             LogEntry last_committed_entry = log_impl.get(commitIndex());
-            int last_index = commit_index, last_term = last_committed_entry.term;
+            int last_index = commit_index, last_term = last_committed_entry.term();
             doSnapshot();
 
             // todo: use streaming approach (STATE$StateOutputStream, BlockingInputStream from JGroups)
             byte[] data = Files.readAllBytes(Paths.get(snapshot_name));
-            log.debug("%s: sending snapshot (%s) to %s", local_addr, Util.printBytes(data.length), dest);
+            logger.debug("{}: sending snapshot ({}) to {}", local_addr, Util.printBytes(data.length), dest);
 
             InstallSnapshotRequest request = new InstallSnapshotRequest(currentTerm(), leader(), last_index, last_term);
             request.setData(data);
@@ -834,7 +841,7 @@ public class RaftProtocol implements Runnable, Settable, DynamicMembership {
                 }
             }
         } catch (Throwable t) {
-            log.error("failed applying commit %d: %s", index, t);
+            logger.error("failed applying commit {}: {}", index, t);
         }
     }
 
@@ -850,7 +857,7 @@ public class RaftProtocol implements Runnable, Settable, DynamicMembership {
             }
             return true;
         } catch (Throwable t) {
-            log.error(local_addr + ": failed advancing commit_index (%d) to %d: %s", commit_index, leader_commit, t);
+            logger.error(local_addr + ": failed advancing commit_index ({}) to {}: {}", commit_index, leader_commit, t);
             return false;
         }
     }
@@ -873,12 +880,12 @@ public class RaftProtocol implements Runnable, Settable, DynamicMembership {
         log_size_bytes += bytes_added;
         if (log_size_bytes >= max_log_size) {
             try {
-                this.log.debug("%s: current log size is %d, exceeding max_log_size of %d: creating snapshot",
+                logger.debug("{}: current log size is {}, exceeding max_log_size of {}: creating snapshot",
                         local_addr, log_size_bytes, max_log_size);
                 snapshot();
                 log_size_bytes = logSizeInBytes();
             } catch (Exception ex) {
-                log.error("%s: failed snapshotting log: %s", local_addr, ex);
+                logger.error("{}: failed snapshotting log: {}", local_addr, ex);
             }
         }
     }
@@ -894,19 +901,19 @@ public class RaftProtocol implements Runnable, Settable, DynamicMembership {
             throw new IllegalStateException(local_addr + ": state machine is null");
         }
         byte[] rsp = null;
-        if (log_entry.internal) {
+        if (log_entry.internal()) {
             InternalCommand cmd;
             try {
                 cmd = new InternalCommand();
-                SerializeTool.deserialize(log_entry.command, cmd);
+                SerializeTool.deserialize(log_entry.command(), cmd);
                 if (cmd.type() == InternalCommand.Type.addServer || cmd.type() == InternalCommand.Type.removeServer) {
                     members_being_changed.set(false); // new addServer()/removeServer() operations can now be started
                 }
             } catch (Throwable t) {
-                log.error("%s: failed unmarshalling internal command: %s", local_addr, t);
+                logger.error("{}: failed unmarshalling internal command: {}", local_addr, t);
             }
         } else {
-            rsp = state_machine.apply(log_entry.command, log_entry.offset, log_entry.length);
+            rsp = state_machine.apply(log_entry.command(), log_entry.offset(), log_entry.length());
         }
         // Notify the client's CompletableFuture and then remove the entry in the client request table
         if (request_table != null) {
@@ -943,7 +950,7 @@ public class RaftProtocol implements Runnable, Settable, DynamicMembership {
             synchronized (this) {
                 impl = new_impl;
             }
-            log.trace("%s: changed role from %s -> %s", local_addr, old_impl == null ? "null" :
+            logger.trace("{}: changed role from {} -> {}", local_addr, old_impl == null ? "null" :
                     old_impl.getClass().getSimpleName(), new_impl.getClass().getSimpleName());
             notifyRoleChangeListeners(new_role);
         }
@@ -956,7 +963,7 @@ public class RaftProtocol implements Runnable, Settable, DynamicMembership {
                 cmd = new InternalCommand();
                 SerializeTool.deserialize(buf, cmd);
             } catch (Exception ex) {
-                log.error("%s: failed unmarshalling internal command: %s", local_addr, ex);
+                logger.error("{}: failed unmarshalling internal command: {}", local_addr, ex);
                 return;
             }
         }
@@ -964,7 +971,7 @@ public class RaftProtocol implements Runnable, Settable, DynamicMembership {
         try {
             cmd.execute(this);
         } catch (Exception ex) {
-            log.error("%s: failed executing internal command %s: %s", local_addr, cmd, ex);
+            logger.error("{}: failed executing internal command {}: {}", local_addr, cmd, ex);
         }
     }
 

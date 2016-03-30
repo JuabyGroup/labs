@@ -79,8 +79,8 @@ public class RpcClientProxyGenerator extends ClassLoader implements Opcodes {
             mv.visitEnd();
         }
 
-        for (String methodSignature : classInfo.getMethods().keySet()) {
-            ServiceClassInfo.MethodInfo methodInfo = classInfo.getMethods().get(methodSignature);
+        for (String key : classInfo.getMethods().keySet()) {
+            ServiceClassInfo.MethodInfo methodInfo = classInfo.getMethods().get(key);
             String returnTypeDesc = methodInfo.getReturnTypeDesc();
             boolean isReturnVoid = methodInfo.isReturnVoid();
             int paramsLength = methodInfo.getParamsLength();
@@ -111,7 +111,7 @@ public class RpcClientProxyGenerator extends ClassLoader implements Opcodes {
                 mv.visitMethodInsn(INVOKEVIRTUAL, "com/juaby/labs/rpc/config/ServiceConfig", "getName", "()Ljava/lang/String;", false);
                 currStackSize = currStackSize - 1 + 1;
 
-                mv.visitLdcInsn(methodInfo.getSignature());
+                mv.visitLdcInsn(methodInfo.getName() + "=" + methodInfo.getDesc());
                 currStackSize = currStackSize + 1;
                 if (maxStackSize < currStackSize) {
                     maxStackSize = currStackSize;

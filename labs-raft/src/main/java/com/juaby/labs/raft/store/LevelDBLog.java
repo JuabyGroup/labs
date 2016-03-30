@@ -1,10 +1,13 @@
-package com.juaby.labs.raft.protocols;
+package com.juaby.labs.raft.store;
 
 import com.juaby.labs.rpc.util.Endpoint;
 import com.juaby.labs.rpc.util.SerializeTool;
 import org.apache.commons.io.FileUtils;
-import org.iq80.leveldb.*;
-import org.slf4j.LoggerFactory;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+import org.iq80.leveldb.DB;
+import org.iq80.leveldb.Options;
+import org.iq80.leveldb.WriteBatch;
 
 import java.io.Closeable;
 import java.io.File;
@@ -12,9 +15,9 @@ import java.io.IOException;
 import java.util.Map;
 import java.util.function.ObjIntConsumer;
 
-import static org.fusesource.leveldbjni.JniDBFactory.factory;
 import static com.juaby.labs.raft.util.IntegerHelper.fromByteArrayToInt;
 import static com.juaby.labs.raft.util.IntegerHelper.fromIntToByteArray;
+import static org.fusesource.leveldbjni.JniDBFactory.factory;
 
 /**
  * Implementation of ${link #Log}
@@ -22,7 +25,7 @@ import static com.juaby.labs.raft.util.IntegerHelper.fromIntToByteArray;
  */
 public class LevelDBLog implements Log {
 
-    protected final org.slf4j.Logger log = LoggerFactory.getLogger(this.getClass());
+    protected final Logger log = LogManager.getLogger(this.getClass());
 
     private static final byte[] FIRSTAPPENDED = "FA".getBytes();
     private static final byte[] LASTAPPENDED  = "LA".getBytes();
@@ -51,13 +54,13 @@ public class LevelDBLog implements Log {
 
         this.dbFileName = new File(log_name);
         db = factory.open(dbFileName, options);
-        log.trace("opened %s", db);
+        log.trace("opened {}", db);
 
         if (isANewRAFTLog()) {
-            log.trace("log %s is new, must be initialized", dbFileName);
+            log.trace("log {} is new, must be initialized", dbFileName);
             initLogWithMetadata();
         } else {
-            log.trace("log %s exists, does not have to be initialized", dbFileName);
+            log.trace("log {} exists, does not have to be initialized", dbFileName);
             readMetadataFromLog();
         }
         checkForConsistency();
@@ -66,7 +69,7 @@ public class LevelDBLog implements Log {
     @Override
     public void close() {
         try {
-            log.trace("closing DB: %s", db);
+            log.trace("closing DB: {}", db);
 
             if (db!= null) db.close();
             currentTerm = 0;
@@ -84,7 +87,7 @@ public class LevelDBLog implements Log {
     public void delete() {
         this.close();
         try {
-            log.trace("deleting DB directory: %s", dbFileName);
+            log.trace("deleting DB directory: {}", dbFileName);
             FileUtils.deleteDirectory(dbFileName);
         } catch (IOException e) {
             e.printStackTrace();
@@ -100,7 +103,7 @@ public class LevelDBLog implements Log {
     @Override
     public Log currentTerm(int new_term) {
         currentTerm = new_term;
-        log.trace("Updating current term: %d", currentTerm);
+        log.trace("Updating current term: {}", currentTerm);
         db.put(CURRENTTERM, fromIntToByteArray(currentTerm));
         return this;
     }
@@ -114,7 +117,7 @@ public class LevelDBLog implements Log {
     public Log votedFor(Endpoint member) {
         votedFor = member;
         try {
-            log.debug("Updating Voted for: %s", votedFor);
+            log.debug("Updating Voted for: {}", votedFor);
             db.put(VOTEDFOR, SerializeTool.serialize(member));
         } catch (Exception e) {
             e.printStackTrace(); // todo: better error handling
@@ -135,7 +138,7 @@ public class LevelDBLog implements Log {
     @Override
     public Log commitIndex(int new_index) {
         commitIndex = new_index;
-        log.trace("Updating commit index: %d", commitIndex);
+        log.trace("Updating commit index: {}", commitIndex);
         db.put(COMMITINDEX, fromIntToByteArray(commitIndex));
         return this;
     }
@@ -148,7 +151,7 @@ public class LevelDBLog implements Log {
     @Override
     public void append(int index, boolean overwrite, LogEntry... entries) {
 
-        log.trace("Appending %d entries", entries.length);
+        log.trace("Appending {} entries", entries.length);
         try (WriteBatch batch = db.createWriteBatch()){
             for(LogEntry entry : entries) {
                 if(overwrite) {
@@ -161,7 +164,7 @@ public class LevelDBLog implements Log {
                 updateLastAppended(index, batch);
                 updateCurrentTerm(entry.term, batch);
 
-                log.trace("Flushing batch to DB: %s", batch);
+                log.trace("Flushing batch to DB: {}", batch);
                 db.write(batch);
                 index++;
             }
@@ -260,16 +263,16 @@ public class LevelDBLog implements Log {
         log.info("-----------------");
 
         byte[] firstAppendedBytes = db.get(FIRSTAPPENDED);
-        log.info("First Appended: %d", fromByteArrayToInt(firstAppendedBytes));
+        log.info("First Appended: {}", fromByteArrayToInt(firstAppendedBytes));
         byte[] lastAppendedBytes = db.get(LASTAPPENDED);
-        log.info("Last Appended: %d", fromByteArrayToInt(lastAppendedBytes));
+        log.info("Last Appended: {}", fromByteArrayToInt(lastAppendedBytes));
         byte[] currentTermBytes = db.get(CURRENTTERM);
-        log.info("Current Term: %d", fromByteArrayToInt(currentTermBytes));
+        log.info("Current Term: {}", fromByteArrayToInt(currentTermBytes));
         byte[] commitIndexBytes = db.get(COMMITINDEX);
-        log.info("Commit Index: %d", fromByteArrayToInt(commitIndexBytes));
+        log.info("Commit Index: {}", fromByteArrayToInt(commitIndexBytes));
         Endpoint votedForTmp = new Endpoint();
         SerializeTool.deserialize(db.get(VOTEDFOR), votedForTmp);
-        log.info("Voted for: %s", votedForTmp);
+        log.info("Voted for: {}", votedForTmp);
     }
 
     @Override
@@ -279,7 +282,7 @@ public class LevelDBLog implements Log {
 
     private boolean checkIfPreviousEntryHasDifferentTerm(int prev_index, int prev_term) {
 
-        log.trace("Checking term (%d) of previous entry (%d)", prev_term, prev_index);
+        log.trace("Checking term ({}) of previous entry ({})", prev_term, prev_index);
         if(prev_index == 0) // index starts at 1
             return false;
         LogEntry prev_entry = getLogEntry(prev_index);
@@ -311,7 +314,7 @@ public class LevelDBLog implements Log {
 
     private void appendEntryIfAbsent(int index, LogEntry entry, WriteBatch batch) throws Exception {
         if (db.get(fromIntToByteArray(index))!= null) {
-            log.trace("Entry %d: %s can't be appended, index already present", index, entry);
+            log.trace("Entry {}: {} can't be appended, index already present", index, entry);
             throw new IllegalStateException("Entry at index " + index + " already exists");
         } else {
             appendEntry(index, entry, batch);
@@ -319,20 +322,20 @@ public class LevelDBLog implements Log {
     }
 
     private void appendEntry(int index, LogEntry entry, WriteBatch batch) throws Exception {
-        log.trace("Appending entry %d: %s", index, entry);
+        log.trace("Appending entry {}: {}", index, entry);
         batch.put(fromIntToByteArray(index), SerializeTool.serialize(entry));
     }
 
 
     private void updateCurrentTerm(int index, WriteBatch batch) {
         currentTerm=index;
-        log.trace("Updating currentTerm: %d", index);
+        log.trace("Updating currentTerm: {}", index);
         batch.put(CURRENTTERM, fromIntToByteArray(currentTerm));
     }
 
     private void updateLastAppended(int index, WriteBatch batch) {
         lastAppended= index;
-        log.trace("Updating lastAppended: %d", index);
+        log.trace("Updating lastAppended: {}", index);
         batch.put(LASTAPPENDED, fromIntToByteArray(lastAppended));
     }
 
@@ -370,27 +373,27 @@ public class LevelDBLog implements Log {
         commitIndex = fromByteArrayToInt(db.get(COMMITINDEX));
         votedFor = new Endpoint();
         SerializeTool.deserialize(db.get(VOTEDFOR), votedFor);
-        log.debug("read metadata from log: firstAppended=%d, lastAppended=%d, currentTerm=%d, commitIndex=%d, votedFor=%s",
+        log.debug("read metadata from log: firstAppended=%d, lastAppended={}, currentTerm={}, commitIndex={}, votedFor={}",
                   firstAppended, lastAppended, currentTerm, commitIndex, votedFor);
     }
 
     private void checkForConsistency() throws Exception {
 
         int loggedFirstAppended = fromByteArrayToInt(db.get(FIRSTAPPENDED));
-        log.trace("FirstAppended in DB is: %d", loggedFirstAppended);
+        log.trace("FirstAppended in DB is: {}", loggedFirstAppended);
 
         int loggedLastAppended = fromByteArrayToInt(db.get(LASTAPPENDED));
-        log.trace("LastAppended in DB is: %d", loggedLastAppended);
+        log.trace("LastAppended in DB is: {}", loggedLastAppended);
 
         int loggedCurrentTerm = fromByteArrayToInt(db.get(CURRENTTERM));
-        log.trace("CurrentTerm in DB is: %d", loggedCurrentTerm);
+        log.trace("CurrentTerm in DB is: {}", loggedCurrentTerm);
 
         int loggedCommitIndex = fromByteArrayToInt(db.get(COMMITINDEX));
-        log.trace("CommitIndex in DB is: %d", loggedCommitIndex);
+        log.trace("CommitIndex in DB is: {}", loggedCommitIndex);
 
         Endpoint loggedVotedForAddress = new Endpoint();
         SerializeTool.deserialize(db.get(VOTEDFOR), loggedVotedForAddress);
-        log.trace("VotedFor in DB is: %s", loggedVotedForAddress);
+        log.trace("VotedFor in DB is: {}", loggedVotedForAddress);
 
         assert (firstAppended == loggedFirstAppended);
         assert (lastAppended == loggedLastAppended);
