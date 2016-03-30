@@ -32,12 +32,15 @@ public class ResultFutureHelper {
         String method = responseMessageBody.getMethod();
         String transportKey = inetSocketAddress.getHostString() + ":" + inetSocketAddress.getPort() + ":" + service + ":" + method;
         ServiceClassInfo.MethodInfo methodInfo = ServiceClassInfoHelper.get(service).getMethods().get(method);
-        if(methodInfo.isCallback()) {
+
+        Integer messageId = message.getId();
+
+        if(message != null && messageId != null && messageId.intValue() == -1 && methodInfo.isCallback()) {
             //TODO
             RpcCallback callback = RpcCallbackHandler.getClientCallbackProxy(transportKey);
             RpcCallbackHandler.handler(callback, responseMessageBody.getBody());
         }
-        Integer messageId = message.getId();
+
         if (message != null && messageId != null && messageId.intValue() != -1) {
             RpcFutureImpl<ResponseMessageBody> resultFuture = map().get(messageId);
             if (resultFuture != null) {

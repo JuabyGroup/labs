@@ -29,7 +29,7 @@ public class RpcCallbackProxy<REQ, RES> {
             String[] transportKeyArray = getTransportKey().split(":");
             responseMessageBody.setService(transportKeyArray[2]);
             responseMessageBody.setMethod(transportKeyArray[3]);
-            responseMessageBody.setReturnClass("LVoid;");
+            responseMessageBody.setReturnClass("V");
             responseMessageBody.setBody(o);
             byte [] body = SerializeTool.serialize(responseMessageBody);
             RpcMessage sentMessage = new RpcMessage((byte) 1, (byte) 2,
