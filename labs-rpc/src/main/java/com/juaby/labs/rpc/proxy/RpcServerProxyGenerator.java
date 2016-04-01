@@ -170,7 +170,7 @@ public class RpcServerProxyGenerator extends ClassLoader implements Opcodes {
             }
         } else {
             {
-                mv = cw.visitMethod(ACC_PUBLIC, "handler", "([Ljava/lang/Object;)Lcom/juaby/labs/rpc/message/ResponseMessageBody;", "([Ljava/lang/Object;)Lcom/juaby/labs/rpc/message/ResponseMessageBody<L" + methodInfo.getReturnTypeDesc() + ";>;", null);
+                mv = cw.visitMethod(ACC_PUBLIC, "handler", "([Ljava/lang/Object;)Lcom/juaby/labs/rpc/message/ResponseMessageBody;", "([Ljava/lang/Object;)Lcom/juaby/labs/rpc/message/ResponseMessageBody<" + methodInfo.getReturnTypeDesc() + ">;", null);
                 mv.visitCode();
                 int maxStackSize = 0;
                 int currStackSize = 0;
@@ -265,7 +265,7 @@ public class RpcServerProxyGenerator extends ClassLoader implements Opcodes {
                     maxStackSize = currStackSize;
                 }
 
-                mv.visitLdcInsn(methodInfo.getReturnTypeDesc());
+                mv.visitLdcInsn(methodInfo.getReturnTypeDesc().substring(1, methodInfo.getReturnTypeDesc().length() - 1));
                 currStackSize = currStackSize + 1;
                 if (maxStackSize < currStackSize) {
                     maxStackSize = currStackSize;

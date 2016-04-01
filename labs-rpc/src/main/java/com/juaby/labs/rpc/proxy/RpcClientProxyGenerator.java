@@ -155,7 +155,7 @@ public class RpcClientProxyGenerator extends ClassLoader implements Opcodes {
                 currStackSize = currStackSize - 3 - 1 + 1;
 
                 if (!isReturnVoid) {
-                    mv.visitTypeInsn(CHECKCAST, returnTypeDesc);
+                    mv.visitTypeInsn(CHECKCAST, returnTypeDesc.substring(1, returnTypeDesc.length() - 1));
                     mv.visitInsn(ARETURN);
                 } else {
                     mv.visitInsn(POP);

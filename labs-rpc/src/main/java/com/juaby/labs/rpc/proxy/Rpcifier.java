@@ -213,16 +213,15 @@ public class Rpcifier extends RpcProxyParser {
         }
 
         if (methodInfo.getDesc() != null) {
-            Type type = Type.getMethodType(methodInfo.getDesc());
-            String rts = type.getReturnType().getDescriptor();
             boolean isReturnVoid = false;
             String returnTypeDesc = methodInfo.getDesc().substring(methodInfo.getDesc().lastIndexOf(")") + 1);
             if (returnTypeDesc != null && returnTypeDesc.length() == 1 && "V".equals(returnTypeDesc)) {
                 isReturnVoid = true;
             } else {
-                int endIndex = returnTypeDesc.lastIndexOf(";");
-                int startIndex = (returnTypeDesc.length() == 1) ? 0 : 1;
-                returnTypeDesc = (endIndex != -1) ? returnTypeDesc.substring(startIndex, endIndex) : returnTypeDesc.substring(startIndex);
+                String basicType = ProxyHelper.javaBasic2LTypes(returnTypeDesc);
+                if (basicType != null) {
+                    returnTypeDesc = basicType;
+                }
             }
 
             final String paramsType = methodInfo.getDesc().substring(methodInfo.getDesc().indexOf("(") + 1, methodInfo.getDesc().lastIndexOf(")"));

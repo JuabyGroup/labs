@@ -17,6 +17,8 @@ public class ProxyHelper {
 
     private static final Map<String, String> javaTypes = new HashMap<String, String>();
 
+    private static final Map<String, String> javaBasic2LTypes = new HashMap<String, String>();
+
     static {
         javaTypes.put("boolean", "Z");
         javaTypes.put("char", "C");
@@ -51,6 +53,42 @@ public class ProxyHelper {
         javaTypes.put("long[][][]", "[[[J");
         javaTypes.put("double[][][]", "[[[D");
         javaTypes.put("void", "V");
+    }
+
+    static {
+        javaBasic2LTypes.put("Z", "Ljava/lang/Boolean;");
+        javaBasic2LTypes.put("C", "Ljava/lang/Character;");
+        javaBasic2LTypes.put("B", "Ljava/lang/Byte;");
+        javaBasic2LTypes.put("S", "Ljava/lang/Short;");
+        javaBasic2LTypes.put("I", "Ljava/lang/Integer;");
+        javaBasic2LTypes.put("F", "Ljava/lang/Float;");
+        javaBasic2LTypes.put("J", "Ljava/lang/Long;");
+        javaBasic2LTypes.put("D", "Ljava/lang/Double;");
+        javaBasic2LTypes.put("[Z", "[Ljava/lang/Boolean;");
+        javaBasic2LTypes.put("[C", "Ljava/lang/Character;");
+        javaBasic2LTypes.put("[B", "[Ljava/lang/Byte;");
+        javaBasic2LTypes.put("[S", "[Ljava/lang/Short;");
+        javaBasic2LTypes.put("[I", "[Ljava/lang/Integer;");
+        javaBasic2LTypes.put("[F", "[Ljava/lang/Float;");
+        javaBasic2LTypes.put("[J", "[Ljava/lang/Long;");
+        javaBasic2LTypes.put("[D", "[Ljava/lang/Double;");
+        javaBasic2LTypes.put("[[Z", "[[Ljava/lang/Boolean;");
+        javaBasic2LTypes.put("[[C", "[[Ljava/lang/Character;");
+        javaBasic2LTypes.put("[[B", "[[Ljava/lang/Byte;");
+        javaBasic2LTypes.put("[[S", "[[Ljava/lang/Short;");
+        javaBasic2LTypes.put("[[I", "[[Ljava/lang/Integer;");
+        javaBasic2LTypes.put("[[F", "[[Ljava/lang/Float;");
+        javaBasic2LTypes.put("[[J", "[[Ljava/lang/Long;");
+        javaBasic2LTypes.put("[[D", "[[Ljava/lang/Double;");
+        javaBasic2LTypes.put("[[[Z", "[[[Ljava/lang/Boolean;");
+        javaBasic2LTypes.put("[[[C", "[[[Ljava/lang/Character;");
+        javaBasic2LTypes.put("[[[B", "[[[Ljava/lang/Byte;");
+        javaBasic2LTypes.put("[[[S", "[[[Ljava/lang/Short;");
+        javaBasic2LTypes.put("[[[I", "[[[Ljava/lang/Integer;");
+        javaBasic2LTypes.put("[[[F", "[[[Ljava/lang/Float;");
+        javaBasic2LTypes.put("[[[J", "[[[Ljava/lang/Long;");
+        javaBasic2LTypes.put("[[[D", "[[[Ljava/lang/Double;");
+        javaBasic2LTypes.put("V", "V");
     }
 
     public static Map<String, RpcServiceHandler> addProxyInstance(String key, RpcServiceHandler proxy) {
@@ -91,6 +129,10 @@ public class ProxyHelper {
                 return "L";
             }
         }
+    }
+
+    public static String javaBasic2LTypes(String typeName) {
+        return javaBasic2LTypes.get(typeName);
     }
 
     public static boolean isJavaType(String typeName) {
