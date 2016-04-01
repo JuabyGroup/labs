@@ -17,6 +17,8 @@ public interface ClientService<K, V> {
 
     public boolean removeServer(Endpoint endpoint);
 
-    public void leader();
+    public Endpoint leader();
+
+    public String role();
 
 }

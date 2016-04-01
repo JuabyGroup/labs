@@ -1,6 +1,7 @@
 package com.juaby.labs.raft.client;
 
 import com.juaby.labs.raft.sm.KVReplicatedStateMachine;
+import com.juaby.labs.raft.util.Cache;
 import com.juaby.labs.rpc.util.Endpoint;
 
 /**
@@ -50,8 +51,13 @@ public class ClientServiceImpl<K, V> implements ClientService<K, V> {
     }
 
     @Override
-    public void leader() {
-        return;
+    public Endpoint leader() {
+        return Cache.getRaftProtocol().leader();
+    }
+
+    @Override
+    public String role() {
+        return Cache.getRaftProtocol().role();
     }
 
 }
