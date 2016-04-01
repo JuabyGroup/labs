@@ -1,7 +1,5 @@
 package com.juaby.labs.raft.protocols;
 
-import com.juaby.labs.rpc.util.RpcCallback;
-
 /**
  * Election
  *
@@ -9,7 +7,7 @@ import com.juaby.labs.rpc.util.RpcCallback;
  */
 public interface ElectionService {
 
-    public VoteResponse vote(VoteRequest voteRequest, RpcCallback<VoteResponse, Boolean> callback);
+    public VoteResponse vote(VoteRequest voteRequest);
 
     public void heartbeat(HeartbeatRequest heartbeatRequest);
 

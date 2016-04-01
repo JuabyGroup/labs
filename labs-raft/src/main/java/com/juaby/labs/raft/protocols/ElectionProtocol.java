@@ -5,7 +5,6 @@ import com.juaby.labs.raft.util.Cache;
 import com.juaby.labs.raft.util.DefaultTimeScheduler;
 import com.juaby.labs.rpc.util.Endpoint;
 import com.juaby.labs.raft.util.TimeScheduler;
-import com.juaby.labs.rpc.util.RpcCallback;
 import com.juaby.labs.rpc.util.RpcThreadFactory;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -281,33 +280,16 @@ public class ElectionProtocol {
             voteThreadPool.submit(new Runnable() {
                 @Override
                 public void run() {
-                    Cache.getElectionService(endpoint).vote(voteRequest, new RpcCallback<VoteResponse, Boolean>() {
-
-                        @Override
-                        public Boolean callback(VoteResponse voteResponse) {
-                            try {
-                                if (voteResponse != null && voteResponse.result()) {
-                                    handleVoteResponse(voteResponse.term());
-                                }
-                                return true;
-                            } catch (Exception e) {
-                                //TODO
-                                return false;
-                            }
-                        }
-
-                    });
+                    Cache.getElectionService(endpoint).vote(voteRequest);
                 }
             });
         }
     }
 
-    protected void sendVoteResponse(Endpoint dest, int term, boolean voteFor, RpcCallback<VoteResponse, Boolean> callback) {
+    protected VoteResponse sendVoteResponse(Endpoint dest, int term, boolean voteFor) {
         VoteResponse voteResponse = new VoteResponse(term, voteFor);
         logger.trace("{}: sending {}", local_addr, voteResponse);
-        if (callback != null) {
-            callback.callback(voteResponse);
-        }
+        return voteResponse;
     }
 
     protected void changeRole(Role new_role) {

@@ -1,9 +1,6 @@
 package com.juaby.labs.raft.util;
 
-import com.juaby.labs.raft.protocols.ElectionProtocol;
-import com.juaby.labs.raft.protocols.ElectionService;
-import com.juaby.labs.raft.protocols.RaftProtocol;
-import com.juaby.labs.raft.protocols.RaftService;
+import com.juaby.labs.raft.protocols.*;
 import com.juaby.labs.rpc.common.RpcEnum;
 import com.juaby.labs.rpc.config.ServiceConfig;
 import com.juaby.labs.rpc.proxy.ServiceFactory;
@@ -37,8 +34,10 @@ public class Cache {
         serviceConfig.setServerType(RpcEnum.Grizzly.value());
         EndpointHelper.add(serviceConfig.getName(), endpoint);
         serviceConfig.setEndpoint(endpoint);
+        serviceConfig.setListener(new ElectionResponseListener());
+        serviceConfig.setAsync(true);
         electionService = ServiceFactory.getService(serviceConfig);
-        electionServiceCache.put(endpoint, electionService);
+        addElectionService(endpoint, electionService);
         return electionService;
     }
 
@@ -55,8 +54,10 @@ public class Cache {
         serviceConfig.setServerType(RpcEnum.Grizzly.value());
         EndpointHelper.add(serviceConfig.getName(), endpoint);
         serviceConfig.setEndpoint(endpoint);
+        serviceConfig.setListener(new AppendResponseListener());
+        serviceConfig.setAsync(true);
         raftService = ServiceFactory.getService(serviceConfig);
-        raftServiceCache.put(endpoint, raftService);
+        addRaftService(endpoint, raftService);
         return raftService;
     }
 

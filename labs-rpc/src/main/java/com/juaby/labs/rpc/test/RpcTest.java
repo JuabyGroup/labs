@@ -21,20 +21,22 @@ public class RpcTest {
         Endpoint endpoint = new Endpoint("localhost", 8007);
         EndpointHelper.add(serviceConfig.getName(), endpoint);
         serviceConfig.setEndpoint(endpoint);
+        serviceConfig.setListener(new ListenerTest());
+        serviceConfig.setAsync(true);
         MessageService messageService = ServiceFactory.getService(serviceConfig);
 
         TestBean testBean = new TestBean();
         testBean.setId("007");
         List<String> params = new ArrayList<String>();
         params.add("hello");
-        TestResult result = messageService.message(testBean, params, new RpcCallback<TestResult, TestResult>() {
+        TestResult result = messageService.message(testBean, params/*, new RpcCallback<TestResult, TestResult>() {
             @Override
             public TestResult callback(TestResult o) {
                 System.out.println("callback : " + o.getTime());
                 return null;
             }
-        });
-        System.out.println(result.getId());
+        }*/);
+        //System.out.println(result.getId());
         //messageService.vmethod("hello");
         //classInfo = ServiceClassInfoHelper.get(RpcServerProxy.class);
         boolean flag = true;

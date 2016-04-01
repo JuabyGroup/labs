@@ -666,15 +666,7 @@ public class RaftProtocol implements Runnable, Settable, DynamicMembership {
                 appendThreadPool.submit(new Runnable() {
                     @Override
                     public void run() {
-                        Cache.getRaftService(endpoint).appendEntries(request, new RpcCallback<AppendEntriesResponse, Boolean>() {
-
-                            @Override
-                            public Boolean callback(AppendEntriesResponse response) {
-                                impl.handleAppendEntriesResponse(response.getSrc(), response.term(), response.getResult());
-                                return true;
-                            }
-
-                        });
+                        Cache.getRaftService(endpoint).appendEntries(request);
                     }
                 });
             }
@@ -738,10 +730,8 @@ public class RaftProtocol implements Runnable, Settable, DynamicMembership {
         if (this.commit_index > commit_idx) { // send an empty AppendEntries message as commit message
             AppendEntriesRequest appendEntriesRequest = new AppendEntriesRequest(current_term, this.local_addr, 0, 0, 0, this.commit_index, false);
             appendEntriesRequest.setEntries(new LogEntry[] {});
-            AppendEntriesResponse response = Cache.getRaftService(member).appendEntries(appendEntriesRequest);
-            AppendResult result = response.getResult();
-            impl.handleAppendEntriesResponse(response.getSrc(), response.term(), result);
-            // TODO
+            Cache.getRaftService(member).appendEntries(appendEntriesRequest);
+            //TODO AppendResponseListener
             return;
         }
 
@@ -763,10 +753,8 @@ public class RaftProtocol implements Runnable, Settable, DynamicMembership {
 
         AppendEntriesRequest appendEntriesRequest = new AppendEntriesRequest(current_term, this.local_addr, index - 1, prev_term, entry.term(), commit_index, entry.internal());
         appendEntriesRequest.setEntries(new LogEntry[] {entry});
-        AppendEntriesResponse response = Cache.getRaftService(target).appendEntries(appendEntriesRequest);
-        AppendResult result = response.getResult();
-        impl.handleAppendEntriesResponse(response.getSrc(), response.term(), result);
-        //TODO
+        Cache.getRaftService(target).appendEntries(appendEntriesRequest);
+        //TODO AppendResponseListener
     }
 
     protected void doSnapshot() throws Exception {

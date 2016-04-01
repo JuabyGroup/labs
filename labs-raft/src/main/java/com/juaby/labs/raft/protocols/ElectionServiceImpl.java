@@ -45,7 +45,8 @@ public class ElectionServiceImpl implements ElectionService {
     }
 
     @Override
-    public VoteResponse vote(VoteRequest voteRequest, RpcCallback<VoteResponse, Boolean> callback) {
+    public VoteResponse vote(VoteRequest voteRequest) {
+        VoteResponse response = null;
         if (voteRequest != null) {
             int term = voteRequest.term();
             int last_log_term = voteRequest.lastLogTerm();
@@ -55,8 +56,9 @@ public class ElectionServiceImpl implements ElectionService {
             // drop the message if hdr.term < raft.current_term, else accept
             // if hdr.term > raft.current_term -> change to follower
             int rc = electionProtocol.raft.currentTerm(voteRequest.term);
-            if (rc < 0)
-                electionProtocol.sendVoteResponse(candidateId, term, false, callback); // raft.current_term);
+            if (rc < 0) {
+                response = electionProtocol.sendVoteResponse(candidateId, term, false); // raft.current_term);
+            }
             if (rc > 0) { // a new term was set
                 electionProtocol.changeRole(Role.Follower);
                 electionProtocol.voteFor(null); // so we can vote again in this term
@@ -64,10 +66,10 @@ public class ElectionServiceImpl implements ElectionService {
 
             boolean send_vote_rsp = electionProtocol.handleVoteRequest(candidateId, term, last_log_term, last_log_index);
             if (send_vote_rsp) {
-                electionProtocol.sendVoteResponse(candidateId, term, true, callback); // raft.current_term);
+                response = electionProtocol.sendVoteResponse(candidateId, term, true); // raft.current_term);
             }
         }
-        return null;
+        return response;
     }
 
 }

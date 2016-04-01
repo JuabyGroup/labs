@@ -1,7 +1,6 @@
 package com.juaby.labs.raft.protocols;
 
 import com.juaby.labs.raft.store.LogEntry;
-import com.juaby.labs.rpc.util.RpcCallback;
 
 /**
  * Created by juaby on 16-3-24.
@@ -44,18 +43,6 @@ public class RaftServiceImpl implements RaftService {
             }
         }
         return new AppendEntriesResponse(raftProtocol.currentTerm(), new AppendResult(false));
-    }
-
-    @Override
-    public AppendEntriesResponse appendEntries(AppendEntriesRequest request, RpcCallback<AppendEntriesResponse, Boolean> callback) {
-        // if hdr.term < current_term -> drop message
-        // if hdr.term > current_term -> set current_term and become Follower, accept message
-        // if hdr.term == current_term -> accept message
-        if (raftProtocol.currentTerm(request.term) < 0) {
-            return new AppendEntriesResponse(raftProtocol.currentTerm(), new AppendResult(false));
-        }
-        callback.callback(appendEntries(request));
-        return null;
     }
 
     @Override

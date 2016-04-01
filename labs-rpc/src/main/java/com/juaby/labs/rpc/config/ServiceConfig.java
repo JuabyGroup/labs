@@ -5,6 +5,7 @@ import com.juaby.labs.rpc.exception.RpcException;
 import com.juaby.labs.rpc.proxy.ProxyHelper;
 import com.juaby.labs.rpc.proxy.ServiceClassInfo;
 import com.juaby.labs.rpc.util.Endpoint;
+import com.juaby.labs.rpc.util.RpcListener;
 import com.juaby.labs.rpc.util.ServiceClassInfoHelper;
 
 /**
@@ -30,6 +31,12 @@ public class ServiceConfig<S> {
     private ServerConfig serverConfig;
 
     private Endpoint endpoint;
+
+    private RpcListener listener;
+
+    private boolean async;
+
+    private long timeout = 5000L;
 
     public ServiceConfig(int serviceType) {
         this.serviceType = serviceType;
@@ -119,6 +126,30 @@ public class ServiceConfig<S> {
 
     public void setEndpoint(Endpoint endpoint) {
         this.endpoint = endpoint;
+    }
+
+    public RpcListener getListener() {
+        return listener;
+    }
+
+    public void setListener(RpcListener listener) {
+        this.listener = listener;
+    }
+
+    public boolean isAsync() {
+        return async;
+    }
+
+    public void setAsync(boolean async) {
+        this.async = async;
+    }
+
+    public long getTimeout() {
+        return timeout;
+    }
+
+    public void setTimeout(long timeout) {
+        this.timeout = timeout;
     }
 
 }

@@ -101,7 +101,11 @@ public class RpcClient {
 
             transport.sendMessage(sentMessage);
 
-            rcvMessage = ResultFutureHelper.result(messageId);
+            if (serviceConfig.isAsync()) {
+                return null;
+            } else {
+                rcvMessage = ResultFutureHelper.result(messageId, serviceConfig.getTimeout());
+            }
         } catch (InterruptedException e) {
             //TODO
         } catch (ExecutionException e) {
