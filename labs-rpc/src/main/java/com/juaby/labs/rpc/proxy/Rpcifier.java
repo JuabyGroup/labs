@@ -213,6 +213,8 @@ public class Rpcifier extends RpcProxyParser {
         }
 
         if (methodInfo.getDesc() != null) {
+            Type type = Type.getMethodType(methodInfo.getDesc());
+            String rts = type.getReturnType().getDescriptor();
             boolean isReturnVoid = false;
             String returnTypeDesc = methodInfo.getDesc().substring(methodInfo.getDesc().lastIndexOf(")") + 1);
             if (returnTypeDesc != null && returnTypeDesc.length() == 1 && "V".equals(returnTypeDesc)) {
@@ -241,7 +243,7 @@ public class Rpcifier extends RpcProxyParser {
             methodInfo.setReturnVoid(isReturnVoid);
             methodInfo.setParamsLength(paramsLength);
             methodInfo.setReturnTypeDesc(returnTypeDesc);
-            int index = ServiceClassInfoHelper.getMethodCounter(classInfo.getName() + ":" + methodInfo.getName() + ":" + methodInfo.getSignature()).getAndIncrement();
+            int index = ServiceClassInfoHelper.getMethodCounter(classInfo.getName() + ":" + methodInfo.getName() + ":" + methodInfo.getDesc()).getAndIncrement();
             methodInfo.setIndex(index);
             classInfo.getMethods().put(methodInfo.getName() + "=" + methodInfo.getDesc(), methodInfo);
         }
