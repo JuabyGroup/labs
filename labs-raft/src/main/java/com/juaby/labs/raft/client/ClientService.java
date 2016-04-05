@@ -21,4 +21,13 @@ public interface ClientService<K, V> {
 
     public String role();
 
+    public int intm(int param);
+    public int intm(boolean param);
+    public int intm(long param);
+    public int intm(char param);
+    public int intm(double param);
+    public int intm(float param);
+    public int intm(short param);
+    public int intm(byte param);
+
 }

@@ -1,6 +1,7 @@
 package com.juaby.labs.rpc.proxy;
 
 import com.juaby.labs.rpc.server.RpcServiceHandler;
+import com.sun.org.apache.bcel.internal.generic.ILOAD;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -133,14 +134,6 @@ public class ProxyHelper {
 
     public static String javaBasic2LTypes(String typeName) {
         return javaBasic2LTypes.get(typeName);
-    }
-
-    public static boolean isJavaType(String typeName) {
-        if (javaTypes.containsKey(typeName)) {
-            return true;
-        } else {
-            return false;
-        }
     }
 
 }

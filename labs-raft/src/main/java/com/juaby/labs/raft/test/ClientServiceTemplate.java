@@ -3,12 +3,6 @@ package com.juaby.labs.raft.test;
 import com.juaby.labs.raft.client.ClientService;
 import com.juaby.labs.rpc.message.ResponseMessageBody;
 import com.juaby.labs.rpc.server.RpcServiceHandler;
-import com.juaby.labs.rpc.test.MessageService;
-import com.juaby.labs.rpc.test.TestBean;
-import com.juaby.labs.rpc.test.TestResult;
-import com.juaby.labs.rpc.util.Endpoint;
-
-import java.util.List;
 
 /**
  * Title: <br>
@@ -27,10 +21,10 @@ public class ClientServiceTemplate implements RpcServiceHandler {
     }
 
     @Override
-    public ResponseMessageBody<Boolean> handler(Object[] params) {
-        Endpoint endpoint = (Endpoint)params[0];
-        Boolean result = clientService.addServer(endpoint);
-        ResponseMessageBody<Boolean> messageBody = new ResponseMessageBody<Boolean>();
+    public ResponseMessageBody handler(Object[] params) {
+        double endpoint = (double)params[0];
+        int result = clientService.intm(endpoint);
+        ResponseMessageBody messageBody = new ResponseMessageBody();
         messageBody.setBody(result);
         messageBody.setReturnClass("ReturnTypeDesc");
         return messageBody;

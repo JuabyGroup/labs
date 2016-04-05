@@ -63,7 +63,7 @@ public class RpcServerProxyGenerator extends ClassLoader implements Opcodes {
         }
         if (methodInfo.isReturnVoid()) {
             {
-                mv = cw.visitMethod(ACC_PUBLIC, "handler", "([Ljava/lang/Object;)Lcom/juaby/labs/rpc/message/ResponseMessageBody;", "([Ljava/lang/Object;)Lcom/juaby/labs/rpc/message/ResponseMessageBody<Ljava/lang/Object;>;", null);
+                mv = cw.visitMethod(ACC_PUBLIC, "handler", "([Ljava/lang/Object;)Lcom/juaby/labs/rpc/message/ResponseMessageBody;", null, null);
                 mv.visitCode();
 
                 int maxStackSize = 0;
@@ -84,9 +84,31 @@ public class RpcServerProxyGenerator extends ClassLoader implements Opcodes {
                     mv.visitInsn(AALOAD);
                     currStackSize = currStackSize - 2 + 1;
 
-                    mv.visitTypeInsn(CHECKCAST, methodInfo.getParamsTypes()[i].substring(1));
-                    mv.visitVarInsn(ASTORE, localStackPos);
-                    currStackSize = currStackSize - 1;
+                    String paramType = methodInfo.getParamsTypes()[i];
+                    String basicType = ProxyHelper.javaBasic2LTypes(paramType);
+                    String finalType;
+                    if (basicType != null) {
+                        finalType = basicType.substring(paramType.length(), basicType.length() - 1);
+                    } else {
+                        finalType = paramType.substring(1);
+                    }
+                    mv.visitTypeInsn(CHECKCAST, finalType);
+                    if (basicType != null) {
+                        String valueMethod = valueMethod(paramType);
+                        int storeType = storeType(paramType);
+                        mv.visitMethodInsn(INVOKEVIRTUAL, finalType, valueMethod, "()" + paramType, false);
+                        currStackSize = currStackSize - 1;
+                        currStackSize = currStackSize + 1;
+                        if (maxStackSize < currStackSize) {
+                            maxStackSize = currStackSize;
+                        }
+                        mv.visitVarInsn(storeType, localStackPos);
+                        currStackSize = currStackSize - 1;
+                    } else {
+                        mv.visitVarInsn(ASTORE, localStackPos);
+                        currStackSize = currStackSize - 1;
+                    }
+
                     localStackPos = localStackPos + 1;
                 }
 
@@ -100,7 +122,15 @@ public class RpcServerProxyGenerator extends ClassLoader implements Opcodes {
                 currStackSize = currStackSize - 1 + 1;
 
                 for (int i = 0; i < methodInfo.getParamsLength(); i++) {
-                    mv.visitVarInsn(ALOAD, 2 + i);
+                    String paramType = methodInfo.getParamsTypes()[i];
+                    String basicType = ProxyHelper.javaBasic2LTypes(paramType);
+
+                    if (basicType != null) {
+                        int loadType = loadType(paramType);
+                        mv.visitVarInsn(loadType, 2 + i);
+                    } else {
+                        mv.visitVarInsn(ALOAD, 2 + i);
+                    }
                     currStackSize = currStackSize + 1;
                     if (maxStackSize < currStackSize) {
                         maxStackSize = currStackSize;
@@ -170,7 +200,7 @@ public class RpcServerProxyGenerator extends ClassLoader implements Opcodes {
             }
         } else {
             {
-                mv = cw.visitMethod(ACC_PUBLIC, "handler", "([Ljava/lang/Object;)Lcom/juaby/labs/rpc/message/ResponseMessageBody;", "([Ljava/lang/Object;)Lcom/juaby/labs/rpc/message/ResponseMessageBody<" + methodInfo.getReturnTypeDesc() + ">;", null);
+                mv = cw.visitMethod(ACC_PUBLIC, "handler", "([Ljava/lang/Object;)Lcom/juaby/labs/rpc/message/ResponseMessageBody;", null, null);
                 mv.visitCode();
                 int maxStackSize = 0;
                 int currStackSize = 0;
@@ -192,9 +222,32 @@ public class RpcServerProxyGenerator extends ClassLoader implements Opcodes {
                     mv.visitInsn(AALOAD);
                     currStackSize = currStackSize - 2 + 1;
 
-                    mv.visitTypeInsn(CHECKCAST, methodInfo.getParamsTypes()[i].substring(1));
-                    mv.visitVarInsn(ASTORE, localStackPos);
-                    currStackSize = currStackSize - 1;
+                    String paramType = methodInfo.getParamsTypes()[i];
+                    String basicType = ProxyHelper.javaBasic2LTypes(paramType);
+                    String finalType;
+                    if (basicType != null) {
+                        finalType = basicType.substring(paramType.length(), basicType.length() - 1);
+                    } else {
+                        finalType = paramType.substring(1);
+                    }
+                    mv.visitTypeInsn(CHECKCAST, finalType);
+
+                    if (basicType != null) {
+                        String valueMethod = valueMethod(paramType);
+                        int storeType = storeType(paramType);
+                        mv.visitMethodInsn(INVOKEVIRTUAL, finalType, valueMethod, "()" + paramType, false);
+                        currStackSize = currStackSize - 1;
+                        currStackSize = currStackSize + 1;
+                        if (maxStackSize < currStackSize) {
+                            maxStackSize = currStackSize;
+                        }
+                        mv.visitVarInsn(storeType, localStackPos);
+                        currStackSize = currStackSize - 1;
+                    } else {
+                        mv.visitVarInsn(ASTORE, localStackPos);
+                        currStackSize = currStackSize - 1;
+                    }
+
                     localStackPos = localStackPos + 1;
                 }
 
@@ -208,7 +261,15 @@ public class RpcServerProxyGenerator extends ClassLoader implements Opcodes {
                 currStackSize = currStackSize - 1 + 1;
 
                 for (int i = 0; i < methodInfo.getParamsLength(); i++) {
-                    mv.visitVarInsn(ALOAD, 2 + i);
+                    String paramType = methodInfo.getParamsTypes()[i];
+                    String basicType = ProxyHelper.javaBasic2LTypes(paramType);
+
+                    if (basicType != null) {
+                        int loadType = loadType(paramType);
+                        mv.visitVarInsn(loadType, 2 + i);
+                    } else {
+                        mv.visitVarInsn(ALOAD, 2 + i);
+                    }
                     currStackSize = currStackSize + 1;
                     if (maxStackSize < currStackSize) {
                         maxStackSize = currStackSize;
@@ -222,7 +283,22 @@ public class RpcServerProxyGenerator extends ClassLoader implements Opcodes {
                     maxStackSize = currStackSize;
                 }
 
-                mv.visitVarInsn(ASTORE, localStackPos);
+                String returnType = methodInfo.getReturnTypeDesc();
+                String basicType = ProxyHelper.javaBasic2LTypes(returnType);
+                String finalType;
+                if (basicType != null) {
+                    finalType = basicType.substring(returnType.length(), basicType.length() - 1);
+                } else {
+                    finalType = returnType.substring(1, returnType.length() - 1);
+                }
+
+                if (basicType != null) {
+                    int storeType = storeType(returnType);
+                    mv.visitVarInsn(storeType, localStackPos);
+                } else {
+                    mv.visitVarInsn(ASTORE, localStackPos);
+                }
+
                 currStackSize = currStackSize - 1;
                 localStackPos = localStackPos + 1;
 
@@ -250,12 +326,26 @@ public class RpcServerProxyGenerator extends ClassLoader implements Opcodes {
                     maxStackSize = currStackSize;
                 }
 
-                mv.visitVarInsn(ALOAD, localStackPos - 1);
-                currStackSize = currStackSize + 1;
-                if (maxStackSize < currStackSize) {
-                    maxStackSize = currStackSize;
+                if (basicType != null) {
+                    int loadType = loadType(returnType);
+                    mv.visitVarInsn(loadType, localStackPos - 1);
+                    currStackSize = currStackSize + 1;
+                    if (maxStackSize < currStackSize) {
+                        maxStackSize = currStackSize;
+                    }
+                    mv.visitMethodInsn(INVOKESTATIC, finalType, "valueOf", "(" + returnType + ")L" + finalType + ";", false);
+                    currStackSize = currStackSize - 1 - 1;
+                    currStackSize = currStackSize + 1;
+                    if (maxStackSize < currStackSize) {
+                        maxStackSize = currStackSize;
+                    }
+                } else {
+                    mv.visitVarInsn(ALOAD, localStackPos - 1);
+                    currStackSize = currStackSize + 1;
+                    if (maxStackSize < currStackSize) {
+                        maxStackSize = currStackSize;
+                    }
                 }
-
                 mv.visitMethodInsn(INVOKEVIRTUAL, "com/juaby/labs/rpc/message/ResponseMessageBody", "setBody", "(Ljava/lang/Object;)V", false);
                 currStackSize = currStackSize - 2;
 
@@ -265,7 +355,7 @@ public class RpcServerProxyGenerator extends ClassLoader implements Opcodes {
                     maxStackSize = currStackSize;
                 }
 
-                mv.visitLdcInsn(methodInfo.getReturnTypeDesc().substring(1, methodInfo.getReturnTypeDesc().length() - 1));
+                mv.visitLdcInsn(finalType);
                 currStackSize = currStackSize + 1;
                 if (maxStackSize < currStackSize) {
                     maxStackSize = currStackSize;
@@ -292,5 +382,105 @@ public class RpcServerProxyGenerator extends ClassLoader implements Opcodes {
         Class<?> handlerClass = defineClass(clientProxyClassName.replace("/", "."), code, 0, code.length);
         return handlerClass;
     }
+
+    public static int loadType(String type) {
+        int loadType = ILOAD;
+        switch (type) {
+            case "Z":
+                loadType = ILOAD;
+                break;
+            case "C":
+                loadType = ILOAD;
+                break;
+            case "I":
+                loadType = ILOAD;
+                break;
+            case "B":
+                loadType = ILOAD;
+                break;
+            case "S":
+                loadType = ILOAD;
+                break;
+            case "L":
+                loadType = LLOAD;
+                break;
+            case "F":
+                loadType = FLOAD;
+                break;
+            case "D":
+                loadType = DLOAD;
+                break;
+            default:
+                //TODO
+        }
+        return loadType;
+    }
+
+    public static int storeType(String type) {
+        int storeType = ISTORE;
+        switch (type) {
+            case "Z":
+                storeType = ISTORE;
+                break;
+            case "C":
+                storeType = ISTORE;
+                break;
+            case "I":
+                storeType = ISTORE;
+                break;
+            case "B":
+                storeType = ISTORE;
+                break;
+            case "S":
+                storeType = ISTORE;
+                break;
+            case "L":
+                storeType = LSTORE;
+                break;
+            case "F":
+                storeType = FSTORE;
+                break;
+            case "D":
+                storeType = DSTORE;
+                break;
+            default:
+                //TODO
+        }
+        return storeType;
+    }
+
+    public static String valueMethod(String type) {
+        String valueMethod = "";
+        switch (type) {
+            case "Z":
+                valueMethod = "booleanValue";
+                break;
+            case "C":
+                valueMethod = "charValue";
+                break;
+            case "I":
+                valueMethod = "intValue";
+                break;
+            case "B":
+                valueMethod = "byteValue";
+                break;
+            case "S":
+                valueMethod = "shortValue";
+                break;
+            case "L":
+                valueMethod = "longValue";
+                break;
+            case "F":
+                valueMethod = "floatValue";
+                break;
+            case "D":
+                valueMethod = "doubleValue";
+                break;
+            default:
+                //TODO
+        }
+        return valueMethod;
+    }
+
 
 }

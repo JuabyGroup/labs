@@ -60,4 +60,44 @@ public class ClientServiceImpl<K, V> implements ClientService<K, V> {
         return Cache.getRaftProtocol().role();
     }
 
+    @Override
+    public int intm(int param) {
+        return 0;
+    }
+
+    @Override
+    public int intm(boolean param) {
+        return 0;
+    }
+
+    @Override
+    public int intm(long param) {
+        return 0;
+    }
+
+    @Override
+    public int intm(char param) {
+        return 0;
+    }
+
+    @Override
+    public int intm(double param) {
+        return 0;
+    }
+
+    @Override
+    public int intm(float param) {
+        return 0;
+    }
+
+    @Override
+    public int intm(short param) {
+        return 0;
+    }
+
+    @Override
+    public int intm(byte param) {
+        return 0;
+    }
+
 }

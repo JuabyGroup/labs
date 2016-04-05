@@ -155,7 +155,15 @@ public class RpcClientProxyGenerator extends ClassLoader implements Opcodes {
                 currStackSize = currStackSize - 3 - 1 + 1;
 
                 if (!isReturnVoid) {
-                    mv.visitTypeInsn(CHECKCAST, returnTypeDesc.substring(1, returnTypeDesc.length() - 1));
+                    String returnType = methodInfo.getReturnTypeDesc();
+                    String basicType = ProxyHelper.javaBasic2LTypes(returnType);
+                    String finalType;
+                    if (basicType != null) {
+                        finalType = basicType.substring(returnType.length(), basicType.length() - 1);
+                    } else {
+                        finalType = returnType.substring(1, returnType.length() - 1);
+                    }
+                    mv.visitTypeInsn(CHECKCAST, finalType);
                     mv.visitInsn(ARETURN);
                 } else {
                     mv.visitInsn(POP);
