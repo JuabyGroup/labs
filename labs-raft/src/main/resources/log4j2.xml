@@ -34,10 +34,10 @@
     </appenders>
     <loggers>
         <!-- 3rdparty Loggers -->
-        <logger name="com.juaby.labs" level="info">
+        <logger name="com.juaby.labs" level="trace">
         </logger>
         <!-- Root Logger -->
-        <root level="DEBUG" includeLocation="true">
+        <root level="trace" includeLocation="true">
             <appender-ref ref="DevLog"/>
             <appender-ref ref="Console"/>
         </root>

@@ -23,9 +23,9 @@ public class ClientServiceTemplate implements RpcServiceHandler {
     @Override
     public ResponseMessageBody handler(Object[] params) {
         double endpoint = (double)params[0];
-        int result = clientService.intm(endpoint);
+        clientService.dm(endpoint);
         ResponseMessageBody messageBody = new ResponseMessageBody();
-        messageBody.setBody(result);
+        messageBody.setBody(null);
         messageBody.setReturnClass("ReturnTypeDesc");
         return messageBody;
     }

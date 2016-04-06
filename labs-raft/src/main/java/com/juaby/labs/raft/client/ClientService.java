@@ -29,5 +29,8 @@ public interface ClientService<K, V> {
     public int intm(float param);
     public int intm(short param);
     public int intm(byte param);
+    public double dm(byte param);
+    public double dm();
+    public void dm(double param);
 
 }

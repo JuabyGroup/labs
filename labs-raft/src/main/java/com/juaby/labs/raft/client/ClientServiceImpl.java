@@ -100,4 +100,19 @@ public class ClientServiceImpl<K, V> implements ClientService<K, V> {
         return 0;
     }
 
+    @Override
+    public double dm(byte param) {
+        return 0;
+    }
+
+    @Override
+    public double dm() {
+        return 0;
+    }
+
+    @Override
+    public void dm(double param) {
+
+    }
+
 }

@@ -12,11 +12,11 @@ public class Main1 {
 
     public static void main(String[] args) throws Exception {
         RaftConfig config = new RaftConfig();
-        RaftConfig.Member member1 = config.new Member("1", "192.168.1.103", 7081);
-        RaftConfig.Member member2 = config.new Member("2", "192.168.1.103", 7082);
-        RaftConfig.Member member3 = config.new Member("3", "192.168.1.103", 7083);
-        RaftConfig.Member member4 = config.new Member("4", "192.168.1.103", 7084);
-        RaftConfig.Member member5 = config.new Member("5", "192.168.1.103", 7085);
+        RaftConfig.Member member1 = config.new Member("1", "10.12.165.43", 7081);
+        RaftConfig.Member member2 = config.new Member("2", "10.12.165.43", 7082);
+        RaftConfig.Member member3 = config.new Member("3", "10.12.165.43", 7083);
+        RaftConfig.Member member4 = config.new Member("4", "10.12.165.43", 7084);
+        RaftConfig.Member member5 = config.new Member("5", "10.12.165.43", 7085);
         config.getMembers().add(member1);
         config.getMembers().add(member2);
         config.getMembers().add(member3);
@@ -26,7 +26,7 @@ public class Main1 {
         for (RaftConfig.Member member : config.getMembers()) {
             members.add(member.getHost() + ":" + member.getPort());
         }
-        String bindHost = "192.168.1.103";
+        String bindHost = "10.12.165.43";
         int bindPort = 7081;
         MainCommon.start(bindHost, bindPort, members);
     }
