@@ -20,6 +20,14 @@ public class RpcClientProxy {
 
     protected ServiceConfig config;
 
+    public RpcClientProxy(String service) {
+        this.config = ServiceConfigHelper.getConfig(service);
+    }
+
+    public RpcClientProxy(ServiceConfig config) {
+        this.config = config;
+    }
+
     protected <R> R sendMessage(String service, String method, Object[] params) {
         RequestMessageBody requestMessageBody = new RequestMessageBody(service);
         requestMessageBody.setMethod(method);

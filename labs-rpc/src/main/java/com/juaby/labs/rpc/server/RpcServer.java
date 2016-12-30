@@ -41,12 +41,19 @@
 package com.juaby.labs.rpc.server;
 
 import com.juaby.labs.rpc.config.ServiceConfig;
+import org.glassfish.grizzly.IOStrategy;
 import org.glassfish.grizzly.filterchain.FilterChainBuilder;
 import org.glassfish.grizzly.filterchain.TransportFilter;
+import org.glassfish.grizzly.memory.ByteBufferManager;
+import org.glassfish.grizzly.memory.MemoryManager;
 import org.glassfish.grizzly.nio.transport.TCPNIOTransport;
 import org.glassfish.grizzly.nio.transport.TCPNIOTransportBuilder;
+import org.glassfish.grizzly.strategies.WorkerThreadIOStrategy;
+import org.glassfish.grizzly.threadpool.ThreadPoolConfig;
+import org.glassfish.grizzly.utils.DelayedExecutor;
 
 import java.io.IOException;
+import java.util.concurrent.TimeUnit;
 
 /**
  * Simple GIOP echo server
@@ -62,8 +69,39 @@ public class RpcServer implements Server {
 
     private final TCPNIOTransport transport;
 
+    private final int cores = Runtime.getRuntime().availableProcessors() * 2;
+
     public RpcServer() {
-        this.transport = TCPNIOTransportBuilder.newInstance().build();
+        ThreadPoolConfig workerThreadPoolConfig = ThreadPoolConfig.defaultConfig()
+                .setPoolName("JSF-GRIZZLY-WORK-TPOOL")
+                .setMemoryManager(ByteBufferManager.DEFAULT_MEMORY_MANAGER)
+                .setCorePoolSize(cores)
+                .setMaxPoolSize(cores)
+                .setKeepAliveTime(-1, TimeUnit.MILLISECONDS)
+                .setThreadFactory(null)
+                .setDaemon(true)
+                .setPriority(0)
+                .setQueue(null)
+                .setQueueLimit(-1)
+                .setTransactionMonitor(null)
+                .setTransactionTimeout(0, null);
+
+        ThreadPoolConfig selectorThreadPoolConfig = ThreadPoolConfig.defaultConfig()
+                .setPoolName("JSF-GRIZZLY-WORK-TPOOL")
+                .setMemoryManager(ByteBufferManager.DEFAULT_MEMORY_MANAGER)
+                .setCorePoolSize(cores)
+                .setMaxPoolSize(cores)
+                .setKeepAliveTime(-1, TimeUnit.MILLISECONDS)
+                .setThreadFactory(null)
+                .setDaemon(true)
+                .setPriority(0)
+                .setQueue(null)
+                .setQueueLimit(-1)
+                .setTransactionMonitor(null)
+                .setTransactionTimeout(0, null);
+
+        this.transport = TCPNIOTransportBuilder.newInstance()
+                .build();
     }
 
     public RpcServer(String host, int port) {
@@ -94,6 +132,14 @@ public class RpcServer implements Server {
         filterChainBuilder.add(new ServiceFilter());
 
         transport.setProcessor(filterChainBuilder.build());
+        transport.setKeepAlive(true);
+        transport.setLinger(0);
+        transport.setTcpNoDelay(true);
+        transport.setClientSocketSoTimeout(5000);
+        transport.setServerSocketSoTimeout(5000);
+        transport.setConnectionTimeout(5000);
+        transport.setIOStrategy(WorkerThreadIOStrategy.getInstance());
+        transport.setMemoryManager(ByteBufferManager.DEFAULT_MEMORY_MANAGER);
 
         try {
             // Bind server socket and start transport

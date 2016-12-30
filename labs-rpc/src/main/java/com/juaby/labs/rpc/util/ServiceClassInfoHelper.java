@@ -2,6 +2,10 @@ package com.juaby.labs.rpc.util;
 
 import com.juaby.labs.rpc.proxy.Rpcifier;
 import com.juaby.labs.rpc.proxy.ServiceClassInfo;
+import com.juaby.labs.rpc.test.MessageService;
+import net.bytebuddy.description.field.FieldDescription;
+import net.bytebuddy.description.method.MethodDescription;
+import net.bytebuddy.description.type.TypeDescription;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -33,6 +37,55 @@ public class ServiceClassInfoHelper {
         mailClassInfo.setId(service.getName());
         ServiceClassInfo othersClassInfo;
         try {
+            mailClassInfo = new Rpcifier().parser(name, mailClassInfo);
+
+            String[] interfaces = mailClassInfo.getInterfaces();
+            while (interfaces != null && interfaces.length > 0) {
+                List<String> othersInterfaces = new ArrayList<String>();
+                for (String interfaceName : interfaces) {
+                    othersClassInfo = new ServiceClassInfo();
+                    othersClassInfo = new Rpcifier().parser(interfaceName, othersClassInfo);
+                    if (!othersClassInfo.getMethods().isEmpty()) {
+                        mailClassInfo.getMethods().putAll(othersClassInfo.getMethods());
+                    }
+                    if (othersClassInfo.getInterfaces() != null && othersClassInfo.getInterfaces().length > 0) {
+                        for (String newInterfaceName : othersClassInfo.getInterfaces()) {
+                            othersInterfaces.add(newInterfaceName);
+                        }
+                    }
+                }
+
+                interfaces = new String[othersInterfaces.size()];
+                if (!othersInterfaces.isEmpty()) {
+                    othersInterfaces.toArray(interfaces);
+                }
+            }
+            serviceClassInfoCache.put(mailClassInfo.getName(), mailClassInfo);
+        } catch (Exception e) {
+            //TODO
+        }
+
+        return mailClassInfo;
+    }
+
+    public static ServiceClassInfo parser2(Class service) {
+        if (serviceClassInfoCache.containsKey(service.getName())) {
+            return serviceClassInfoCache.get(service.getName());
+        }
+        String name = service.getCanonicalName();
+        ServiceClassInfo mailClassInfo = new ServiceClassInfo();
+        mailClassInfo.setId(service.getName());
+        ServiceClassInfo othersClassInfo;
+        try {
+            TypeDescription.ForLoadedType t = new TypeDescription.ForLoadedType(MessageService.class);
+            for (FieldDescription.InDefinedShape f : t.getDeclaredFields()) {
+                System.out.println(f);
+            }
+            for (MethodDescription.InDefinedShape m : t.getDeclaredMethods()) {
+                System.out.println(m.getGenericSignature());
+                //System.out.println(m.getName());
+            }
+
             mailClassInfo = new Rpcifier().parser(name, mailClassInfo);
 
             String[] interfaces = mailClassInfo.getInterfaces();

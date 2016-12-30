@@ -22,6 +22,7 @@ import java.util.Map;
 public class RpcClientProxyTemplate<O, F> extends RpcClientProxy implements MessageService<O, F> {
 
     private RpcClientProxyTemplate(String serviceName) {
+        super(serviceName);
         setConfig(serviceName);
     }
 
